@@ -41,6 +41,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from pipeline_utils import load_panel, monthly_last, normalize_index_name
+
 ROOT = Path(__file__).resolve().parent.parent
 NAV_PANEL_CSV = ROOT / "output" / "nav_panel.csv"
 BENCHMARKS_CSV = ROOT / "data" / "benchmarks_consolidated.csv"
@@ -56,20 +58,6 @@ MIN_CAPTURE_MONTHS = 12
 
 # --- loading ------------------------------------------------------------------
 
-def load_panel(path: Path) -> pd.DataFrame:
-    """Loads a wide dates x series CSV. Date column name varies by source
-    (nav_panel.csv uses 'date', benchmarks_consolidated.csv uses 'Date'), so
-    match case-insensitively rather than assume one or the other."""
-    df = pd.read_csv(path)
-    date_col = next((c for c in df.columns if c.strip().lower() == "date"), None)
-    if date_col is None:
-        raise ValueError(f"{path.name}: no 'date' column found (got columns: {list(df.columns)})")
-    df[date_col] = pd.to_datetime(df[date_col])
-    df = df.set_index(date_col).sort_index()
-    df.index.name = "date"
-    return df
-
-
 def load_universe() -> pd.DataFrame:
     return pd.read_csv(FUNDS_UNIVERSE_CSV, dtype=str)
 
@@ -77,10 +65,6 @@ def load_universe() -> pd.DataFrame:
 def load_benchmark_map() -> dict[str, str]:
     df = pd.read_csv(BENCHMARK_UNIVERSE_CSV, dtype=str)
     return dict(zip(df["category"].str.strip(), df["benchmark_index_name"].str.strip()))
-
-
-def normalize_index_name(name: str) -> str:
-    return " ".join(name.strip().upper().split())
 
 
 # --- per-series metric computations --------------------------------------------
@@ -119,11 +103,12 @@ def rolling_summary(series: pd.Series) -> dict[str, float | None]:
     }
 
 
-def max_drawdown_and_recovery(nav: pd.Series) -> dict:
+def max_drawdown_and_recovery(nav: pd.Series, bench_nav: pd.Series | None = None) -> dict:
     nav = nav.dropna()
     if len(nav) < 2:
-        return {"mdd_pct": None, "peak_date": None, "trough_date": None, "recovery_date": None,
-                "decline_days": None, "recovery_days": None, "recovered": None}
+        return {"pct": None, "peak_date": None, "trough_date": None, "recovery_date": None,
+                "decline_days": None, "recovery_days": None, "recovered": None,
+                "bench_decline_pct_same_window": None, "bench_recovered_by_fund_recovery_date": None}
 
     running_max = nav.cummax()
     drawdown = nav / running_max - 1
@@ -136,15 +121,35 @@ def max_drawdown_and_recovery(nav: pd.Series) -> dict:
     recovered_mask = after_trough >= peak_value
     recovery_date = after_trough.index[recovered_mask][0] if recovered_mask.any() else None
 
-    return {
-        "mdd_pct": mdd * 100,
+    result = {
+        "pct": mdd * 100,
         "peak_date": peak_date.date().isoformat(),
         "trough_date": trough_date.date().isoformat(),
         "recovery_date": recovery_date.date().isoformat() if recovery_date is not None else None,
         "decline_days": (trough_date - peak_date).days,
         "recovery_days": (recovery_date - trough_date).days if recovery_date is not None else None,
         "recovered": recovery_date is not None,
+        "bench_decline_pct_same_window": None,
+        "bench_recovered_by_fund_recovery_date": None,
     }
+
+    # Was this the fund's own doing, or did the whole category fall together?
+    # Compare the benchmark's move over the SAME peak->trough window the fund suffered,
+    # rather than the benchmark's own independent worst drawdown (which may be a
+    # different period entirely).
+    if bench_nav is not None:
+        bnav = bench_nav.dropna()
+        if not bnav.empty and bnav.index[0] <= peak_date <= bnav.index[-1]:
+            bench_at_peak = bnav.asof(peak_date)
+            bench_at_trough = bnav.asof(trough_date)
+            if pd.notna(bench_at_peak) and pd.notna(bench_at_trough) and bench_at_peak > 0:
+                result["bench_decline_pct_same_window"] = (bench_at_trough / bench_at_peak - 1) * 100
+            if recovery_date is not None and recovery_date <= bnav.index[-1]:
+                bench_at_fund_recovery = bnav.asof(recovery_date)
+                if pd.notna(bench_at_fund_recovery) and pd.notna(bench_at_peak):
+                    result["bench_recovered_by_fund_recovery_date"] = bool(bench_at_fund_recovery >= bench_at_peak)
+
+    return result
 
 
 def downside_deviation_annual(daily_returns: pd.Series) -> float | None:
@@ -162,18 +167,6 @@ def full_period_cagr(nav: pd.Series) -> float | None:
     if years <= 0 or nav.iloc[0] <= 0:
         return None
     return (nav.iloc[-1] / nav.iloc[0]) ** (1 / years) - 1
-
-
-def monthly_last(series: pd.Series) -> pd.Series:
-    """Last observation per calendar month — implemented via groupby rather than
-    .resample('M'/'ME') to sidestep pandas version differences in the resample alias."""
-    s = series.dropna()
-    if s.empty:
-        return s
-    periods = s.index.to_period("M")
-    monthly = s.groupby(periods).last()
-    monthly.index = monthly.index.to_timestamp(how="end")
-    return monthly
 
 
 def capture_ratios(fund_nav: pd.Series, bench_nav: pd.Series) -> dict:
@@ -235,7 +228,7 @@ def compute_fund_metrics(isin: str, name: str, category: str, nav: pd.Series,
             row[prefix + stat] = value * 100 if (value is not None and stat != "pct_positive") else \
                 (value * 100 if value is not None else None)
 
-    dd = max_drawdown_and_recovery(nav_clean)
+    dd = max_drawdown_and_recovery(nav_clean, bench_nav)
     row.update({f"mdd_{k}": v for k, v in dd.items()})
 
     daily_returns = nav_clean.pct_change().dropna()
@@ -248,6 +241,11 @@ def compute_fund_metrics(isin: str, name: str, category: str, nav: pd.Series,
         row["sortino_ratio"] = (cagr_full - risk_free_rate) / ddev
     else:
         row["sortino_ratio"] = None
+
+    if cagr_full is not None and dd.get("pct") is not None and dd["pct"] != 0:
+        row["calmar_ratio"] = cagr_full / (abs(dd["pct"]) / 100)
+    else:
+        row["calmar_ratio"] = None
 
     if bench_nav is not None:
         row.update(capture_ratios(nav_clean, bench_nav.dropna()))
@@ -301,7 +299,7 @@ def main() -> None:
         )
         rows.append(row)
         print(f"[done] {isin} ({name}): {row['track_record_years']}y track record, "
-              f"MDD {row.get('mdd_mdd_pct')}")
+              f"MDD {row.get('mdd_pct')}")
 
     if not rows:
         print("No funds processed — nothing to write.")
