@@ -30,14 +30,15 @@ mf-portfolio-toolkit/
     Program.cs, Models.cs, NavClient.cs, CsvHelper.cs   <- Module 1: fund NAV + metadata acquisition
 ```
 
-## Benchmarks — no code needed
+## Benchmarks — no code needed, manually extracted
 
-Removed the automated benchmark-fetching modules (both Python and the `csharp-benchmarks`
-project) — you're maintaining `data/benchmarks_consolidated.csv` by hand from
-niftyindices.com downloads, which is more reliable than anything scraped, and it's
-already the exact shape the analytics code needs. Annual review = append that year's
+Maintaining `data/benchmarks_consolidated.csv` by hand from
+niftyindices.com downloads. Annual review = append that year's
 rows to this one file, no script involved. `data/benchmark_universe.csv` stays as the
 category -> index-name reference the Step 4 metrics engine will read from.
+Source: https://www.niftyindices.com/reports/historical-data
+Select "Historical Index Data" as the context, then choose rest of dropdown field values.
+Period - one year at a time only is allowed. For appending, that much is enough.
 
 ## Module 1: fund NAV + metadata acquisition (updated — source swap)
 
