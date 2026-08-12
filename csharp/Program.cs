@@ -1,23 +1,23 @@
 // Step 0/1/2 of the portfolio pipeline: fund universe metadata + historical NAV acquisition.
 //
 // Reads:   ../data/funds_universe.csv
-// Writes:  ../data/cache/{isin}_nav.json / {isin}_meta.json   (raw API responses, cached)
+// Writes:  ../data/cache/mfapi_scheme_list.json         (bulk scheme list, cached)
+//          ../data/cache/{isin}_nav.json / {isin}_meta.json   (raw API responses, cached)
 //          ../output/nav_panel.csv        (dates x funds NAV matrix, forward-filled)
 //          ../output/fund_metadata.csv    (flattened metadata)
 //
-// This mirrors python/fetch_data.py field-for-field and format-for-format, so the two
-// outputs can be diffed against each other as a sanity check that both pipelines agree.
+// Data sources (hybrid, mirrors python/fetch_data.py):
+//   - NAV history: api.mfapi.in. No ISIN lookup endpoint, so we resolve ISIN -> scheme
+//     code via one cached bulk fetch of GET /mf (isinGrowth/isinDivReinvestment fields),
+//     then pull full history via GET /mf/{scheme_code}.
+//   - Metadata (AUM, expense ratio, fund manager): mf.captnemo.in /kuvera/{isin} —
+//     mfapi.in's own metadata doesn't include these fields.
 //
 // Usage:
 //   dotnet run                                   -- fetch/refresh everything
 //   dotnet run -- --isin INF846K01K35             -- fetch just one fund (testing)
 //   dotnet run -- --no-cache                      -- ignore cache, force re-download
 //   dotnet run -- --max-age-days 7                -- treat cache older than 7 days as stale
-//
-// Caveats carried over from the Python version:
-//   - mf.captnemo.in is an unofficial free API. Spot-check a few NAVs against the AMC's
-//     own factsheet before trusting this for real decisions.
-//   - Be a good citizen of a free service: this sleeps between calls and retries with backoff.
 
 using System.Text.Json;
 using MfToolkit;
@@ -28,9 +28,11 @@ var repoRoot = projectDir.Parent!.FullName;
 var universeCsv = Path.Combine(repoRoot, "data", "funds_universe.csv");
 var cacheDir = Path.Combine(repoRoot, "data", "cache");
 var outputDir = Path.Combine(repoRoot, "output");
+var schemeListCachePath = Path.Combine(cacheDir, "mfapi_scheme_list.json");
 
 const int maxForwardFillDays = 5;
 const double sleepBetweenCallsSecs = 0.5;
+const int schemeListMaxAgeDaysDefault = 1; // the bulk list changes rarely; refresh daily at most
 
 string? isinFilter = null;
 bool noCache = false;
@@ -67,9 +69,25 @@ Directory.CreateDirectory(cacheDir);
 Directory.CreateDirectory(outputDir);
 
 var client = new NavClient();
+bool useCache = !noCache;
+
+var schemeList = await EnsureSchemeListAsync(client, schemeListCachePath, useCache,
+    maxAgeDays ?? schemeListMaxAgeDaysDefault);
+var isinIndex = BuildIsinIndex(schemeList);
+Console.WriteLine($"Resolved scheme-code index: {isinIndex.Count} ISINs known to mfapi.in\n");
+
+var unresolved = funds.Where(f => !isinIndex.ContainsKey(f.Isin.Trim().ToUpperInvariant())).ToList();
+if (unresolved.Count > 0)
+{
+    Console.WriteLine("[warn] ISINs not found in mfapi.in scheme list (NAV fetch will be skipped for these):");
+    foreach (var f in unresolved)
+        Console.WriteLine($"    {f.Isin}  {f.Name}");
+    Console.WriteLine();
+}
+
 foreach (var fund in funds)
 {
-    await FetchFundAsync(fund, client, cacheDir, useCache: !noCache, maxAgeDays: maxAgeDays);
+    await FetchFundAsync(fund, client, isinIndex, cacheDir, useCache: useCache, maxAgeDays: maxAgeDays);
 }
 
 var allFunds = ReadUniverse(universeCsv);
@@ -116,19 +134,63 @@ static bool IsCacheFresh(string path, int? maxAgeDays)
     return age < TimeSpan.FromDays(maxAgeDays.Value);
 }
 
-static async Task FetchFundAsync(FundEntry fund, NavClient client, string cacheDir, bool useCache, int? maxAgeDays)
+static async Task<List<MfapiSchemeListEntry>> EnsureSchemeListAsync(
+    NavClient client, string cachePath, bool useCache, int maxAgeDays)
+{
+    if (useCache && IsCacheFresh(cachePath, maxAgeDays))
+    {
+        Console.WriteLine("[cache] mfapi scheme list");
+        var cached = await File.ReadAllTextAsync(cachePath);
+        return JsonSerializer.Deserialize<List<MfapiSchemeListEntry>>(cached) ?? new();
+    }
+
+    Console.WriteLine("[fetch] mfapi scheme list (~37k schemes, one-time/occasional download)");
+    var raw = await client.GetSchemeListRawAsync();
+    if (raw is null)
+    {
+        if (File.Exists(cachePath))
+        {
+            Console.WriteLine("  [warn] using stale cached scheme list since fresh fetch failed");
+            var stale = await File.ReadAllTextAsync(cachePath);
+            return JsonSerializer.Deserialize<List<MfapiSchemeListEntry>>(stale) ?? new();
+        }
+        throw new InvalidOperationException("Could not fetch mfapi scheme list and no cache available.");
+    }
+    await File.WriteAllTextAsync(cachePath, raw);
+    return JsonSerializer.Deserialize<List<MfapiSchemeListEntry>>(raw) ?? new();
+}
+
+static Dictionary<string, int> BuildIsinIndex(List<MfapiSchemeListEntry> schemeList)
+{
+    var index = new Dictionary<string, int>();
+    foreach (var entry in schemeList)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.IsinGrowth))
+            index[entry.IsinGrowth.Trim().ToUpperInvariant()] = entry.SchemeCode;
+        if (!string.IsNullOrWhiteSpace(entry.IsinDivReinvestment))
+            index[entry.IsinDivReinvestment.Trim().ToUpperInvariant()] = entry.SchemeCode;
+    }
+    return index;
+}
+
+static async Task FetchFundAsync(FundEntry fund, NavClient client, Dictionary<string, int> isinIndex,
+    string cacheDir, bool useCache, int? maxAgeDays)
 {
     var navPath = CachePath(cacheDir, fund.Isin, "nav");
     if (useCache && IsCacheFresh(navPath, maxAgeDays))
     {
         Console.WriteLine($"[cache] {fund.Isin} NAV ({fund.Name})");
     }
-    else
+    else if (isinIndex.TryGetValue(fund.Isin.Trim().ToUpperInvariant(), out var schemeCode))
     {
-        Console.WriteLine($"[fetch] {fund.Isin} NAV ({fund.Name})");
-        var raw = await client.GetNavRawAsync(fund.Isin);
+        Console.WriteLine($"[fetch] {fund.Isin} NAV via mfapi scheme {schemeCode} ({fund.Name})");
+        var raw = await client.GetSchemeNavRawAsync(schemeCode);
         if (raw is not null) await File.WriteAllTextAsync(navPath, raw);
         await Task.Delay(TimeSpan.FromSeconds(sleepBetweenCallsSecs));
+    }
+    else
+    {
+        Console.WriteLine($"  [warn] {fund.Isin} ({fund.Name}): not found in mfapi scheme list, skipping NAV fetch");
     }
 
     var metaPath = CachePath(cacheDir, fund.Isin, "meta");
@@ -218,20 +280,24 @@ static void BuildNavPanel(List<FundEntry> funds, string cacheDir, string outputD
         }
 
         var json = File.ReadAllText(navPath);
-        var payload = JsonSerializer.Deserialize<NavResponse>(json);
+        var payload = JsonSerializer.Deserialize<MfapiSchemeResponse>(json);
         var series = new Dictionary<string, double>();
 
-        if (payload?.HistoricalNav is not null)
+        if (payload?.Data is not null)
         {
-            foreach (var pair in payload.HistoricalNav)
+            foreach (var entry in payload.Data)
             {
-                if (pair.Count < 2) continue;
-                var dateStr = pair[0].GetString();
-                if (dateStr is null) continue;
-                if (!DateTime.TryParse(dateStr, out var d))
+                if (string.IsNullOrWhiteSpace(entry.Date) || string.IsNullOrWhiteSpace(entry.Nav))
+                    continue;
+                // mfapi.in dates are "DD-MM-YYYY", not ISO
+                if (!DateTime.TryParseExact(entry.Date.Trim(), "dd-MM-yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out var d))
                     continue; // skip anything we can't parse rather than guess
+                if (!double.TryParse(entry.Nav, System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out var nav))
+                    continue;
                 var iso = d.ToString("yyyy-MM-dd");
-                var nav = pair[1].GetDouble();
                 series[iso] = nav;
                 allDates.Add(iso);
             }

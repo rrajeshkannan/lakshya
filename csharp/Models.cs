@@ -4,25 +4,39 @@ namespace MfToolkit;
 
 public record FundEntry(string Isin, string Name, string Category, bool IsCurrentHolding, string Notes);
 
-// Shape of GET https://mf.captnemo.in/nav/{isin}
-public class NavResponse
+// One entry in the bulk GET https://api.mfapi.in/mf list (~37k schemes).
+// isinGrowth/isinDivReinvestment are what let us resolve ISIN -> scheme code,
+// since mfapi.in doesn't support looking up by ISIN directly.
+public class MfapiSchemeListEntry
 {
-    [JsonPropertyName("ISIN")]
-    public string? Isin { get; set; }
+    [JsonPropertyName("schemeCode")] public int SchemeCode { get; set; }
+    [JsonPropertyName("schemeName")] public string? SchemeName { get; set; }
+    [JsonPropertyName("isinGrowth")] public string? IsinGrowth { get; set; }
+    [JsonPropertyName("isinDivReinvestment")] public string? IsinDivReinvestment { get; set; }
+}
 
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+// Shape of GET https://api.mfapi.in/mf/{scheme_code} — full NAV history, newest-first.
+public class MfapiSchemeResponse
+{
+    [JsonPropertyName("meta")] public MfapiSchemeMeta? Meta { get; set; }
+    [JsonPropertyName("data")] public List<MfapiNavEntry>? Data { get; set; }
+    [JsonPropertyName("status")] public string? Status { get; set; }
+}
 
-    [JsonPropertyName("nav")]
-    public double? Nav { get; set; }
+public class MfapiSchemeMeta
+{
+    [JsonPropertyName("fund_house")] public string? FundHouse { get; set; }
+    [JsonPropertyName("scheme_type")] public string? SchemeType { get; set; }
+    [JsonPropertyName("scheme_category")] public string? SchemeCategory { get; set; }
+    [JsonPropertyName("scheme_code")] public int SchemeCode { get; set; }
+    [JsonPropertyName("scheme_name")] public string? SchemeName { get; set; }
+}
 
-    [JsonPropertyName("date")]
-    public string? Date { get; set; }
-
-    // Each element is [dateString, navNumber] — deserialized as raw JSON elements
-    // because it's a heterogeneous tuple, not a fixed object shape.
-    [JsonPropertyName("historical_nav")]
-    public List<List<System.Text.Json.JsonElement>>? HistoricalNav { get; set; }
+public class MfapiNavEntry
+{
+    // Format "DD-MM-YYYY", e.g. "26-10-2024" — mfapi.in's convention, not ISO.
+    [JsonPropertyName("date")] public string? Date { get; set; }
+    [JsonPropertyName("nav")] public string? Nav { get; set; }
 }
 
 // Shape of GET https://mf.captnemo.in/kuvera/{isin} (a JSON array with one entry)

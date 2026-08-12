@@ -1,0 +1,9 @@
+category,benchmark_index_name,download_status,notes
+Small Cap,NIFTY SMALLCAP 250,downloaded,confirmed working — see data/benchmarks/NIFTY_SMALLCAP_250_Historical_TR.csv
+Flexi Cap,NIFTY 500,pending,
+ELSS,NIFTY 500,pending,same index as Flexi Cap — SEBI benchmarks ELSS against Nifty 500 TRI
+Value,NIFTY500 VALUE 50,pending,verify exact IndexName string once downloaded — this is a best-guess name
+Large Cap,NIFTY 100,pending,
+Large & Mid Cap,NIFTY LARGEMIDCAP 250,pending,verify exact IndexName string once downloaded
+Mid Cap,NIFTY MIDCAP 150,pending,
+Multi Cap,NIFTY500 MULTICAP 50:25:25,pending,verify exact IndexName string once downloaded — this is a best-guess name
