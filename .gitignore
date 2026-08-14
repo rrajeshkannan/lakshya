@@ -1,6 +1,6 @@
 data/cache/
 output/
-csharp/bin/
-csharp/obj/
+bin/
+obj/
 __pycache__/
 *.pyc

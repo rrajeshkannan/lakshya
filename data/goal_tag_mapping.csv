@@ -1,0 +1,8 @@
+current_goal_tag,pipeline_goal,confidence,notes
+Retirement,Retirement,confirmed,Priority #2.
+Edu_B,Edu_B,confirmed,Priority #1.
+Home,Retirement,confirmed,Priority #2.
+Home_Loan,Marriage_HomeLoan,confirmed,priority #4.
+Marriage,Marriage_HomeLoan,confirmed,priority #4.
+Kutti,Stitch_Kutti,confirmed,priority #3.
+Edu_A,Retirement,confirmed,priority #2.
