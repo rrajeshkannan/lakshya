@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MfFrontier</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Only external dependency in the whole C# side of this toolkit. Needed for
+         GoldfarbIdnani, a well-tested quadratic programming solver — deliberately NOT
+         hand-rolled, unlike the correlation/Ledoit-Wolf math in csharp-correlation,
+         because a subtly-wrong QP solver is a much more dangerous failure mode
+         (plausible-looking wrong portfolio weights) than a subtly-wrong diagnostic. -->
+    <PackageReference Include="Accord.Math" Version="3.8.0" />
+  </ItemGroup>
+
+</Project>
