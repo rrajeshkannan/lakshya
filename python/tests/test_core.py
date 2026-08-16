@@ -54,3 +54,43 @@ def test_nav_evidence_inventory():
 
     assert (inventory["Invalid_Dates"] == 0).all()
     assert (inventory["Invalid_NAV"] == 0).all()
+    
+from lakshya_core.fund_evidence import calculate_fund_evidence
+
+
+def test_fund_evidence_for_one_fund():
+    evidence = calculate_fund_evidence("INF174K01KT2")
+
+    assert evidence.isin == "INF174K01KT2"
+
+    assert evidence.returns.observations > 0
+    assert evidence.returns.first_date < evidence.returns.last_date
+
+    assert evidence.drawdown.maximum_drawdown <= 0
+    assert evidence.drawdown.decline_days >= 0
+    
+from lakshya_core.evidence_inventory import load_nav_cache
+from lakshya_core.rolling_returns import calculate_rolling_cagr
+
+from pathlib import Path
+
+
+def test_five_year_rolling_returns():
+    project_root = Path(__file__).resolve().parents[2]
+
+    path = (
+        project_root
+        / "data"
+        / "cache"
+        / "INF174K01KT2_nav.json"
+    )
+
+    df = load_nav_cache(path)
+
+    evidence = calculate_rolling_cagr(df, 5)
+
+    assert evidence.years == 5
+    assert evidence.observations > 0
+    assert evidence.minimum <= evidence.median
+    assert evidence.median <= evidence.maximum
+    assert evidence.negative_periods >= 0
