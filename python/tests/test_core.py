@@ -31,3 +31,26 @@ def test_existing_data_can_be_loaded():
     assert not goals.empty
     assert not funds.empty
     assert not holdings.empty
+    
+from lakshya_core.evidence_inventory import build_evidence_inventory
+
+from lakshya_core.evidence_inventory import build_evidence_inventory
+
+
+def test_nav_evidence_inventory():
+    inventory = build_evidence_inventory()
+
+    assert not inventory.empty
+    assert len(inventory) == 17
+
+    assert inventory["Observations"].min() > 0
+    assert inventory["First_NAV"].notna().all()
+    assert inventory["Last_NAV"].notna().all()
+
+    assert (inventory["Last_NAV"] >= inventory["First_NAV"]).all()
+
+    assert (inventory["Duplicate_Dates"] == 0).all()
+    assert (inventory["Duplicate_Records"] == 0).all()
+
+    assert (inventory["Invalid_Dates"] == 0).all()
+    assert (inventory["Invalid_NAV"] == 0).all()
