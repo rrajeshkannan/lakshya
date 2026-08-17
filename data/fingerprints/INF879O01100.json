@@ -1,0 +1,175 @@
+{
+  "artifact_version": 1,
+  "nav_artifact_version": 1,
+  "generated_at": "2026-08-18T00:30:50+05:30",
+  "fund": {
+    "name": "Parag Parikh ELSS Tax Saver Fund - Direct Plan - Growth",
+    "isin": "INF879O01100",
+    "category": "ELSS",
+    "benchmark": null
+  },
+  "elevation": {
+    "rolling_3y": {
+      "years": 3,
+      "observations": 997,
+      "minimum": 0.11169016707405666,
+      "percentile_25": 0.18440297413236006,
+      "median": 0.22610171081280273,
+      "percentile_75": 0.24569963402185313,
+      "maximum": 0.37512027168491935,
+      "mean": 0.21801882595387082,
+      "standard_deviation": 0.04946670696227703,
+      "positive_periods": 997,
+      "negative_periods": 0,
+      "positive_period_pct": 100.0,
+      "latest": 0.11643252260855652
+    },
+    "rolling_5y": {
+      "years": 5,
+      "observations": 507,
+      "minimum": 0.12893866550040478,
+      "percentile_25": 0.17914181964633635,
+      "median": 0.2338854420415828,
+      "percentile_75": 0.26023614338566026,
+      "maximum": 0.3238309955015959,
+      "mean": 0.22195952680519798,
+      "standard_deviation": 0.04925980822523411,
+      "positive_periods": 507,
+      "negative_periods": 0,
+      "positive_period_pct": 100.0,
+      "latest": 0.1300076985811489
+    },
+    "rolling_7y": {
+      "years": 7,
+      "observations": 15,
+      "minimum": 0.1799484454286726,
+      "percentile_25": 0.18075460619388073,
+      "median": 0.18253365681109623,
+      "percentile_75": 0.18368849199574167,
+      "maximum": 0.18594958523054816,
+      "mean": 0.18264850036789174,
+      "standard_deviation": 0.0020100792087597943,
+      "positive_periods": 15,
+      "negative_periods": 0,
+      "positive_period_pct": 100.0,
+      "latest": 0.1822382695108129
+    },
+    "rolling_10y": null
+  },
+  "protection": {
+    "observations": 1737,
+    "median_severity_pct": 1.6286143482276971,
+    "percentile_75_severity_pct": 4.522767559050589,
+    "percentile_90_severity_pct": 9.043194083225693,
+    "percentile_95_severity_pct": 10.707575413783266,
+    "percentile_99_severity_pct": 20.183801263097703,
+    "maximum_severity_pct": 29.542551385923687,
+    "days_at_or_above_threshold": {
+      "5": 393,
+      "10": 109,
+      "15": 48,
+      "20": 22,
+      "25": 7,
+      "30": 0
+    },
+    "pct_days_at_or_above_threshold": {
+      "5": 22.625215889464595,
+      "10": 6.275187104202648,
+      "15": 2.763385146804836,
+      "20": 1.266551525618883,
+      "25": 0.40299366724237184,
+      "30": 0.0
+    }
+  },
+  "resilience": {
+    "episode_count": 6,
+    "recovered_count": 5,
+    "ongoing_count": 1,
+    "median_depth_pct": 11.47733134259764,
+    "worst_depth_pct": 29.542551385923687,
+    "median_decline_days_recovered": 117.0,
+    "median_recovery_days": 58.0,
+    "median_underwater_days_recovered": 159.0,
+    "median_underwater_days_ongoing": 295.0,
+    "episodes": [
+      {
+        "peak_date": "2020-02-13T00:00:00",
+        "peak_value": 11.1947,
+        "trough_date": "2020-03-23T00:00:00",
+        "trough_value": 7.8875,
+        "drawdown_pct": -0.2954255138592369,
+        "decline_days": 39,
+        "recovery_date": "2020-07-21T00:00:00",
+        "recovery_days": 120,
+        "underwater_days": 159,
+        "status": "recovered",
+        "history_before_peak_days": 202
+      },
+      {
+        "peak_date": "2021-10-18T00:00:00",
+        "peak_value": 20.0265,
+        "trough_date": "2022-06-20T00:00:00",
+        "trough_value": 17.6154,
+        "drawdown_pct": -0.12039547599430744,
+        "decline_days": 245,
+        "recovery_date": "2022-08-17T00:00:00",
+        "recovery_days": 58,
+        "underwater_days": 303,
+        "status": "recovered",
+        "history_before_peak_days": 815
+      },
+      {
+        "peak_date": "2022-09-14T00:00:00",
+        "peak_value": 20.8169,
+        "trough_date": "2022-09-29T00:00:00",
+        "trough_value": 19.6851,
+        "drawdown_pct": -0.05436928649318595,
+        "decline_days": 15,
+        "recovery_date": "2022-10-25T00:00:00",
+        "recovery_days": 26,
+        "underwater_days": 41,
+        "status": "recovered",
+        "history_before_peak_days": 1146
+      },
+      {
+        "peak_date": "2022-12-01T00:00:00",
+        "peak_value": 21.4354,
+        "trough_date": "2023-03-28T00:00:00",
+        "trough_value": 20.3174,
+        "drawdown_pct": -0.0521567127275443,
+        "decline_days": 117,
+        "recovery_date": "2023-04-28T00:00:00",
+        "recovery_days": 31,
+        "underwater_days": 148,
+        "status": "recovered",
+        "history_before_peak_days": 1224
+      },
+      {
+        "peak_date": "2024-09-26T00:00:00",
+        "peak_value": 34.105,
+        "trough_date": "2025-03-04T00:00:00",
+        "trough_value": 30.3824,
+        "drawdown_pct": -0.10915115085764537,
+        "decline_days": 159,
+        "recovery_date": "2025-06-06T00:00:00",
+        "recovery_days": 94,
+        "underwater_days": 253,
+        "status": "recovered",
+        "history_before_peak_days": 1889
+      },
+      {
+        "peak_date": "2025-10-23T00:00:00",
+        "peak_value": 35.2178,
+        "trough_date": "2026-03-31T00:00:00",
+        "trough_value": 30.0248,
+        "drawdown_pct": -0.14745384436279374,
+        "decline_days": 159,
+        "recovery_date": null,
+        "recovery_days": null,
+        "underwater_days": 295,
+        "status": "ongoing",
+        "history_before_peak_days": 2281
+      }
+    ]
+  }
+}

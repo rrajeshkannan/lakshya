@@ -17,6 +17,13 @@ from fund_analysis.nav_evidence import NavEvidenceStore
 from fund_analysis.fingerprint_evidence import FingerprintEvidenceStore
 from fund_analysis.fingerprint_serialization import fingerprint_to_dict
 from fund_analysis.analyze_fund import analyze_fund
+from fund_analysis.run_fund_analysis import run_fund_analysis
+from fund_analysis.run_fund_pipeline import run_fund_pipeline
+from fund_analysis.report_fund_evidence import (
+    load_fund_evidence_report,
+    build_fund_evidence_views,
+    render_fund_evidence_report,
+)
 
 from pathlib import Path
 from lakshya_core.rolling_returns import calculate_rolling_cagr
@@ -842,6 +849,832 @@ def test_analyze_fund_builds_fingerprint_from_persisted_nav(
 
     assert payload["fund"]["isin"] == "TEST123"
     assert payload["nav_artifact_version"] == 1
+
+
+def test_run_fund_analysis_processes_entire_fund_universe(
+    tmp_path,
+    monkeypatch,
+):
+    funds = [
+        Fund(
+            name="Fund A",
+            isin="ISIN_A",
+            category="Small Cap",
+        ),
+        Fund(
+            name="Fund B",
+            isin="ISIN_B",
+            category="Flexi Cap",
+        ),
+    ]
+
+    processed = []
+
+    def fake_analyze_fund(
+        *,
+        fund,
+        nav_evidence_path,
+        fingerprint_evidence_path,
+        generated_at,
+    ):
+        processed.append(
+            {
+                "fund": fund,
+                "nav_path": nav_evidence_path,
+                "fingerprint_path": fingerprint_evidence_path,
+            }
+        )
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_analysis.analyze_fund",
+        fake_analyze_fund,
+    )
+
+    results = run_fund_analysis(
+        funds=funds,
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    assert len(processed) == 2
+
+    assert processed[0]["fund"] is funds[0]
+    assert processed[1]["fund"] is funds[1]
+
+    assert processed[0]["nav_path"] == (
+        tmp_path / "nav" / "ISIN_A.json"
+    )
+
+    assert processed[0]["fingerprint_path"] == (
+        tmp_path / "fingerprints" / "ISIN_A.json"
+    )
+
+    assert processed[1]["nav_path"] == (
+        tmp_path / "nav" / "ISIN_B.json"
+    )
+
+    assert processed[1]["fingerprint_path"] == (
+        tmp_path / "fingerprints" / "ISIN_B.json"
+    )
+
+    assert len(results) == 2
+
+
+def test_run_fund_analysis_reports_failure_without_silently_skipping_fund(
+    tmp_path,
+    monkeypatch,
+):
+    funds = [
+        Fund(
+            name="Fund A",
+            isin="ISIN_A",
+            category="Small Cap",
+        ),
+        Fund(
+            name="Fund B",
+            isin="ISIN_B",
+            category="Flexi Cap",
+        ),
+        Fund(
+            name="Fund C",
+            isin="ISIN_C",
+            category="Large Cap",
+        ),
+    ]
+
+    processed = []
+
+    def fake_analyze_fund(
+        *,
+        fund,
+        nav_evidence_path,
+        fingerprint_evidence_path,
+        generated_at,
+    ):
+        processed.append(fund.isin)
+
+        if fund.isin == "ISIN_B":
+            raise ValueError("synthetic analysis failure")
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_analysis.analyze_fund",
+        fake_analyze_fund,
+    )
+
+    results = run_fund_analysis(
+        funds=funds,
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    assert processed == [
+        "ISIN_A",
+        "ISIN_B",
+        "ISIN_C",
+    ]
+
+    assert len(results) == 3
+
+    assert results[0]["status"] == "success"
+
+    assert results[1]["status"] == "failed"
+    assert results[1]["isin"] == "ISIN_B"
+    assert "synthetic analysis failure" in results[1]["error"]
+
+    assert results[2]["status"] == "success"
+
+
+def test_run_fund_pipeline_acquires_nav_and_analyzes_each_fund(
+    tmp_path,
+    monkeypatch,
+):
+    funds = [
+        Fund(
+            name="Fund A",
+            isin="ISIN_A",
+            category="Small Cap",
+        ),
+        Fund(
+            name="Fund B",
+            isin="ISIN_B",
+            category="Flexi Cap",
+        ),
+    ]
+
+    class FakeNavSource:
+        def resolve_scheme_code(self, isin):
+            return {
+                "ISIN_A": 111,
+                "ISIN_B": 222,
+            }[isin]
+
+        def fetch_nav_history(self, scheme_code):
+            return pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        [
+                            "2026-08-03",
+                            "2026-08-02",
+                            "2026-08-01",
+                        ]
+                    ),
+                    "nav": [103.0, 102.0, 101.0],
+                }
+            )
+
+    analyzed = []
+
+    def fake_analyze_fund(
+        *,
+        fund,
+        nav_evidence_path,
+        fingerprint_evidence_path,
+        generated_at,
+    ):
+        analyzed.append(fund.isin)
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_pipeline.analyze_fund",
+        fake_analyze_fund,
+    )
+
+    results = run_fund_pipeline(
+        funds=funds,
+        nav_source=FakeNavSource(),
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    assert analyzed == [
+        "ISIN_A",
+        "ISIN_B",
+    ]
+
+    assert len(results) == 2
+
+    assert all(
+        result["status"] == "success"
+        for result in results
+    )
+
+
+def test_run_fund_pipeline_reports_source_failure_and_continues(
+    tmp_path,
+    monkeypatch,
+):
+    funds = [
+        Fund(
+            name="Fund A",
+            isin="ISIN_A",
+            category="Small Cap",
+        ),
+        Fund(
+            name="Fund B",
+            isin="ISIN_B",
+            category="Flexi Cap",
+        ),
+        Fund(
+            name="Fund C",
+            isin="ISIN_C",
+            category="Large Cap",
+        ),
+    ]
+
+    class FakeNavSource:
+        def resolve_scheme_code(self, isin):
+            if isin == "ISIN_B":
+                raise ValueError("synthetic MFAPI failure")
+
+            return 123
+
+        def fetch_nav_history(self, scheme_code):
+            return pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        [
+                            "2026-08-03",
+                            "2026-08-02",
+                            "2026-08-01",
+                        ]
+                    ),
+                    "nav": [103.0, 102.0, 101.0],
+                }
+            )
+
+    analyzed = []
+
+    def fake_analyze_fund(
+        *,
+        fund,
+        nav_evidence_path,
+        fingerprint_evidence_path,
+        generated_at,
+    ):
+        analyzed.append(fund.isin)
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_pipeline.analyze_fund",
+        fake_analyze_fund,
+    )
+
+    results = run_fund_pipeline(
+        funds=funds,
+        nav_source=FakeNavSource(),
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    assert analyzed == [
+        "ISIN_A",
+        "ISIN_C",
+    ]
+
+    assert results[0]["status"] == "success"
+
+    assert results[1]["status"] == "failed"
+    assert results[1]["isin"] == "ISIN_B"
+    assert "synthetic MFAPI failure" in results[1]["error"]
+
+    assert results[2]["status"] == "success"
+
+
+def test_run_fund_pipeline_treats_existing_fingerprint_as_success(
+    tmp_path,
+    monkeypatch,
+):
+    fund = Fund(
+        name="Fund A",
+        isin="ISIN_A",
+        category="Small Cap",
+    )
+
+    class FakeNavSource:
+        def resolve_scheme_code(self, isin):
+            return 123
+
+        def fetch_nav_history(self, scheme_code):
+            return pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        ["2026-08-03", "2026-08-02", "2026-08-01"]
+                    ),
+                    "nav": [103.0, 102.0, 101.0],
+                }
+            )
+
+    def fake_analyze_fund(**kwargs):
+        raise ValueError(
+            "Fingerprint evidence artifact already exists: "
+            "synthetic/path.json"
+        )
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_pipeline.analyze_fund",
+        fake_analyze_fund,
+    )
+
+    results = run_fund_pipeline(
+        funds=[fund],
+        nav_source=FakeNavSource(),
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    assert results[0]["status"] == "success"
+    assert results[0]["fingerprint_action"] == "already_exists"
+
+
+def test_run_fund_pipeline_reports_progress(
+    tmp_path,
+    monkeypatch,
+):
+    funds = [
+        Fund(
+            name="Fund A",
+            isin="ISIN_A",
+            category="Small Cap",
+        ),
+    ]
+
+    class FakeNavSource:
+        def resolve_scheme_code(self, isin):
+            return 123
+
+        def fetch_nav_history(self, scheme_code):
+            return pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        ["2026-08-03", "2026-08-02", "2026-08-01"]
+                    ),
+                    "nav": [103.0, 102.0, 101.0],
+                }
+            )
+
+    monkeypatch.setattr(
+        "fund_analysis.run_fund_pipeline.analyze_fund",
+        lambda **kwargs: None,
+    )
+
+    messages = []
+
+    results = run_fund_pipeline(
+        funds=funds,
+        nav_source=FakeNavSource(),
+        data_root=tmp_path,
+        generated_at="2026-08-18T00:00:00+05:30",
+        progress=messages.append,
+    )
+
+    assert results[0]["status"] == "success"
+    assert messages
+
+
+def test_load_fund_evidence_report_reads_all_fingerprint_artifacts(
+    tmp_path,
+):
+    fingerprints_dir = tmp_path / "fingerprints"
+    fingerprints_dir.mkdir()
+
+    (fingerprints_dir / "ISIN_A.json").write_text(
+        json.dumps(
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "elevation": {
+                    "rolling_3y": {
+                        "median": 15.0,
+                    },
+                    "rolling_5y": {
+                        "median": 16.0,
+                    },
+                    "rolling_7y": {
+                        "median": 17.0,
+                    },
+                    "rolling_10y": {
+                        "median": 18.0,
+                    },
+                },
+                "protection": {
+                    "observations": 100,
+                    "median_severity_pct": 3.0,
+                    "percentile_90_severity_pct": 10.0,
+                    "percentile_95_severity_pct": 15.0,
+                    "percentile_99_severity_pct": 20.0,
+                    "maximum_severity_pct": 25.0,
+                },
+                "resilience": {
+                    "episode_count": 5,
+                    "recovered_count": 4,
+                    "ongoing_count": 1,
+                    "median_depth_pct": 10.0,
+                    "worst_depth_pct": 25.0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    (fingerprints_dir / "ISIN_B.json").write_text(
+        json.dumps(
+            {
+                "fund": {
+                    "name": "Fund B",
+                    "isin": "ISIN_B",
+                    "category": "Flexi Cap",
+                },
+                "elevation": {
+                    "rolling_3y": {
+                        "median": 12.0,
+                    },
+                    "rolling_5y": {
+                        "median": 13.0,
+                    },
+                    "rolling_7y": {
+                        "median": 14.0,
+                    },
+                    "rolling_10y": {
+                        "median": 15.0,
+                    },
+                },
+                "protection": {
+                    "observations": 100,
+                    "median_severity_pct": 4.0,
+                    "percentile_90_severity_pct": 12.0,
+                    "percentile_95_severity_pct": 18.0,
+                    "percentile_99_severity_pct": 23.0,
+                    "maximum_severity_pct": 30.0,
+                },
+                "resilience": {
+                    "episode_count": 7,
+                    "recovered_count": 7,
+                    "ongoing_count": 0,
+                    "median_depth_pct": 12.0,
+                    "worst_depth_pct": 30.0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = load_fund_evidence_report(
+        fingerprints_dir
+    )
+
+    assert len(report) == 2
+
+    assert report[0]["fund"]["isin"] == "ISIN_A"
+    assert report[1]["fund"]["isin"] == "ISIN_B"
+
+    assert (
+        report[0]["elevation"]["rolling_5y"]["median"]
+        == 16.0
+    )
+
+    assert (
+        report[1]["protection"]["maximum_severity_pct"]
+        == 30.0
+    )
+
+    assert (
+        report[0]["resilience"]["recovered_count"]
+        == 4
+    )
+
+
+def test_fund_evidence_report_extracts_three_compass_views(
+    tmp_path,
+):
+    fingerprints_dir = tmp_path / "fingerprints"
+    fingerprints_dir.mkdir()
+
+    payload = {
+        "fund": {
+            "name": "Fund A",
+            "isin": "ISIN_A",
+            "category": "Small Cap",
+        },
+        "elevation": {
+            "rolling_3y": {"median": 15.0},
+            "rolling_5y": {"median": 16.0},
+            "rolling_7y": {"median": 17.0},
+            "rolling_10y": {"median": 18.0},
+        },
+        "protection": {
+            "observations": 100,
+            "median_severity_pct": 3.0,
+            "percentile_90_severity_pct": 10.0,
+            "percentile_95_severity_pct": 15.0,
+            "percentile_99_severity_pct": 20.0,
+            "maximum_severity_pct": 25.0,
+        },
+        "resilience": {
+            "episode_count": 5,
+            "recovered_count": 4,
+            "ongoing_count": 1,
+            "median_depth_pct": 10.0,
+            "worst_depth_pct": 25.0,
+            "median_decline_days_recovered": 18.0,
+            "median_recovery_days": 42.0,
+            "median_underwater_days_recovered": 75.0,
+            "median_underwater_days_ongoing": 120.0,
+        },
+    }
+
+    (fingerprints_dir / "ISIN_A.json").write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    report = load_fund_evidence_report(
+        fingerprints_dir
+    )
+
+    views = build_fund_evidence_views(report)
+
+    assert set(views) == {
+        "elevation",
+        "protection",
+        "resilience",
+    }
+
+    assert views["elevation"][0]["fund"]["isin"] == "ISIN_A"
+    assert (
+        views["elevation"][0]["rolling_5y_median"]
+        == 16.0
+    )
+
+    assert (
+        views["protection"][0]["median_severity_pct"]
+        == 3.0
+    )
+
+    assert (
+        views["protection"][0]["percentile_95_severity_pct"]
+        == 15.0
+    )
+
+    assert (
+        views["resilience"][0]["episode_count"]
+        == 5
+    )
+
+    assert (
+        views["resilience"][0]["recovered_count"]
+        == 4
+    )
+
+    assert (
+        views["resilience"][0]["ongoing_count"]
+        == 1
+    )
+
+
+def test_render_fund_evidence_report_contains_three_compass_sections():
+    views = {
+        "elevation": [
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "rolling_3y_median": 15.0,
+                "rolling_5y_median": 16.0,
+                "rolling_7y_median": 17.0,
+                "rolling_10y_median": 18.0,
+            }
+        ],
+        "protection": [
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "observations": 100,
+                "median_severity_pct": 3.0,
+                "percentile_90_severity_pct": 10.0,
+                "percentile_95_severity_pct": 15.0,
+                "percentile_99_severity_pct": 20.0,
+                "maximum_severity_pct": 25.0,
+            }
+        ],
+        "resilience": [
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "episode_count": 5,
+                "recovered_count": 4,
+                "ongoing_count": 1,
+                "median_depth_pct": 10.0,
+                "median_decline_days_recovered": 18.0,
+                "median_recovery_days": 42.0,
+                "median_underwater_days_recovered": 75.0,
+                "median_underwater_days_ongoing": 120.0,
+                "worst_depth_pct": 25.0,
+            }
+        ],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "ELEVATION" in report
+    assert "PROTECTION" in report
+    assert "RESILIENCE" in report
+
+    assert "Fund A" in report
+    assert "15.00%" in report
+    assert "25.00%" in report
+
+
+def test_fund_evidence_report_preserves_missing_elevation_horizon():
+    report = [
+        {
+            "fund": {
+                "name": "Short History Fund",
+                "isin": "ISIN_SHORT",
+                "category": "Small Cap",
+            },
+            "elevation": {
+                "rolling_3y": {
+                    "median": 15.0,
+                },
+                "rolling_5y": {
+                    "median": 16.0,
+                },
+                "rolling_7y": None,
+                "rolling_10y": None,
+            },
+            "protection": {
+                "observations": 100,
+                "median_severity_pct": 3.0,
+                "percentile_90_severity_pct": 10.0,
+                "percentile_95_severity_pct": 15.0,
+                "percentile_99_severity_pct": 20.0,
+                "maximum_severity_pct": 25.0,
+            },
+            "resilience": {
+                "episode_count": 5,
+                "recovered_count": 4,
+                "ongoing_count": 1,
+                "median_depth_pct": 10.0,
+                "worst_depth_pct": 25.0,
+                "median_decline_days_recovered": 18.0,
+                "median_recovery_days": 42.0,
+                "median_underwater_days_recovered": 75.0,
+                "median_underwater_days_ongoing": 120.0,
+            },
+        }
+    ]
+
+    views = build_fund_evidence_views(report)
+
+    assert (
+        views["elevation"][0]["rolling_3y_median"]
+        == 15.0
+    )
+
+    assert (
+        views["elevation"][0]["rolling_5y_median"]
+        == 16.0
+    )
+
+    assert (
+        views["elevation"][0]["rolling_7y_median"]
+        is None
+    )
+
+    assert (
+        views["elevation"][0]["rolling_10y_median"]
+        is None
+    )
+
+
+def test_render_fund_evidence_report_shows_na_for_missing_evidence():
+    views = {
+        "elevation": [
+            {
+                "fund": {
+                    "name": "Short History Fund",
+                    "isin": "ISIN_SHORT",
+                    "category": "Small Cap",
+                },
+                "rolling_3y_median": 0.15,
+                "rolling_5y_median": 0.16,
+                "rolling_7y_median": None,
+                "rolling_10y_median": None,
+            }
+        ],
+        "protection": [],
+        "resilience": [],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "15.00%" in report
+    assert "16.00%" in report
+    assert "N/A" in report
+
+
+def test_render_fund_evidence_report_converts_elevation_decimal_to_percent():
+    views = {
+        "elevation": [
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "rolling_3y_median": 0.15,
+                "rolling_5y_median": 0.20,
+                "rolling_7y_median": 0.21,
+                "rolling_10y_median": 0.22,
+            }
+        ],
+        "protection": [],
+        "resilience": [],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "15.00%" in report
+    assert "20.00%" in report
+    assert "21.00%" in report
+    assert "22.00%" in report
+
+
+def test_fund_evidence_report_includes_resilience_duration_evidence():
+    views = {
+        "elevation": [],
+        "protection": [],
+        "resilience": [
+            {
+                "fund": {
+                    "name": "Fund A",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "episode_count": 5,
+                "recovered_count": 4,
+                "ongoing_count": 1,
+                "median_depth_pct": 10.0,
+                "worst_depth_pct": 25.0,
+                "median_decline_days_recovered": 18.0,
+                "median_recovery_days": 42.0,
+                "median_underwater_days_recovered": 75.0,
+                "median_underwater_days_ongoing": 120.0,
+            }
+        ],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "Median Decline Days" in report
+    assert "Median Recovery Days" in report
+    assert "Median Underwater Days" in report
+
+    assert "18.0" in report
+    assert "42.0" in report
+    assert "75.0" in report
+    assert "120.0" in report
+
+
+def test_render_fund_evidence_report_shows_na_for_missing_resilience_duration():
+    views = {
+        "elevation": [],
+        "protection": [],
+        "resilience": [
+            {
+                "fund": {
+                    "name": "Recovered Fund",
+                    "isin": "ISIN_A",
+                    "category": "Small Cap",
+                },
+                "episode_count": 5,
+                "recovered_count": 5,
+                "ongoing_count": 0,
+                "median_depth_pct": 10.0,
+                "worst_depth_pct": 25.0,
+                "median_decline_days_recovered": 18.0,
+                "median_recovery_days": 42.0,
+                "median_underwater_days_recovered": 75.0,
+                "median_underwater_days_ongoing": None,
+            }
+        ],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "18.0" in report
+    assert "42.0" in report
+    assert "75.0" in report
+    assert "N/A" in report
 
 
 def test_nav_history_normalizes_chronological_order():
