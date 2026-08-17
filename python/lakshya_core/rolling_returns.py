@@ -21,6 +21,8 @@ class RollingReturnEvidence:
     negative_periods: int
     positive_period_pct: float
 
+    latest: float
+
 
 def calculate_rolling_cagr(
     df: pd.DataFrame,
@@ -93,6 +95,10 @@ def calculate_rolling_cagr(
         positive_period_pct=float(
             (positive_periods / len(series)) * 100
         ),
+
+        # The latest rolling observation is retained as part of the observed terrain.
+        # It is descriptive evidence, not a forecast.
+        latest=float(series.iloc[-1]),
     )
 
 

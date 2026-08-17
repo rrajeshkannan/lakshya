@@ -15,7 +15,18 @@ from pathlib import Path
 from lakshya_core.rolling_returns import calculate_rolling_cagr
 from datetime import date
 
-from lakshya_core.models import Goal, Fund
+from lakshya_core.models import (
+    Goal,
+    Fund,
+    ElevationEvidence,
+    ProtectionEvidence,
+    ResilienceEvidence,
+    FundBehaviouralFingerprint,
+)
+
+from lakshya_core.drawdown_episodes import DrawdownEpisode
+from lakshya_core.rolling_returns import RollingReturnEvidence
+
 from lakshya_core.load_data import (
     load_current_holdings,
     load_funds_universe,
@@ -98,6 +109,184 @@ def test_five_year_rolling_returns():
     assert evidence.minimum <= evidence.median
     assert evidence.median <= evidence.maximum
     assert evidence.negative_periods >= 0
+
+
+def test_drawdown_episode_distinguishes_recovered_and_ongoing():
+    # A recovered episode has a known recovery story.
+    # An ongoing episode has an unknown recovery story.
+    # Not zero. Not estimated. Unknown.
+    recovered = DrawdownEpisode(
+        peak_date=date(2020, 1, 1),
+        peak_value=100.0,
+        trough_date=date(2020, 3, 1),
+        trough_value=60.0,
+        drawdown_pct=-0.40,
+        decline_days=60,
+        recovery_date=date(2020, 9, 1),
+        recovery_days=184,
+        underwater_days=244,
+        status="recovered",
+        history_before_peak_days=1000,
+    )
+
+    ongoing = DrawdownEpisode(
+        peak_date=date(2025, 1, 1),
+        peak_value=100.0,
+        trough_date=date(2025, 3, 1),
+        trough_value=70.0,
+        drawdown_pct=-0.30,
+        decline_days=59,
+        recovery_date=None,
+        recovery_days=None,
+        underwater_days=300,
+        status="ongoing",
+        history_before_peak_days=1000,
+    )
+
+    assert recovered.status == "recovered"
+    assert recovered.recovery_date is not None
+    assert recovered.recovery_days is not None
+
+    assert ongoing.status == "ongoing"
+    assert ongoing.recovery_date is None
+    assert ongoing.recovery_days is None
+
+
+def test_elevation_can_have_missing_long_horizon_evidence():
+    # Elevation evidence can be constructed with only short-horizon evidence.
+    # Unavailable evidence remains unavailable. We don't turn insufficient history into zeros.
+    rolling_3y = RollingReturnEvidence(
+        years=3,
+        observations=100,
+        minimum=-5.0,
+        percentile_25=8.0,
+        median=12.0,
+        percentile_75=16.0,
+        maximum=25.0,
+        mean=12.5,
+        standard_deviation=5.0,
+        positive_periods=95,
+        negative_periods=5,
+        positive_period_pct=95.0,
+        latest=14.0,
+    )
+
+    elevation = ElevationEvidence(
+        rolling_3y=rolling_3y,
+        rolling_5y=None,
+        rolling_7y=None,
+        rolling_10y=None,
+    )
+
+    assert elevation.rolling_3y is not None
+    assert elevation.rolling_5y is None
+    assert elevation.rolling_7y is None
+    assert elevation.rolling_10y is None
+
+
+def test_resilience_retains_episode_level_evidence():
+    # Resilience evidence can be constructed from a list of drawdown episodes.
+    # This explicitly prevents us from building a system that calculates medians and throws away the journeys that produced them.
+    episode = DrawdownEpisode(
+        peak_date=date(2020, 1, 1),
+        peak_value=100.0,
+        trough_date=date(2020, 3, 1),
+        trough_value=60.0,
+        drawdown_pct=-0.40,
+        decline_days=60,
+        recovery_date=date(2020, 9, 1),
+        recovery_days=184,
+        underwater_days=244,
+        status="recovered",
+        history_before_peak_days=1000,
+    )
+
+    resilience = ResilienceEvidence(
+        episode_count=1,
+        recovered_count=1,
+        ongoing_count=0,
+        median_depth_pct=40.0,
+        worst_depth_pct=40.0,
+        median_decline_days_recovered=60.0,
+        median_recovery_days=184.0,
+        median_underwater_days_recovered=244.0,
+        median_underwater_days_ongoing=None,
+        episodes=[episode],
+    )
+
+    assert resilience.episode_count == 1
+    assert resilience.recovered_count == 1
+    assert resilience.ongoing_count == 0
+
+    assert len(resilience.episodes) == 1
+    assert resilience.episodes[0] is episode
+
+
+def test_fund_behavioural_fingerprint_contains_three_compass_dimensions():
+    # A fund's behavioural fingerprint contains three compass dimensions: elevation, protection, and resilience.
+    elevation = ElevationEvidence(
+        rolling_3y=None,
+        rolling_5y=None,
+        rolling_7y=None,
+        rolling_10y=None,
+    )
+
+    protection = ProtectionEvidence(
+        observations=100,
+        median_severity_pct=5.0,
+        percentile_75_severity_pct=10.0,
+        percentile_90_severity_pct=15.0,
+        percentile_95_severity_pct=20.0,
+        percentile_99_severity_pct=30.0,
+        maximum_severity_pct=40.0,
+        days_at_or_above_threshold={
+            5: 50,
+            10: 25,
+            15: 10,
+            20: 5,
+            25: 2,
+            30: 1,
+        },
+        pct_days_at_or_above_threshold={
+            5: 50.0,
+            10: 25.0,
+            15: 10.0,
+            20: 5.0,
+            25: 2.0,
+            30: 1.0,
+        },
+    )
+
+    resilience = ResilienceEvidence(
+        episode_count=0,
+        recovered_count=0,
+        ongoing_count=0,
+        median_depth_pct=None,
+        worst_depth_pct=None,
+        median_decline_days_recovered=None,
+        median_recovery_days=None,
+        median_underwater_days_recovered=None,
+        median_underwater_days_ongoing=None,
+        episodes=[],
+    )
+
+    fund = Fund(
+        name="Example Fund",
+        isin="EXAMPLE",
+        category="Flexi Cap",
+    )
+
+    fingerprint = FundBehaviouralFingerprint(
+        fund=fund,
+        elevation=elevation,
+        protection=protection,
+        resilience=resilience,
+    )
+
+    assert fingerprint.fund == fund
+    assert fingerprint.elevation is elevation
+    assert fingerprint.protection is protection
+    assert fingerprint.resilience is resilience
 
 
 def test_downside_deviation():
