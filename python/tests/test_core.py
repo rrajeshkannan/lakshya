@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import pytest
 
@@ -6,6 +8,15 @@ from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.drawdown_episodes import calculate_resilience
 from lakshya_core.fund_fingerprint import build_fund_behavioural_fingerprint
 from lakshya_core.parked.evidence_inventory import load_nav_cache
+from lakshya_core.nav_history import normalize_nav_history
+from lakshya_core.models import Fund
+
+from fund_analysis.universe import load_fund_universe
+from fund_analysis.nav_source import MfapiNavSource
+from fund_analysis.nav_evidence import NavEvidenceStore
+from fund_analysis.fingerprint_evidence import FingerprintEvidenceStore
+from fund_analysis.fingerprint_serialization import fingerprint_to_dict
+from fund_analysis.analyze_fund import analyze_fund
 
 from pathlib import Path
 from lakshya_core.rolling_returns import calculate_rolling_cagr
@@ -28,6 +39,15 @@ from lakshya_core.load_data import (
     load_funds_universe,
     load_goals,
 )
+
+
+class FakeHttpResponse:
+    def __init__(self, status_code, payload):
+        self.status_code = status_code
+        self._payload = payload
+
+    def json(self):
+        return self._payload
 
 
 def test_goal_can_be_created():
@@ -53,6 +73,906 @@ def test_existing_data_can_be_loaded():
     assert not goals.empty
     assert not funds.empty
     assert not holdings.empty
+
+
+def test_fund_universe_loads_all_current_funds():
+    # The current Fund universe is defined by funds_universe.csv.
+    # Fund-stage analysis must operate on the complete current universe,
+    # not on hard-coded funds or holdings embedded in the engine.
+    funds = load_fund_universe()
+
+    assert len(funds) == 17
+    assert all(isinstance(fund, Fund) for fund in funds)
+
+
+def test_fund_universe_uses_isin_as_unique_identity():
+    # ISIN is the stable identity used to connect a fund across
+    # universe data, NAV history, and future evidence artifacts.
+    funds = load_fund_universe()
+
+    isins = [fund.isin for fund in funds]
+
+    assert len(isins) == len(set(isins))
+    assert all(isin for isin in isins)
+
+
+def test_fund_universe_contains_required_fund_identity():
+    # Every Fund entering the behavioural engine must have enough
+    # identity to describe whose behaviour is being analysed.
+    funds = load_fund_universe()
+
+    assert all(fund.name for fund in funds)
+    assert all(fund.isin for fund in funds)
+    assert all(fund.category for fund in funds)
+
+
+def test_fund_universe_does_not_depend_on_current_holdings():
+    # The Fund stage describes the defined Fund universe.
+    # Current portfolio holdings are a later Portfolio-stage concern.
+    funds = load_fund_universe()
+
+    assert len(funds) == 17
+
+
+def test_nav_source_resolves_isin_to_scheme_code():
+    # MFAPI identifies historical NAV endpoints by scheme code,
+    # while Lakshya identifies funds by ISIN.
+    source = MfapiNavSource(
+        scheme_catalog=[
+            {
+                "schemeCode": 12345,
+                "schemeName": "Test Fund - Growth",
+                "isinGrowth": "TEST123",
+            }
+        ]
+    )
+
+    assert source.resolve_scheme_code("TEST123") == 12345
+
+
+def test_nav_source_rejects_unknown_isin():
+    # An unresolved ISIN is an identity problem, not a missing NAV.
+    source = MfapiNavSource(
+        scheme_catalog=[
+            {
+                "schemeCode": 12345,
+                "schemeName": "Test Fund - Growth",
+                "isinGrowth": "TEST123",
+            }
+        ]
+    )
+
+    with pytest.raises(ValueError, match="ISIN"):
+        source.resolve_scheme_code("UNKNOWN")
+
+
+def test_nav_source_parses_nav_history():
+    # Source-specific NAV responses are converted into the canonical
+    # date/nav representation expected by Lakshya.
+    source = MfapiNavSource(scheme_catalog=[])
+
+    response = {
+        "data": [
+            {"date": "17-08-2026", "nav": "123.45"},
+            {"date": "14-08-2026", "nav": "122.80"},
+        ]
+    }
+
+    nav = source.parse_nav_response(response)
+
+    assert list(nav.columns) == ["date", "nav"]
+    assert nav["date"].iloc[0] == pd.Timestamp("2026-08-17")
+    assert nav["nav"].iloc[0] == 123.45
+
+
+def test_nav_source_does_not_calculate_behavioural_evidence():
+    # The source adapter retrieves observations only.
+    # Elevation, Protection and Resilience remain Fund-engine concerns.
+    source = MfapiNavSource(scheme_catalog=[])
+
+    response = {
+        "data": [
+            {"date": "17-08-2026", "nav": "123.45"},
+        ]
+    }
+
+    nav = source.parse_nav_response(response)
+
+    assert "return" not in nav.columns
+    assert "drawdown" not in nav.columns
+    assert "recovery" not in nav.columns
+
+
+def test_nav_source_fetches_scheme_catalog_through_transport():
+    # The source adapter obtains the MFAPI scheme catalog through
+    # an injected transport. Tests must not depend on live internet access.
+    responses = {
+        "https://api.mfapi.in/mf": FakeHttpResponse(
+            status_code=200,
+            payload=[
+                {
+                    "schemeCode": 12345,
+                    "schemeName": "Test Fund - Growth",
+                    "isinGrowth": "TEST123",
+                }
+            ],
+        )
+    }
+
+    def transport(url):
+        return responses[url]
+
+    source = MfapiNavSource(transport=transport)
+
+    catalog = source.fetch_scheme_catalog()
+
+    assert len(catalog) == 1
+    assert catalog[0]["schemeCode"] == 12345
+
+
+def test_nav_source_fetches_nav_history_through_transport():
+    # Once the scheme code is known, MFAPI history is retrieved from
+    # the scheme-specific endpoint.
+    responses = {
+        "https://api.mfapi.in/mf/12345": FakeHttpResponse(
+            status_code=200,
+            payload={
+                "data": [
+                    {"date": "17-08-2026", "nav": "123.45"},
+                    {"date": "14-08-2026", "nav": "122.80"},
+                ]
+            },
+        )
+    }
+
+    def transport(url):
+        return responses[url]
+
+    source = MfapiNavSource(transport=transport)
+
+    nav = source.fetch_nav_history(12345)
+
+    assert list(nav.columns) == ["date", "nav"]
+    assert len(nav) == 2
+    assert nav["nav"].iloc[0] == 123.45
+
+
+def test_nav_source_rejects_unsuccessful_catalog_response():
+    # A failed source response must never be mistaken for an empty
+    # or valid Fund universe.
+    def transport(url):
+        return FakeHttpResponse(
+            status_code=500,
+            payload={},
+        )
+
+    source = MfapiNavSource(transport=transport)
+
+    with pytest.raises(ValueError, match="MFAPI"):
+        source.fetch_scheme_catalog()
+
+
+def test_nav_source_rejects_unsuccessful_nav_response():
+    # A failed historical NAV response must be surfaced rather than
+    # converted into incomplete evidence.
+    def transport(url):
+        return FakeHttpResponse(
+            status_code=503,
+            payload={},
+        )
+
+    source = MfapiNavSource(transport=transport)
+
+    with pytest.raises(ValueError, match="MFAPI"):
+        source.fetch_nav_history(12345)
+
+
+def test_nav_evidence_store_creates_new_artifact(tmp_path):
+    # A new fund gets a persistent evidence artifact containing the
+    # observations actually retrieved from the source.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [103.0, 102.0, 101.0],
+        }
+    )
+
+    path = tmp_path / "INFTEST123_nav.json"
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-17T16:00:00+05:30",
+    )
+
+    assert path.exists()
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert payload["isin"] == "INFTEST123"
+    assert payload["scheme_code"] == 12345
+    assert payload["source"] == "mfapi.in"
+    assert payload["artifact_version"] == 1
+    assert len(payload["observations"]) == 3
+
+    # Persist newest observation first.
+    assert payload["observations"][0]["date"] == "2026-08-03"
+
+
+def test_nav_evidence_store_prepends_new_observations(tmp_path):
+    # Persisted observations are newest-first, so an incremental update
+    # prepends genuinely new observations to the existing evidence.
+    path = tmp_path / "INFTEST123_nav.json"
+
+    initial = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [103.0, 102.0, 101.0],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=initial,
+        retrieved_at="2026-08-04T16:00:00+05:30",
+    )
+
+    new = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-05",
+                    "2026-08-04",
+                ]
+            ),
+            "nav": [105.0, 104.0],
+        }
+    )
+
+    store.update(
+        nav=new,
+        retrieved_at="2026-08-06T16:00:00+05:30",
+    )
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert payload["artifact_version"] == 2
+
+    assert [
+        observation["date"]
+        for observation in payload["observations"]
+    ] == [
+        "2026-08-05",
+        "2026-08-04",
+        "2026-08-03",
+        "2026-08-02",
+        "2026-08-01",
+    ]
+
+
+def test_nav_evidence_store_rejects_observations_not_strictly_newer(
+    tmp_path,
+):
+    # Existing history ends at 2026-08-03.
+    # An update containing 2026-08-03 is not an incremental update.
+    # We reject it rather than silently overwriting or deduplicating history.
+    path = tmp_path / "INFTEST123_nav.json"
+
+    initial = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                ]
+            ),
+            "nav": [103.0, 102.0],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=initial,
+        retrieved_at="2026-08-04T16:00:00+05:30",
+    )
+
+    overlapping = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-04",
+                    "2026-08-03",
+                ]
+            ),
+            "nav": [104.0, 999.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="strictly newer"):
+        store.update(
+            nav=overlapping,
+            retrieved_at="2026-08-05T16:00:00+05:30",
+        )
+
+
+def test_nav_evidence_store_rejects_identity_change(tmp_path):
+    # An evidence artifact belongs permanently to one Fund identity.
+    path = tmp_path / "INFTEST123_nav.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2026-08-03"]),
+            "nav": [103.0],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-04T16:00:00+05:30",
+    )
+
+    with pytest.raises(ValueError, match="identity"):
+        store.update(
+            nav=pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2026-08-04"]),
+                    "nav": [104.0],
+                }
+            ),
+            retrieved_at="2026-08-05T16:00:00+05:30",
+            isin="DIFFERENT123",
+        )
+
+
+def test_nav_evidence_can_be_created_from_normalized_history(tmp_path):
+    # The persistent evidence layer consumes the canonical NAV
+    # representation produced by the NAV history gate.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [103.0, 102.0, 101.0],
+        }
+    )
+
+    normalized = normalize_nav_history(nav)
+
+    path = tmp_path / "INFTEST123_nav.json"
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=normalized,
+        retrieved_at="2026-08-17T16:00:00+05:30",
+    )
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8")
+    )
+
+    assert payload["artifact_version"] == 1
+    assert payload["observations"][0]["date"] == "2026-08-03"
+    assert payload["observations"][-1]["date"] == "2026-08-01"
+
+
+def test_nav_evidence_store_returns_no_new_observations_when_history_is_current(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [103.0, 102.0, 101.0],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-04T16:00:00+05:30",
+    )
+
+    incoming = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                ]
+            ),
+            "nav": [999.0, 998.0],
+        }
+    )
+
+    latest_date = store.latest_date()
+
+    new_observations = incoming[
+        incoming["date"] > latest_date
+    ]
+
+    assert new_observations.empty
+
+
+def test_nav_evidence_store_reports_latest_observation_date(tmp_path):
+    path = tmp_path / "INFTEST123.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [103.0, 102.0, 101.0],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-04T16:00:00+05:30",
+    )
+
+    assert store.latest_date() == pd.Timestamp("2026-08-03")
+
+
+def test_fingerprint_evidence_store_creates_artifact(tmp_path):
+    # A Fund fingerprint is persisted as evidence of what the Fund-stage
+    # engine observed. It is not a score, rank, suitability judgement,
+    # or recommendation.
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {
+            "rolling_3y": {"median": 12.0},
+            "rolling_5y": {"median": 13.0},
+        },
+        "protection": {
+            "median_severity_pct": 10.0,
+            "maximum_severity_pct": 25.0,
+        },
+        "resilience": {
+            "episode_count": 4,
+            "recovered_count": 3,
+            "ongoing_count": 1,
+        },
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint,
+        nav_artifact_version=1,
+        generated_at="2026-08-17T16:00:00+05:30",
+    )
+
+    assert path.exists()
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8")
+    )
+
+    assert payload["artifact_version"] == 1
+    assert payload["nav_artifact_version"] == 1
+    assert payload["fund"]["isin"] == "INFTEST123"
+    assert "elevation" in payload
+    assert "protection" in payload
+    assert "resilience" in payload
+
+
+def test_fingerprint_evidence_store_preserves_nav_artifact_version(
+    tmp_path,
+):
+    # A fingerprint must record which NAV evidence version produced it.
+    # This creates an explicit lineage from source evidence to analysis.
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {},
+        "protection": {},
+        "resilience": {},
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint,
+        nav_artifact_version=7,
+        generated_at="2026-08-17T16:00:00+05:30",
+    )
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8")
+    )
+
+    assert payload["nav_artifact_version"] == 7
+
+
+def test_fingerprint_evidence_store_rejects_overwrite(tmp_path):
+    # A fingerprint artifact must not silently replace an existing
+    # fingerprint derived from an earlier evidence state.
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {},
+        "protection": {},
+        "resilience": {},
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint,
+        nav_artifact_version=1,
+        generated_at="2026-08-17T16:00:00+05:30",
+    )
+
+    with pytest.raises(ValueError, match="already exists"):
+        store.create(
+            fingerprint=fingerprint,
+            nav_artifact_version=2,
+            generated_at="2026-08-18T16:00:00+05:30",
+        )
+
+
+def test_fund_behavioural_fingerprint_can_be_serialized_to_evidence_dict():
+    fund = Fund(
+        name="Test Fund",
+        isin="TEST123",
+        category="Flexi Cap",
+    )
+
+    fingerprint = FundBehaviouralFingerprint(
+        fund=fund,
+        elevation=ElevationEvidence(
+            rolling_3y=None,
+            rolling_5y=None,
+            rolling_7y=None,
+            rolling_10y=None,
+        ),
+        protection=ProtectionEvidence(
+            observations=4,
+            median_severity_pct=10.0,
+            percentile_75_severity_pct=12.5,
+            percentile_90_severity_pct=15.0,
+            percentile_95_severity_pct=17.5,
+            percentile_99_severity_pct=19.0,
+            maximum_severity_pct=20.0,
+            days_at_or_above_threshold={},
+            pct_days_at_or_above_threshold={},
+        ),
+        resilience=ResilienceEvidence(
+            episode_count=2,
+            recovered_count=1,
+            ongoing_count=1,
+            median_depth_pct=20.0,
+            worst_depth_pct=30.0,
+            median_decline_days_recovered=30.0,
+            median_recovery_days=60.0,
+            median_underwater_days_recovered=90.0,
+            median_underwater_days_ongoing=120.0,
+            episodes=[],
+        ),
+    )
+
+    evidence = fingerprint_to_dict(fingerprint)
+
+    assert evidence["fund"]["name"] == "Test Fund"
+    assert evidence["fund"]["isin"] == "TEST123"
+    assert evidence["fund"]["category"] == "Flexi Cap"
+
+    assert "elevation" in evidence
+    assert "protection" in evidence
+    assert "resilience" in evidence
+
+    assert evidence["protection"]["median_severity_pct"] == 10.0
+    assert evidence["resilience"]["episode_count"] == 2
+
+
+def test_fund_behavioural_fingerprint_serialization_is_json_safe():
+    fund = Fund(
+        name="Test Fund",
+        isin="TEST123",
+        category="Flexi Cap",
+    )
+
+    fingerprint = FundBehaviouralFingerprint(
+        fund=fund,
+        elevation=ElevationEvidence(
+            rolling_3y=None,
+            rolling_5y=None,
+            rolling_7y=None,
+            rolling_10y=None,
+        ),
+        protection=ProtectionEvidence(
+            observations=0,
+            median_severity_pct=0.0,
+            percentile_75_severity_pct=0.0,
+            percentile_90_severity_pct=0.0,
+            percentile_95_severity_pct=0.0,
+            percentile_99_severity_pct=0.0,
+            maximum_severity_pct=0.0,
+            days_at_or_above_threshold={},
+            pct_days_at_or_above_threshold={},
+        ),
+        resilience=ResilienceEvidence(
+            episode_count=0,
+            recovered_count=0,
+            ongoing_count=0,
+            median_depth_pct=0.0,
+            worst_depth_pct=0.0,
+            median_decline_days_recovered=0.0,
+            median_recovery_days=0.0,
+            median_underwater_days_recovered=0.0,
+            median_underwater_days_ongoing=0.0,
+            episodes=[],
+        ),
+    )
+
+    evidence = fingerprint_to_dict(fingerprint)
+
+    json.dumps(evidence)
+
+
+def test_analyze_fund_builds_fingerprint_from_persisted_nav(
+    tmp_path,
+):
+    fund = Fund(
+        name="Test Fund",
+        isin="TEST123",
+        category="Flexi Cap",
+    )
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.date_range(
+                "2010-01-01",
+                periods=4500,
+                freq="D",
+            ),
+            "nav": list(range(100, 4600)),
+        }
+    )
+
+    nav_path = tmp_path / "TEST123.json"
+
+    nav_store = NavEvidenceStore(nav_path)
+
+    nav_store.create(
+        isin=fund.isin,
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-17T16:00:00+05:30",
+    )
+
+    fingerprint_path = (
+        tmp_path / "fingerprint.json"
+    )
+
+    fingerprint = analyze_fund(
+        fund=fund,
+        nav_evidence_path=nav_path,
+        fingerprint_evidence_path=fingerprint_path,
+        generated_at="2026-08-17T16:00:00+05:30",
+    )
+
+    assert fingerprint.fund is fund
+
+    assert fingerprint.elevation is not None
+    assert fingerprint.protection is not None
+    assert fingerprint.resilience is not None
+
+    assert fingerprint_path.exists()
+
+    payload = json.loads(
+        fingerprint_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert payload["fund"]["isin"] == "TEST123"
+    assert payload["nav_artifact_version"] == 1
+
+
+def test_nav_history_normalizes_chronological_order():
+    # External NAV sources may not arrive in chronological order.
+    # The analytical engine consumes a canonical ascending date order.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-03",
+                    "2026-08-01",
+                    "2026-08-02",
+                ]
+            ),
+            "nav": [103.0, 101.0, 102.0],
+        }
+    )
+
+    normalized = normalize_nav_history(nav)
+
+    assert list(normalized["date"]) == [
+        pd.Timestamp("2026-08-01"),
+        pd.Timestamp("2026-08-02"),
+        pd.Timestamp("2026-08-03"),
+    ]
+
+
+def test_nav_history_rejects_duplicate_dates():
+    # Two observations for the same date are ambiguous.
+    # We must not silently choose one and thereby rewrite observed history.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-01",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [100.0, 101.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="duplicate"):
+        normalize_nav_history(nav)
+
+
+def test_nav_history_rejects_missing_nav_values():
+    # Missing observed NAV values remain missing.
+    # We do not interpolate or manufacture historical observations.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-01",
+                    "2026-08-02",
+                ]
+            ),
+            "nav": [100.0, None],
+        }
+    )
+
+    with pytest.raises(ValueError, match="missing"):
+        normalize_nav_history(nav)
+
+
+def test_nav_history_rejects_non_positive_nav():
+    # NAV must represent a valid positive fund value.
+    # Zero or negative observations are invalid input, not evidence of behaviour.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-01",
+                    "2026-08-02",
+                ]
+            ),
+            "nav": [100.0, 0.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="positive"):
+        normalize_nav_history(nav)
+
+
+def test_nav_history_preserves_missing_calendar_days():
+    # Mutual-fund NAV history does not need an observation for every
+    # calendar day. Missing calendar dates are not missing NAV observations.
+    # We must not fabricate values for weekends or other non-observation days.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-01",
+                    "2026-08-02",
+                    "2026-08-05",
+                ]
+            ),
+            "nav": [100.0, 101.0, 102.0],
+        }
+    )
+
+    normalized = normalize_nav_history(nav)
+
+    assert len(normalized) == 3
+    assert list(normalized["date"]) == [
+        pd.Timestamp("2026-08-01"),
+        pd.Timestamp("2026-08-02"),
+        pd.Timestamp("2026-08-05"),
+    ]
+
+
+def test_nav_history_returns_canonical_columns():
+    # The rest of Lakshya should consume one canonical NAV representation,
+    # regardless of how the source originally represented the observations.
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-02",
+                    "2026-08-01",
+                ]
+            ),
+            "nav": [101.0, 100.0],
+        }
+    )
+
+    normalized = normalize_nav_history(nav)
+
+    assert list(normalized.columns) == ["date", "nav"]
+    assert pd.api.types.is_datetime64_any_dtype(normalized["date"])
+    assert pd.api.types.is_numeric_dtype(normalized["nav"])
 
 
 def test_five_year_rolling_returns():
