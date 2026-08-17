@@ -7,12 +7,19 @@ import pandas as pd
 class RollingReturnEvidence:
     years: int
     observations: int
+
     minimum: float
     percentile_25: float
     median: float
     percentile_75: float
     maximum: float
+
+    mean: float
+    standard_deviation: float
+
+    positive_periods: int
     negative_periods: int
+    positive_period_pct: float
 
 
 def calculate_rolling_cagr(
@@ -21,9 +28,9 @@ def calculate_rolling_cagr(
 ) -> RollingReturnEvidence:
     """
     Calculate rolling CAGR using the inherited toolkit convention:
-    
+
     CAGR = (ending NAV / starting NAV) ** (1 / years) - 1
-    
+
     The starting NAV is the latest available NAV on or before 
     the requested lookback date.
     """
@@ -53,7 +60,7 @@ def calculate_rolling_cagr(
 
         if start_nav <= 0:
             continue
-        
+
         cagr = (end_nav / start_nav) ** (1 / years) - 1
 
         results.append(cagr)
@@ -65,17 +72,30 @@ def calculate_rolling_cagr(
 
     series = pd.Series(results)
 
+    positive_periods = int((series > 0).sum())
+    negative_periods = int((series < 0).sum())
+
     return RollingReturnEvidence(
         years=years,
         observations=len(series),
+
         minimum=float(series.min()),
         percentile_25=float(series.quantile(0.25)),
         median=float(series.median()),
         percentile_75=float(series.quantile(0.75)),
         maximum=float(series.max()),
-        negative_periods=int((series < 0).sum()),
+
+        mean=float(series.mean()),
+        standard_deviation=float(series.std()),
+
+        positive_periods=positive_periods,
+        negative_periods=negative_periods,
+        positive_period_pct=float(
+            (positive_periods / len(series)) * 100
+        ),
     )
-    
+
+
 if __name__ == "__main__":
     from pathlib import Path
     from lakshya_core.evidence_inventory import load_nav_cache
