@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from .models import ResilienceEvidence
+
 
 @dataclass(frozen=True)
 class DrawdownEpisode:
@@ -164,6 +166,23 @@ def identify_drawdown_episodes(
     return episodes
 
 
+# ---------------------------------------------------------------------------
+# Historical exploratory helper
+# ---------------------------------------------------------------------------
+# This function supported the empirical investigation that led to the
+# current Fund-stage Resilience model.
+#
+# It is retained temporarily as historical analytical machinery.
+# The active Fund-stage path uses:
+#
+#     identify_drawdown_episodes()
+#             ↓
+#     calculate_resilience()
+#
+# Once the Fund-stage implementation is fully validated, this helper can
+# either be moved into an experiment/archive module or removed if its
+# historical outputs are no longer needed.
+# ---------------------------------------------------------------------------
 def summarize_drawdown_episodes(
     episodes: list[DrawdownEpisode],
     threshold_pct: float,
@@ -264,61 +283,115 @@ def summarize_drawdown_episodes(
     )
 
 
-if __name__ == "__main__":
+def calculate_resilience(
+    episodes: list[DrawdownEpisode],
+) -> ResilienceEvidence:
+    """
+    Compose drawdown episodes into Fund-stage Resilience evidence.
 
-    import json
-    from pathlib import Path
+    Resilience describes what happens after adversity begins.
 
-    # isin = "INF174K01KT2"
-    # isin = "INF109K01BL4"
-    isin = "INF179K01608"
+    The individual DrawdownEpisode objects are deliberately retained.
+    Summary statistics are derived from them, but never replace them.
 
-    project_root = Path(__file__).resolve().parents[2]
+    Recovered and ongoing episodes are treated separately:
 
-    path = (
-        project_root
-        / "data"
-        / "cache"
-        / f"{isin}_nav.json"
+        recovered:
+            recovery behaviour is known and may contribute to recovery
+            statistics.
+
+        ongoing:
+            the recovery story is not yet known. The episode remains
+            evidence, but cannot contribute to recovery-duration statistics.
+
+    This distinction is fundamental:
+        unknown recovery != zero recovery
+        unknown recovery != failed recovery
+    """
+
+    recovered = [
+        episode
+        for episode in episodes
+        if episode.status == "recovered"
+    ]
+
+    ongoing = [
+        episode
+        for episode in episodes
+        if episode.status == "ongoing"
+    ]
+
+    return ResilienceEvidence(
+        episodes=list(episodes),
+
+        episode_count=len(episodes),
+        recovered_count=len(recovered),
+        ongoing_count=len(ongoing),
+
+        median_depth_pct=(
+            float(
+                pd.Series(
+                    abs(episode.drawdown_pct) * 100
+                    for episode in episodes
+                ).median()
+            )
+            if episodes
+            else None
+        ),
+
+        worst_depth_pct=(
+            float(
+                pd.Series(
+                    abs(episode.drawdown_pct) * 100
+                    for episode in episodes
+                ).max()
+            )
+            if episodes
+            else None
+        ),
+
+        median_decline_days_recovered=(
+            float(
+                pd.Series(
+                    episode.decline_days
+                    for episode in recovered
+                ).median()
+            )
+            if recovered
+            else None
+        ),
+
+        median_recovery_days=(
+            float(
+                pd.Series(
+                    episode.recovery_days
+                    for episode in recovered
+                    if episode.recovery_days is not None
+                ).median()
+            )
+            if recovered
+            else None
+        ),
+
+        median_underwater_days_recovered=(
+            float(
+                pd.Series(
+                    episode.underwater_days
+                    for episode in recovered
+                ).median()
+            )
+            if recovered
+            else None
+        ),
+
+        median_underwater_days_ongoing=(
+            float(
+                pd.Series(
+                    episode.underwater_days
+                    for episode in ongoing
+                ).median()
+            )
+            if ongoing
+            else None
+        ),
     )
-
-    with path.open("r", encoding="utf-8") as f:
-        payload = json.load(f)
-
-    df = pd.DataFrame(payload["data"])
-
-    df["date"] = pd.to_datetime(
-        df["date"],
-        format="%d-%m-%Y",
-        errors="raise",
-    )
-
-    df["nav"] = pd.to_numeric(
-        df["nav"],
-        errors="raise",
-    )
-
-    df = df.sort_values("date")
-
-    nav = pd.Series(
-        df["nav"].values,
-        index=df["date"],
-        name=isin,
-    )
-
-    for threshold in [0.05, 0.10, 0.15, 0.20, 0.25]:
-
-        episodes = identify_drawdown_episodes(
-            nav,
-            threshold,
-        )
-
-        summary = summarize_drawdown_episodes(
-            episodes,
-            threshold,
-        )
-
-        print(summary)
-
-        # for episode in episodes:
-        #     print(episode)
