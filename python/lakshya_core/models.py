@@ -91,6 +91,20 @@ class Portfolio:
 
 @dataclass(frozen=True)
 class EvidenceWindow:
+    """
+    Describes the historical time window over which evidence is observed.
+
+    An evidence window records the temporal boundary of an observation,
+    rather than making any judgement about the quality or behaviour
+    observed within that window.
+
+    Keeping the window explicit matters because behavioural evidence is
+    inherently historical: the same calculation can mean something
+    different when based on a short, long, recent, or full-period history.
+
+    This is a supporting domain concept. It does not itself determine
+    whether a fund is suitable, resilient, or preferable.
+    """
     start_date: date
     end_date: date
     observations: int
@@ -98,6 +112,22 @@ class EvidenceWindow:
 
 @dataclass(frozen=True)
 class Evidence:
+    """
+    Describes the availability and quality of observed historical evidence.
+
+    Evidence is deliberately separated from conclusions. It records what
+    historical information is available for analysis and provides context
+    for interpreting the resulting observations.
+
+    A lack of evidence is not the same as evidence of poor behaviour.
+    Similarly, limited history should constrain what Lakshya is allowed
+    to conclude rather than being silently converted into a numerical
+    value.
+
+    This class belongs to the supporting evidence layer. The Fund
+    Behavioural Fingerprint is built from specific behavioural evidence
+    such as Elevation, Protection, and Resilience.
+    """
     fund_isin: str
     window: EvidenceWindow
     metric_name: str
