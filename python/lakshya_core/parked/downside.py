@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from lakshya_core.evidence_inventory import load_nav_cache
+from lakshya_core.parked.evidence_inventory import load_nav_cache
 
 
 @dataclass(frozen=True)

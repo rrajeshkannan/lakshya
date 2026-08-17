@@ -100,26 +100,3 @@ def calculate_rolling_cagr(
         # It is descriptive evidence, not a forecast.
         latest=float(series.iloc[-1]),
     )
-
-
-if __name__ == "__main__":
-    from pathlib import Path
-    from lakshya_core.evidence_inventory import load_nav_cache
-
-    project_root = Path(__file__).resolve().parents[2]
-
-    path = (
-        project_root
-        / "data"
-        / "cache"
-        / "INF174K01KT2_nav.json"
-    )
-
-    df = load_nav_cache(path)
-
-    for years in [3, 5, 7, 10]:
-        try:
-            evidence = calculate_rolling_cagr(df, years)
-            print(evidence)
-        except ValueError as exc:
-            print(f"{years}Y: {exc}")

@@ -2,3 +2,9 @@
 pythonpath = [
     "python"
 ]
+testpaths = [
+    "python/tests"
+]
+norecursedirs = [
+    "python/tests/parked"
+]

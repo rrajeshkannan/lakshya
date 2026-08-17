@@ -4,7 +4,7 @@ from typing import Optional
 
 import pandas as pd
 
-from lakshya_core.evidence_inventory import load_nav_cache
+from lakshya_core.parked.evidence_inventory import load_nav_cache
 
 
 @dataclass(frozen=True)
@@ -32,6 +32,7 @@ class FundEvidence:
     isin: str
     returns: FundReturnEvidence
     drawdown: MaximumDrawdownEvidence
+
 
 def calculate_return_evidence(df: pd.DataFrame) -> FundReturnEvidence:
     """Calculate simple historical return evidence."""
@@ -61,6 +62,7 @@ def calculate_return_evidence(df: pd.DataFrame) -> FundReturnEvidence:
         last_date=last_date.date(),
         observations=len(df),
     )
+
 
 def calculate_drawdown_evidence(df: pd.DataFrame) -> MaximumDrawdownEvidence:
     """Calculate maximum drawdown and its recovery characteristics."""
@@ -113,6 +115,7 @@ def calculate_drawdown_evidence(df: pd.DataFrame) -> MaximumDrawdownEvidence:
         recovery_days=recovery_days,
         underwater_days=underwater_days,
     )
+
 
 def calculate_fund_evidence(isin: str) -> FundEvidence:
     """Build the first fund-level Lakshya evidence record."""

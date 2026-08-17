@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from lakshya_core.downside import calculate_downside_deviation
-from lakshya_core.fund_evidence import calculate_fund_evidence
+from lakshya_core.parked.downside import calculate_downside_deviation
+from lakshya_core.parked.fund_evidence import calculate_fund_evidence
 
 
 @dataclass(frozen=True)
@@ -59,7 +59,7 @@ def calculate_ratio_evidence(
 def calculate_fund_evidence_from_df(df: pd.DataFrame):
     """Calculate the existing fund evidence directly from a DataFrame."""
 
-    from lakshya_core.fund_evidence import (
+    from lakshya_core.parked.fund_evidence import (
         calculate_return_evidence,
         calculate_drawdown_evidence,
     )
@@ -78,7 +78,7 @@ def calculate_fund_evidence_from_df(df: pd.DataFrame):
 
 if __name__ == "__main__":
     from pathlib import Path
-    from lakshya_core.evidence_inventory import load_nav_cache
+    from lakshya_core.parked.evidence_inventory import load_nav_cache
 
     project_root = Path(__file__).resolve().parents[2]
 

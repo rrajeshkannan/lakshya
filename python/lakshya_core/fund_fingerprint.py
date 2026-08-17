@@ -9,7 +9,17 @@ from .drawdown_episodes import (
 import pandas as pd
 
 
-DRAWDOWN_EPISODE_THRESHOLD_PCT = 5.0
+# Drawdown episodes are detected once adversity reaches 5%.
+#
+# This value is represented as a decimal fraction because the underlying
+# episode detector compares it directly with decimal drawdown values:
+#
+#     0.05 == 5%
+#
+# This is deliberately separate from Protection's 5/10/15/... severity
+# terrain thresholds. Those thresholds measure frequency; this threshold
+# defines the resolution at which we record a journey.
+DRAWDOWN_EPISODE_THRESHOLD = 0.05
 
 
 def build_fund_behavioural_fingerprint(
@@ -39,8 +49,8 @@ def build_fund_behavioural_fingerprint(
     protection = calculate_protection(nav)
 
     episodes = identify_drawdown_episodes(
-        nav["nav"],
-        threshold_pct=DRAWDOWN_EPISODE_THRESHOLD_PCT,
+        nav.set_index("date")["nav"],
+        threshold_pct=DRAWDOWN_EPISODE_THRESHOLD,
     )
 
     resilience = calculate_resilience(episodes)

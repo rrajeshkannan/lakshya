@@ -44,6 +44,16 @@ def identify_drawdown_episodes(
     nav: pd.Series,
     threshold_pct: float,
 ) -> list[DrawdownEpisode]:
+    """
+    Identify drawdown journeys from a date-indexed NAV series.
+
+    The Series index is expected to contain datetime-like observations.
+    Episode duration is derived directly from differences between the
+    peak, trough, and recovery dates.
+
+    The threshold is expressed as a decimal fraction:
+        0.05 == 5% drawdown.
+    """
 
     if nav.empty:
         return []

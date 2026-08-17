@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from lakshya_core.capture import calculate_capture
+from lakshya_core.parked.capture import calculate_capture
 
 
 def load_fund_nav(isin: str, project_root: Path) -> pd.Series:
