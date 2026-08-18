@@ -20,6 +20,10 @@ from pathlib import Path
 from typing import Any
 
 
+class FingerprintEvidenceAlreadyExistsError(ValueError):
+    """Raised when a fingerprint evidence artifact already exists."""
+
+
 class FingerprintEvidenceStore:
     """
     Persistent JSON store for one Fund behavioural fingerprint.
@@ -45,7 +49,7 @@ class FingerprintEvidenceStore:
         """
 
         if self.path.exists():
-            raise ValueError(
+            raise FingerprintEvidenceAlreadyExistsError(
                 f"Fingerprint evidence artifact already exists: {self.path}"
             )
 
