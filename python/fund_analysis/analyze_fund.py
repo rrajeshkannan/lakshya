@@ -43,11 +43,7 @@ def analyze_fund(
         )
 
     nav = pd.DataFrame(nav_payload["observations"])
-
     nav["date"] = pd.to_datetime(nav["date"])
-    nav["nav"] = pd.to_numeric(nav["nav"])
-
-    nav = nav.sort_values("date").reset_index(drop=True)
 
     fingerprint = build_fund_behavioural_fingerprint(
         fund=fund,
