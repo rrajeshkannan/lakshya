@@ -356,6 +356,33 @@ def test_render_fund_evidence_report_shows_na_for_missing_evidence():
     assert "N/A" in report
 
 
+def test_render_fund_evidence_report_shows_na_for_missing_protection():
+    views = {
+        "elevation": [],
+        "protection": [
+            {
+                "fund": {
+                    "name": "Missing Protection Fund",
+                    "isin": "ISIN_MISSING",
+                    "category": "Small Cap",
+                },
+                "observations": 0,
+                "median_severity_pct": None,
+                "percentile_90_severity_pct": None,
+                "percentile_95_severity_pct": None,
+                "percentile_99_severity_pct": None,
+                "maximum_severity_pct": None,
+            }
+        ],
+        "resilience": [],
+    }
+
+    report = render_fund_evidence_report(views)
+
+    assert "Missing Protection Fund" in report
+    assert report.count("N/A") >= 5
+
+
 def test_render_fund_evidence_report_converts_elevation_decimal_to_percent():
     views = {
         "elevation": [

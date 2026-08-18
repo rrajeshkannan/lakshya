@@ -230,11 +230,11 @@ def render_fund_evidence_report(
 
         lines.append(
             f"{fund['name']} | "
-            f"{row['median_severity_pct']:.2f}% | "
-            f"{row['percentile_90_severity_pct']:.2f}% | "
-            f"{row['percentile_95_severity_pct']:.2f}% | "
-            f"{row['percentile_99_severity_pct']:.2f}% | "
-            f"{row['maximum_severity_pct']:.2f}%"
+            f"{_format_pct(row['median_severity_pct'])} | "
+            f"{_format_pct(row['percentile_90_severity_pct'])} | "
+            f"{_format_pct(row['percentile_95_severity_pct'])} | "
+            f"{_format_pct(row['percentile_99_severity_pct'])} | "
+            f"{_format_pct(row['maximum_severity_pct'])}"
         )
 
     lines.append("")
