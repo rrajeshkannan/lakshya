@@ -355,6 +355,37 @@ def test_five_year_rolling_returns():
     assert evidence.negative_periods >= 0
 
 
+def test_rolling_cagr_uses_latest_nav_on_or_before_lookback_date():
+    df = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2020-01-01",
+                    "2020-01-03",
+                    "2025-01-02",
+                ]
+            ),
+            "nav": [
+                100.0,
+                110.0,
+                121.0,
+            ],
+        }
+    )
+
+    evidence = calculate_rolling_cagr(df, 5)
+
+    # The 5-year lookback from 2025-01-02 is 2020-01-02.
+    # There is no NAV on that date, so the correct starting NAV
+    # is the latest NAV on or before it: 2020-01-01 = 100.
+    #
+    # Therefore:
+    # CAGR = (121 / 100) ** (1 / 5) - 1
+    expected = (121.0 / 100.0) ** (1 / 5) - 1
+
+    assert evidence.latest == pytest.approx(expected)
+
+
 def test_drawdown_episode_distinguishes_recovered_and_ongoing():
     # A recovered episode has a known recovery story.
     # An ongoing episode has an unknown recovery story.

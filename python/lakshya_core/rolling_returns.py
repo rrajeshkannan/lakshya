@@ -33,7 +33,7 @@ def calculate_rolling_cagr(
 
     CAGR = (ending NAV / starting NAV) ** (1 / years) - 1
 
-    The starting NAV is the latest available NAV on or before 
+    The starting NAV is the latest available NAV on or before
     the requested lookback date.
     """
 
@@ -45,17 +45,20 @@ def calculate_rolling_cagr(
 
     results = []
 
+    start_idx = 0
+
     for i in range(len(df)):
         end_date = dates.iloc[i]
         target_start = end_date - pd.DateOffset(years=years)
 
-        start_candidates = dates[dates <= target_start]
+        while (
+            start_idx + 1 < len(df)
+            and dates.iloc[start_idx + 1] <= target_start
+        ):
+            start_idx += 1
 
-        if start_candidates.empty:
+        if dates.iloc[start_idx] > target_start:
             continue
-
-        start_date = start_candidates.iloc[-1]
-        start_idx = dates[dates == start_date].index[0]
 
         start_nav = float(navs.iloc[start_idx])
         end_nav = float(navs.iloc[i])
@@ -96,7 +99,5 @@ def calculate_rolling_cagr(
             (positive_periods / len(series)) * 100
         ),
 
-        # The latest rolling observation is retained as part of the observed terrain.
-        # It is descriptive evidence, not a forecast.
         latest=float(series.iloc[-1]),
     )
