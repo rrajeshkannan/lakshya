@@ -2,9 +2,6 @@ from pathlib import Path
 
 from fund_analysis.analyze_fund import analyze_fund
 from fund_analysis.nav_evidence import NavEvidenceStore
-from fund_analysis.fingerprint_evidence import (
-    FingerprintEvidenceAlreadyExistsError,
-)
 from lakshya_core.nav_history import normalize_nav_history
 
 
@@ -104,18 +101,12 @@ def run_fund_pipeline(
                     f"{fund.name} — NAV {nav_action}"
                 )
 
-            try:
-                analyze_fund(
-                    fund=fund,
-                    nav_evidence_path=nav_evidence_path,
-                    fingerprint_evidence_path=fingerprint_evidence_path,
-                    generated_at=generated_at,
-                )
-
-                fingerprint_action = "created"
-
-            except FingerprintEvidenceAlreadyExistsError:
-                fingerprint_action = "already_exists"
+            _, fingerprint_action = analyze_fund(
+                fund=fund,
+                nav_evidence_path=nav_evidence_path,
+                fingerprint_evidence_path=fingerprint_evidence_path,
+                generated_at=generated_at,
+            )
 
             if progress:
                 progress(

@@ -1,10 +1,18 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF179K01608",
   "scheme_code": 101762,
   "source": "mfapi.in",
-  "retrieved_at": "2026-08-18T00:30:50+05:30",
+  "retrieved_at": "2026-08-20T02:45:57+05:30",
   "observations": [
+    {
+      "date": "2026-08-18",
+      "nav": 2072.454
+    },
+    {
+      "date": "2026-08-17",
+      "nav": 2078.042
+    },
     {
       "date": "2026-08-14",
       "nav": 2081.258

@@ -34,13 +34,14 @@ def main():
         timespec="seconds"
     )
 
-    fingerprint = analyze_fund(
+    fingerprint, action = analyze_fund(
         fund=fund,
         nav_evidence_path=nav_evidence_path,
         fingerprint_evidence_path=fingerprint_evidence_path,
         generated_at=generated_at,
     )
 
+    print(f"Fingerprint action: {action}")
     print(f"Fund: {fund.name}")
     print(f"ISIN: {fund.isin}")
     print(f"Fingerprint: {fingerprint_evidence_path}")

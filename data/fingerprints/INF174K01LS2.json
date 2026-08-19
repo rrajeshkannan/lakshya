@@ -1,82 +1,82 @@
 {
-  "artifact_version": 1,
-  "nav_artifact_version": 1,
-  "generated_at": "2026-08-18T00:30:50+05:30",
+  "artifact_version": 2,
+  "nav_artifact_version": 2,
+  "generated_at": "2026-08-20T05:03:47+05:30",
   "fund": {
-    "name": "Kotak Flexicap Fund - Direct Plan - Growth",
+    "name": "Kotak Flexicap Fund - Growth - Direct",
     "isin": "INF174K01LS2",
-    "category": "Flexi Cap",
+    "category": "Equity Scheme - Flexi Cap Fund",
     "benchmark": null
   },
   "elevation": {
     "rolling_3y": {
       "years": 3,
-      "observations": 2614,
+      "observations": 2616,
       "minimum": -0.041938183459660716,
-      "percentile_25": 0.13932638939260233,
-      "median": 0.1669367869852092,
-      "percentile_75": 0.19422063556989366,
+      "percentile_25": 0.1393737179148088,
+      "median": 0.16690118731323111,
+      "percentile_75": 0.19421546159654524,
       "maximum": 0.3147128319980199,
-      "mean": 0.16536570732861003,
-      "standard_deviation": 0.0573400261456754,
-      "positive_periods": 2580,
+      "mean": 0.16534631941552497,
+      "standard_deviation": 0.05732238311205299,
+      "positive_periods": 2582,
       "negative_periods": 34,
-      "positive_period_pct": 98.69931140015302,
-      "latest": 0.14031825666156905
+      "positive_period_pct": 98.70030581039755,
+      "latest": 0.1395496146720565
     },
     "rolling_5y": {
       "years": 5,
-      "observations": 2119,
+      "observations": 2121,
       "minimum": 0.02265175315710266,
-      "percentile_25": 0.1247216884458916,
-      "median": 0.15902063366168595,
-      "percentile_75": 0.19519683807745136,
+      "percentile_25": 0.12468611666033214,
+      "median": 0.15901897649265884,
+      "percentile_75": 0.19516471716579642,
       "maximum": 0.2699598721775356,
-      "mean": 0.15844298662032216,
-      "standard_deviation": 0.04351105992618279,
-      "positive_periods": 2119,
+      "mean": 0.15840912949868768,
+      "standard_deviation": 0.04350449997883093,
+      "positive_periods": 2121,
       "negative_periods": 0,
       "positive_period_pct": 100.0,
-      "latest": 0.12343403317477653
+      "latest": 0.12213984505231568
     },
     "rolling_7y": {
       "years": 7,
-      "observations": 1631,
+      "observations": 1633,
       "minimum": 0.1127287690809895,
-      "percentile_25": 0.14153697561172895,
-      "median": 0.15090600814472088,
-      "percentile_75": 0.16213174904340155,
+      "percentile_25": 0.14154612792601373,
+      "median": 0.15090783672704466,
+      "percentile_75": 0.1621312430308397,
       "maximum": 0.2044614880331479,
-      "mean": 0.15222669720697166,
-      "standard_deviation": 0.01583409784764811,
-      "positive_periods": 1631,
+      "mean": 0.1522269986534898,
+      "standard_deviation": 0.015824399258406605,
+      "positive_periods": 1633,
       "negative_periods": 0,
       "positive_period_pct": 100.0,
-      "latest": 0.1533599611369405
+      "latest": 0.15213927674019034
     },
     "rolling_10y": {
       "years": 10,
-      "observations": 888,
+      "observations": 890,
       "minimum": 0.12671972668963583,
-      "percentile_25": 0.15030680825010373,
-      "median": 0.162661369861549,
-      "percentile_75": 0.1755096569107742,
+      "percentile_25": 0.15030104128060529,
+      "median": 0.16262038812577584,
+      "percentile_75": 0.17547636980521208,
       "maximum": 0.19052917591973895,
-      "mean": 0.16218974355993424,
-      "standard_deviation": 0.015264869027740166,
-      "positive_periods": 888,
+      "mean": 0.1621375617112668,
+      "standard_deviation": 0.015287355762344088,
+      "positive_periods": 890,
       "negative_periods": 0,
       "positive_period_pct": 100.0,
-      "latest": 0.1398304324571138
+      "latest": 0.13833876057859462
     }
   },
   "protection": {
-    "observations": 3348,
-    "median_severity_pct": 2.821166101859335,
-    "percentile_75_severity_pct": 6.613730123763364,
-    "percentile_90_severity_pct": 10.27536718920326,
-    "percentile_95_severity_pct": 13.174165338080885,
-    "percentile_99_severity_pct": 24.863934228025617,
+    "observations": 3350,
+    "median_severity_pct": 2.829314382707043,
+    "percentile_75_severity_pct": 6.612157356889084,
+    "percentile_90_severity_pct": 10.271492938850448,
+    "percentile_95_severity_pct": 13.171228351388574,
+    "percentile_99_severity_pct": 24.863160440091875,
     "maximum_severity_pct": 37.30625075565227,
     "days_at_or_above_threshold": {
       "5": 1155,
@@ -87,12 +87,12 @@
       "30": 9
     },
     "pct_days_at_or_above_threshold": {
-      "5": 34.49820788530466,
-      "10": 10.75268817204301,
-      "15": 3.106332138590203,
-      "20": 1.5232974910394266,
-      "25": 0.955794504181601,
-      "30": 0.2688172043010753
+      "5": 34.47761194029851,
+      "10": 10.746268656716417,
+      "15": 3.1044776119402986,
+      "20": 1.5223880597014925,
+      "25": 0.9552238805970149,
+      "30": 0.26865671641791045
     }
   },
   "resilience": {
@@ -104,7 +104,7 @@
     "median_decline_days_recovered": 59.0,
     "median_recovery_days": 47.5,
     "median_underwater_days_recovered": 125.0,
-    "median_underwater_days_ongoing": 184.0,
+    "median_underwater_days_ongoing": 188.0,
     "episodes": [
       {
         "peak_date": "2013-01-15T00:00:00",
@@ -401,7 +401,7 @@
         "decline_days": 48,
         "recovery_date": null,
         "recovery_days": null,
-        "underwater_days": 184,
+        "underwater_days": 188,
         "status": "ongoing",
         "history_before_peak_days": 4786
       }

@@ -67,6 +67,56 @@ class FingerprintEvidenceStore:
 
         self._write(payload)
 
+    def append(
+        self,
+        *,
+        fingerprint: dict[str, Any],
+        nav_artifact_version: int,
+        generated_at: str,
+    ) -> None:
+        """
+        Append the next Fund fingerprint snapshot.
+
+        The new snapshot must be derived from a strictly newer NAV
+        evidence artifact version.
+
+        The existing snapshot is never modified conceptually; the
+        current materialized file advances to the next snapshot.
+        Git preserves the previous state.
+        """
+
+        if not self.path.exists():
+            raise ValueError(
+                f"Fingerprint evidence artifact does not exist: {self.path}"
+            )
+
+        self._validate_fingerprint(fingerprint)
+
+        with self.path.open("r", encoding="utf-8") as f:
+            existing = json.load(f)
+
+        existing_nav_version = existing["nav_artifact_version"]
+
+        if nav_artifact_version <= existing_nav_version:
+            raise ValueError(
+                "New fingerprint NAV artifact version must be greater "
+                "than the existing version."
+            )
+
+        payload = {
+            "artifact_version": (
+                existing["artifact_version"] + 1
+            ),
+            "nav_artifact_version": int(nav_artifact_version),
+            "generated_at": generated_at,
+            "fund": fingerprint["fund"],
+            "elevation": fingerprint["elevation"],
+            "protection": fingerprint["protection"],
+            "resilience": fingerprint["resilience"],
+        }
+
+        self._write(payload)
+
     @staticmethod
     def _validate_fingerprint(
         fingerprint: dict[str, Any],

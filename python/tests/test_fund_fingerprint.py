@@ -245,3 +245,131 @@ def test_fund_behavioural_fingerprint_composes_three_evidence_dimensions():
     assert fingerprint.elevation is elevation
     assert fingerprint.protection is protection
     assert fingerprint.resilience is resilience
+
+
+def test_fingerprint_evidence_store_appends_new_nav_artifact_version(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint_v1 = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {},
+        "protection": {},
+        "resilience": {},
+    }
+
+    fingerprint_v2 = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {
+            "rolling_3y": {
+                "median": 13.0,
+            },
+        },
+        "protection": {},
+        "resilience": {},
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint_v1,
+        nav_artifact_version=1,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    store.append(
+        fingerprint=fingerprint_v2,
+        nav_artifact_version=2,
+        generated_at="2026-08-20T00:00:00+05:30",
+    )
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8")
+    )
+
+    assert payload["artifact_version"] == 2
+    assert payload["nav_artifact_version"] == 2
+    assert payload["generated_at"] == (
+        "2026-08-20T00:00:00+05:30"
+    )
+
+    assert payload["elevation"]["rolling_3y"]["median"] == 13.0
+
+
+def test_fingerprint_evidence_store_rejects_append_at_same_nav_artifact_version(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {},
+        "protection": {},
+        "resilience": {},
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint,
+        nav_artifact_version=2,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="greater than the existing version",
+    ):
+        store.append(
+            fingerprint=fingerprint,
+            nav_artifact_version=2,
+            generated_at="2026-08-20T00:00:00+05:30",
+        )
+
+
+def test_fingerprint_evidence_store_rejects_append_to_older_nav_artifact_version(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    fingerprint = {
+        "fund": {
+            "name": "Test Fund",
+            "isin": "INFTEST123",
+            "category": "Flexi Cap",
+        },
+        "elevation": {},
+        "protection": {},
+        "resilience": {},
+    }
+
+    store = FingerprintEvidenceStore(path)
+
+    store.create(
+        fingerprint=fingerprint,
+        nav_artifact_version=2,
+        generated_at="2026-08-18T00:00:00+05:30",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="greater than the existing version",
+    ):
+        store.append(
+            fingerprint=fingerprint,
+            nav_artifact_version=1,
+            generated_at="2026-08-20T00:00:00+05:30",
+        )

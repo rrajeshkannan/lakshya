@@ -56,13 +56,44 @@ def analyze_fund(
         fingerprint_evidence_path
     )
 
-    store.create(
-        fingerprint=evidence,
-        nav_artifact_version=nav_payload["artifact_version"],
-        generated_at=generated_at,
-    )
+    nav_artifact_version = nav_payload["artifact_version"]
 
-    return fingerprint
+    if not fingerprint_evidence_path.exists():
+        store.create(
+            fingerprint=evidence,
+            nav_artifact_version=nav_artifact_version,
+            generated_at=generated_at,
+        )
+        action = "created"
+
+    else:
+        with fingerprint_evidence_path.open(
+            "r",
+            encoding="utf-8",
+        ) as f:
+            existing_payload = json.load(f)
+
+        existing_nav_artifact_version = (
+            existing_payload["nav_artifact_version"]
+        )
+
+        if existing_nav_artifact_version == nav_artifact_version:
+            action = "current"
+
+        elif existing_nav_artifact_version < nav_artifact_version:
+            store.append(
+                fingerprint=evidence,
+                nav_artifact_version=nav_artifact_version,
+                generated_at=generated_at,
+            )
+            action = "appended"
+
+        else:
+            raise ValueError(
+                "Fingerprint evidence is ahead of NAV evidence."
+            )
+
+    return fingerprint, action
 
 
 def _load_nav_evidence(path: Path) -> dict:

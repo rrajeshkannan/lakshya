@@ -1,18 +1,18 @@
 from datetime import datetime
 from pathlib import Path
 
+from fund_analysis.admissible_funds import load_admissible_funds
 from fund_analysis.nav_source import (
     MfapiNavSource,
     mfapi_http_transport,
 )
 from fund_analysis.run_fund_pipeline import run_fund_pipeline
-from fund_analysis.universe import load_fund_universe
 
 
 def main():
     project_root = Path(__file__).resolve().parents[2]
 
-    funds = load_fund_universe()
+    funds = load_admissible_funds()
 
     source = MfapiNavSource(
         transport=mfapi_http_transport,
