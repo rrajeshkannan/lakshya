@@ -23,23 +23,26 @@ def dominates(
     b: Mapping[str, float],
     dimensions: Sequence[Dimension],
 ) -> bool:
-    """Return whether A strictly dominates B across all eligible dimensions.
+    """Return whether A strictly dominates B across all dimensions.
 
-    A must be no worse than B on every dimension and strictly better on at
-    least one. Missing/None values are not eligible for comparison and are
-    therefore ignored for that dimension. If no dimension is eligible, no
-    object dominates another.
+    [lakshya] Dominance is deliberately conservative. Every declared
+    dimension must be available for both objects. An unavailable value is
+    not interpreted as weak, zero, or comparable. If any dimension is
+    unavailable, this pair cannot establish dominance. Otherwise A must be
+    no worse than B on every dimension and strictly better on at least one.
     """
+    if not dimensions:
+        return False
+
     better = False
-    compared = False
 
     for dimension in dimensions:
         av = a.get(dimension.name)
         bv = b.get(dimension.name)
-        if av is None or bv is None:
-            continue
 
-        compared = True
+        if av is None or bv is None:
+            return False
+
         if dimension.direction == "up":
             if av < bv:
                 return False
@@ -51,7 +54,7 @@ def dominates(
             if av < bv:
                 better = True
 
-    return compared and better
+    return better
 
 
 def non_dominated_frontier(
