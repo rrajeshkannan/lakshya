@@ -36,14 +36,7 @@ def fingerprint():
         percentile_95_severity_pct=4,
         percentile_99_severity_pct=5,
         maximum_severity_pct=6,
-        pct_days_at_or_above_threshold={
-            5: 10,
-            10: 11,
-            15: 12,
-            20: 13,
-            25: 14,
-            30: 15,
-        },
+        pct_days_at_or_above_threshold={5: 10, 10: 11, 15: 12, 20: 13, 25: 14, 30: 15},
         days_at_or_above_threshold={5: 100},
         observations=100,
     )
@@ -52,14 +45,12 @@ def fingerprint():
 
 def test_adapter_produces_exactly_the_declared_surface():
     values = fund_comparator_values(fingerprint())
-
     assert set(values) == {dimension.name for dimension in fund_team_dimensions()}
     assert len(values) == 40
 
 
 def test_adapter_maps_all_elevation_metrics_without_folding():
     values = fund_comparator_values(fingerprint())
-
     assert values["elevation_3y_minimum"] == 1
     assert values["elevation_3y_median"] == 3
     assert values["elevation_3y_mean"] == 6
@@ -68,7 +59,6 @@ def test_adapter_maps_all_elevation_metrics_without_folding():
 
 def test_adapter_maps_protection_percentages_not_raw_day_counts():
     values = fund_comparator_values(fingerprint())
-
     assert values["protection_median_severity_pct"] == 1
     assert values["protection_pct_days_at_or_above_5"] == 10
     assert "protection_days_at_or_above_5" not in values
@@ -80,4 +70,7 @@ def test_unavailable_elevation_horizon_remains_unavailable():
 
     values = fund_comparator_values(fp)
 
-    assert "elevation_10y_median" not in values
+    # [lakshya] The declared 40-D contract remains intact; unavailable
+    # evidence is represented explicitly as None, never omitted or invented.
+    assert "elevation_10y_median" in values
+    assert values["elevation_10y_median"] is None
