@@ -14,9 +14,7 @@ def fingerprint(values):
         "maximum", "mean", "positive_period_pct",
     )
     for years in (3, 5, 7, 10):
-        fields = {}
-        for metric in metrics:
-            fields[metric] = values.get(f"elevation_{years}y_{metric}")
+        fields = {metric: values.get(f"elevation_{years}y_{metric}") for metric in metrics}
         elevation[f"rolling_{years}y"] = SimpleNamespace(**fields)
 
     protection = SimpleNamespace(
@@ -39,11 +37,23 @@ def all_values(value):
 
 
 def test_frontier_keeps_only_globally_non_dominated_funds():
-    # A is better on both upward Elevation and downward Protection dimensions.
-    a = fingerprint(all_values(10))
-    b = fingerprint(all_values(11))
-    c = fingerprint(all_values(12))
+    # [lakshya] A is better in both directions: higher Elevation and lower Protection.
+    a_values = all_values(10)
+    b_values = all_values(11)
+    c_values = all_values(12)
+    for values, elevation, protection in ((a_values, 12, 10), (b_values, 11, 11), (c_values, 10, 12)):
+        for years in (3, 5, 7, 10):
+            for metric in ("minimum", "percentile_25", "median", "percentile_75", "maximum", "mean", "positive_period_pct"):
+                values[f"elevation_{years}y_{metric}"] = elevation
+        for metric in (
+            "median_severity_pct", "percentile_75_severity_pct", "percentile_90_severity_pct",
+            "percentile_95_severity_pct", "percentile_99_severity_pct", "maximum_severity_pct",
+        ):
+            values[f"protection_{metric}"] = protection
+        for threshold in (5, 10, 15, 20, 25, 30):
+            values[f"protection_pct_days_at_or_above_{threshold}"] = protection
 
+    a, b, c = map(fingerprint, (a_values, b_values, c_values))
     assert fund_frontier([a, b, c], fund_team_dimensions()) == [a]
 
 
