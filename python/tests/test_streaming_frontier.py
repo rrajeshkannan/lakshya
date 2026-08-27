@@ -42,7 +42,7 @@ def test_the_classic_basket_trap_is_safe():
 
     # A and C are initially incomparable. D dominates A, but not C.
     accumulator.consider(a, {"x": 10, "y": 10})
-    accumulator.consider(c, {"x": 8, "y": 12})
+    accumulator.consider(c, {"x": 12, "y": 8})
     accumulator.consider(d, {"x": 11, "y": 9})
 
     assert accumulator.items() == [c, d]
