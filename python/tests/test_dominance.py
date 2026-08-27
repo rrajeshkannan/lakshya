@@ -19,10 +19,12 @@ def test_dominance_requires_no_worse_on_every_dimension_and_better_on_one():
 
 
 def test_all_objects_can_survive_if_none_is_dominated():
+    # Higher growth is better; lower drawdown is better. Each object trades
+    # one dimension for the other, so none dominates another.
     objects = [
-        {"id": "A", "growth": 10, "drawdown": 8},
-        {"id": "B", "growth": 8, "drawdown": 10},
-        {"id": "C", "growth": 9, "drawdown": 9},
+        {"id": "A", "growth": 10, "drawdown": 10},
+        {"id": "B", "growth": 9, "drawdown": 9},
+        {"id": "C", "growth": 8, "drawdown": 8},
     ]
     frontier = non_dominated_frontier(objects, [UP, DOWN])
     assert [obj["id"] for obj in frontier] == ["A", "B", "C"]
@@ -42,9 +44,9 @@ def test_multiple_objects_can_be_removed():
 def test_frontier_is_independent_of_candidate_order():
     dims = [UP, DOWN]
     objects = [
-        {"id": "A", "growth": 10, "drawdown": 5},
-        {"id": "B", "growth": 8, "drawdown": 10},
-        {"id": "C", "growth": 9, "drawdown": 9},
+        {"id": "A", "growth": 10, "drawdown": 10},
+        {"id": "B", "growth": 9, "drawdown": 9},
+        {"id": "C", "growth": 8, "drawdown": 8},
     ]
     first = {obj["id"] for obj in non_dominated_frontier(objects, dims)}
     second = {obj["id"] for obj in non_dominated_frontier(list(reversed(objects)), dims)}
