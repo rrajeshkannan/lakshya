@@ -63,8 +63,9 @@ def non_dominated_frontier(
 ) -> list[Mapping[str, float]]:
     """Return every globally non-dominated object, preserving input order.
 
-    This intentionally computes the mathematical frontier from the complete
-    candidate set rather than progressively settling a mutable basket.
+    [lakshya] The frontier is evaluated against the complete candidate set,
+    not a mutable basket. This prevents candidate arrival order from changing
+    the mathematical frontier.
     """
     candidates = list(objects)
     return [
