@@ -1,4 +1,9 @@
-"""TEAM domain identity."""
+"""TEAM domain identity.
+
+[lakshya] TEAM-stage implementation. Keep Team identity separate from
+behavioural evidence so collective evidence is always derived from the
+collective NAV trajectory.
+"""
 
 from __future__ import annotations
 
