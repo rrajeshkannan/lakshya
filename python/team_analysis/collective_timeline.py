@@ -1,7 +1,7 @@
 """Collective NAV trajectories for TEAM-stage analysis.
 
 A Team trajectory is derived from the persisted NAV trajectories of its
-member Funds.  The constituent NAVs are never combined at the metric level.
+member Funds. The constituent NAVs are never combined at the metric level.
 Instead, the collective NAV is calculated first and the existing behavioural
 engine can then operate on that collective trajectory.
 
@@ -12,7 +12,7 @@ For a Team T and observation date D:
 where each member contributes its latest NAV observation on or before D.
 
 The collective timeline is the union of member observation dates within the
-period in which every member has an observed history.  Missing calendar days
+period in which every member has an observed history. Missing calendar days
 are not manufactured.
 """
 
@@ -61,8 +61,6 @@ def build_collective_nav(
             "Team members have no common period of observed NAV history."
         )
 
-    # The Team timeline contains every constituent observation date inside
-    # the common period.  We do not manufacture calendar-day observations.
     timeline = pd.DatetimeIndex(
         sorted(
             {
@@ -78,9 +76,11 @@ def build_collective_nav(
 
     collective = pd.DataFrame({"date": timeline})
 
-    # Reindex each Fund onto the collective observation dates and carry its
-    # latest known NAV forward.  Because the timeline starts only once every
-    # Fund has begun, every member has a valid as-of value at every Team date.
+    # [lakshya] Start with integer zero rather than float zero so a singleton
+    # preserves the NAV dtype; normal floating-point NAV histories remain
+    # floating-point when summed.
+    collective["nav"] = 0
+
     for history in histories.values():
         series = history.set_index("date")["nav"]
         collective_nav = series.reindex(timeline, method="ffill")
@@ -90,6 +90,6 @@ def build_collective_nav(
                 "Unable to construct a complete as-of collective trajectory."
             )
 
-        collective["nav"] = collective.get("nav", 0.0) + collective_nav.to_numpy()
+        collective["nav"] = collective["nav"] + collective_nav.to_numpy()
 
     return collective.reset_index(drop=True)
