@@ -1,8 +1,10 @@
-"""TEAM-stage gate fingerprint.
+"""TEAM-stage behavioural fingerprint.
 
-The TEAM gate uses the same trajectory-derived Elevation and Protection
-mathematics as FUND. No constituent metrics are combined: the collective
-NAV trajectory is the sole input to the calculations.
+[lakshya] TEAM-stage implementation. All behavioural metrics are calculated
+from the collective NAV trajectory; constituent metrics are never combined.
+The current TeamFingerprint contains only the evidence earned by TEAM so
+far: Elevation and Protection. Richer evidence is added only when a
+ downstream consumer genuinely earns the need for it.
 """
 
 from __future__ import annotations
