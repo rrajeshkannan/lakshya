@@ -9,10 +9,7 @@ from team_analysis.comparator_surface import fund_team_dimensions
 
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
     prefix = f"elevation_{horizon}y_"
-    if evidence is None:
-        return
-
-    for metric in (
+    metrics = (
         "minimum",
         "percentile_25",
         "median",
@@ -20,7 +17,13 @@ def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
         "maximum",
         "mean",
         "positive_period_pct",
-    ):
+    )
+    if evidence is None:
+        for metric in metrics:
+            values[prefix + metric] = None
+        return
+
+    for metric in metrics:
         values[prefix + metric] = getattr(evidence, metric)
 
 
