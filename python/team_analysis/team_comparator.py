@@ -4,22 +4,21 @@ from __future__ import annotations
 
 from typing import Any
 
-from .comparator_surface import fund_team_dimensions
+from .comparator_surface import ROLLING_METRICS, fund_team_dimensions
 
 
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
-    if evidence is None:
-        return
     prefix = f"elevation_{horizon}y_"
-    for metric in (
-        "minimum", "percentile_25", "median", "percentile_75",
-        "maximum", "mean", "positive_period_pct",
-    ):
-        values[prefix + metric] = getattr(evidence, metric)
+    for metric in ROLLING_METRICS:
+        values[prefix + metric] = None if evidence is None else getattr(evidence, metric)
 
 
 def team_comparator_values(fingerprint: Any) -> dict[str, Any]:
-    """Return Team gate values directly from the collective fingerprint."""
+    """Return Team gate values directly from the collective fingerprint.
+
+    [lakshya] Unavailable evidence remains explicitly represented as None so
+    the comparator surface stays exactly aligned with its declared dimensions.
+    """
     values: dict[str, Any] = {}
     elevation = fingerprint.elevation
     _put_rolling(values, 3, elevation.rolling_3y)
