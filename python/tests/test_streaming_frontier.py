@@ -30,7 +30,7 @@ def test_incoming_candidate_can_remove_multiple_frontier_members():
 def test_tradeoffs_remain_on_frontier():
     a, b = object(), object()
     result = streaming_frontier(
-        [(a, {"x": 10, "y": 10}), (b, {"x": 8, "y": 8})],
+        [(a, {"x": 10, "y": 8}), (b, {"x": 8, "y": 10})],
         (UP, DOWN),
     )
     assert result == [a, b]
