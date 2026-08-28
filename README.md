@@ -5,15 +5,23 @@ constructing and evolving a portfolio over a lifetime and beyond.
 
 ## Fundamental Architecture
 
-``` text
+```text
 FUND → TEAM → MISSION → FUTURE ENVIRONMENT
 ```
 
-Each stage consumes the understanding built below it and asks a
+Each stage consumes the understanding earned below it and asks a
 higher-order question.
 
-> **Aggregation gives us the structural flow.\
+> **Aggregation gives us the structural flow.
 > The questions give us the meaning of the flow.**
+
+Lakshya follows an important discipline across the stages:
+
+> **A calculation does not automatically become a downstream input, and a
+downstream input does not automatically become persisted state.**
+
+Information crosses an abstraction boundary only when the higher stage
+has earned the need for it.
 
 ------------------------------------------------------------------------
 
@@ -26,16 +34,16 @@ fund.
 
 Its behavioural fingerprint has three primary dimensions:
 
--   **Elevation** --- participation in prosperity
--   **Protection** --- severity of adversity
--   **Resilience** --- the journey after adversity begins
+- **Elevation** — participation in prosperity
+- **Protection** — severity of adversity
+- **Resilience** — the journey after adversity begins
 
-The Fund stage is descriptive, not prescriptive. It establishes
-evidence; it does not decide whether Lakshya should own the fund.
+The Fund stage is descriptive, not prescriptive. It establishes evidence;
+it does not decide whether Lakshya should own the fund.
 
 ### Fund-stage evidence flow
 
-``` text
+```text
 Fund Admission
       ↓
 Admissible Funds
@@ -61,46 +69,82 @@ Detailed specification:
 
 ### What kind of collective do these teammates form?
 
-TEAM answers:
+TEAM asks:
 
 > **Who stands together?**
 
-TEAM forms collective behavioural structures from Fund fingerprints.
-Team formation is based on Fund-level behavioural evidence, not on
-family goals, allocation, or suitability.
+TEAM forms collective behavioural structures from admitted Fund-level
+behavioural evidence. It remains descriptive rather than prescriptive.
+TEAM does not decide what the family should own, how a goal should be
+funded, or how capital should be allocated.
 
-The established structural constraint is:
+The established Team universe currently consists of:
 
--   singleton
--   pair
--   trio
+- singleton
+- pair
+- trio
 
 with a maximum of **3 members per Team**.
 
-TEAM is descriptive rather than prescriptive.
+### TEAM evidence flow
 
-The possible Team universe can become combinatorially large. TEAM
-therefore performs the necessary abstraction-preserving bulk work to
-pass only the necessary / eligible Teams onward to MISSION.
+```text
+Admitted Funds
+      ↓
+Team candidates
+      ↓
+Collective NAV / evidence
+      ↓
+Team Behavioural Fingerprint
+      ↓
+TEAM comparator surface
+      ↓
+Non-dominated TEAM frontier
+```
 
-> **TEAM may determine which Teams are necessary to pass onward; TEAM
-> must not decide what MISSION wants.**
+TEAM owns the collective behavioural calculation required to compare
+candidate Teams. The current declared gate surface contains **40
+comparative dimensions**:
 
-This reduction must remain within the TEAM abstraction boundary. TEAM
-must not import:
+- **28 Elevation dimensions**: 4 horizons × 7 rolling-return measures
+- **12 Protection dimensions**: severity distribution and threshold-
+  frequency measures
 
--   goal suitability;
--   goal-specific criteria;
--   composition percentages;
--   allocation;
--   portfolio-purpose decisions; or
--   higher-order MISSION entities
+Resilience is not currently part of the TEAM gate surface. This is a
+boundary decision, not an assertion that Resilience is unimportant at
+FUND stage. TEAM consumes only the Fund evidence it actually needs.
+
+The TEAM comparator preserves unavailable evidence explicitly rather than
+manufacturing zeroes or silently changing the declared surface.
+
+The frontier is an exact non-dominated frontier using the declared
+upward/downward direction of each dimension. TEAM can stream candidates
+through the frontier without retaining the full combinatorial universe.
+
+### TEAM abstraction boundary
+
+TEAM may determine which Teams are non-dominated under the **declared
+TEAM behavioural gate**. It must not import MISSION semantics merely to
+reduce its own output.
+
+TEAM must not import:
+
+- goal suitability;
+- family goals or purpose;
+- composition percentages;
+- allocation;
+- portfolio-purpose decisions; or
+- higher-order MISSION entities
 
 merely to reduce its own output.
 
-Team evidence must preserve sufficient collective journey/form
-information beneath any reduced representation so that MISSION receives
-meaningful evidence rather than an over-compressed label.
+The final durable TEAM → MISSION output and persistence surface is **not
+yet frozen**. It will be established only after MISSION's requirements
+are understood.
+
+Detailed TEAM specification:
+
+`docs/Lakshya_Team_Behavioural_Fingerprint.md`
 
 ------------------------------------------------------------------------
 
@@ -108,18 +152,21 @@ meaningful evidence rather than an over-compressed label.
 
 ### What must this collective accomplish for the family?
 
-MISSION connects the collective with the family's purpose, goals and
-constraints.
+MISSION connects collective behavioural evidence with the family's
+purpose, goals and constraints.
 
 MISSION is where purpose-driven interpretation enters, including:
 
--   goal-specific suitability;
--   composition percentages;
--   allocation per goal; and
--   other purpose/criterion-driven decisions.
+- goal-specific suitability;
+- composition percentages;
+- allocation per goal; and
+- other purpose/criterion-driven decisions.
 
-MISSION consumes Team outputs rather than reaching backward into raw
-Fund/NAV machinery.
+MISSION should consume Team outputs rather than reaching backward into
+raw Fund/NAV machinery.
+
+The exact TEAM → MISSION contract remains an architectural discovery
+question at the current checkpoint.
 
 ------------------------------------------------------------------------
 
@@ -144,15 +191,30 @@ Lakshya preserves depth.
 
 The broad picture and the underlying evidence remain connected.
 
-Observed is not inferred.\
+Observed is not inferred.
 Unknown is not zero.
 
 > **Compression can be useful. Compression cannot be allowed to erase
 > meaning.**
 
-A lower abstraction layer may reduce or organise information for the
-next layer, but it must not import the next layer's semantics merely to
+A lower abstraction layer may reduce or organise information for the next
+layer, but it must not import the next layer's semantics merely to
 achieve that reduction.
+
+### Calculation versus persistence
+
+Lakshya distinguishes four different questions:
+
+1. **What can a stage calculate?**
+2. **What does the next stage actually consume?**
+3. **What evidence must remain available for interpretation or audit?**
+4. **What state deserves durable persistence?**
+
+These questions are not interchangeable.
+
+The discovery that FUND Resilience is not required by the current TEAM
+surface is an example of this discipline. It remains meaningful FUND
+evidence without automatically becoming TEAM state.
 
 ------------------------------------------------------------------------
 
@@ -160,7 +222,7 @@ achieve that reduction.
 
 Lakshya follows:
 
-``` text
+```text
 PHILOSOPHY
     ↓
 SPECIFICATION
@@ -178,57 +240,83 @@ The implementation exists to express the architecture, not replace it.
 
 Versioned evidence is part of the architecture. Historical analytical
 states are preserved rather than overwritten, with Git serving as the
-historical ledger.
+historical ledger where durable analytical state has been deliberately
+chosen.
 
 ------------------------------------------------------------------------
 
-## Current FUND Implementation State
+## Current Implementation Checkpoint
 
-The FUND stage is implemented, tested and validated.
+### FUND
 
-The Fund pipeline establishes a version-linked relationship between NAV
-evidence and Fund fingerprints:
+FUND is implemented, tested and has previously been validated against the
+admissible Fund universe and persisted NAV evidence. Its behavioural
+fingerprint establishes the individual Fund evidence from which TEAM may
+consume only what its own contract requires.
 
-``` text
-NAV artifact vN
-      ↓
-Fund fingerprint based on NAV artifact vN
+### TEAM
+
+TEAM's structural and analytical foundation is implemented and tested,
+including:
+
+- deterministic singleton/pair/trio candidate generation;
+- collective evidence construction;
+- Team behavioural fingerprinting;
+- the 40-dimensional comparator surface;
+- unavailable-evidence handling;
+- exact non-dominated frontier calculation;
+- streaming frontier operation; and
+- a thin public TEAM-stage orchestration boundary.
+
+The current automated test checkpoint is:
+
+> **159 passed, 1 skipped**
+
+This is a unit/integration validation checkpoint. It is **not yet the
+real-data commissioning result**.
+
+### Real-data commissioning
+
+The complete real-data FUND → TEAM → MISSION run is deliberately
+postponed until MISSION is fully established and tested.
+
+This prevents intermediate analytical artefacts from being persisted
+before Lakshya has established which information genuinely deserves to
+survive each abstraction boundary.
+
+------------------------------------------------------------------------
+
+## Current Architectural Direction
+
+The current state is:
+
+```text
+FUND
+  │
+  │ individual behavioural evidence
+  ▼
+TEAM
+  │
+  │ collective behavioural evidence
+  │
+  │ non-dominated Team frontier
+  ▼
+MISSION
+  │
+  │ purpose / goals / constraints
+  ▼
+FUTURE ENVIRONMENT
 ```
 
-Fingerprint lifecycle:
+The next architectural task is **TEAM → MISSION boundary discovery**:
 
-``` text
-no fingerprint
-      ↓
-   created
+- determine what MISSION genuinely needs from TEAM;
+- identify what remains TEAM-internal or transient;
+- distinguish calculated evidence from durable state;
+- avoid carrying information upward merely because it exists; and
+- avoid generalising abstractions before the higher-order requirement is
+  known.
 
-older fingerprint
-      ↓
-   appended
-
-current fingerprint
-      ↓
-   current
-```
-
-A partially stale state can therefore be reconciled without destroying
-historical analytical state or unnecessarily rebuilding upstream
-evidence.
-
-The completed Fund-stage implementation has been validated by:
-
--   72 passing tests;
--   real processing of all 17 admissible Funds;
--   reconciliation of stale fingerprints;
--   a subsequent idempotent run in which all 17 Funds reported
-    `fingerprint current`.
-
-The completed FUND milestone is committed in Git.
-
-## What Comes Next
-
-> **FUND → TEAM**
-
-Before implementation, TEAM's exact input/output contract and its
-abstraction-preserving reduction boundary should be established from the
-Fund outputs already earned.
+Only after that boundary is established should Lakshya commission the
+full real-data chain and decide the appropriate durable analytical
+outputs.
