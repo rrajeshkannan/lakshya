@@ -165,8 +165,8 @@ MISSION is where purpose-driven interpretation enters, including:
 MISSION should consume Team outputs rather than reaching backward into
 raw Fund/NAV machinery.
 
-The exact TEAM → MISSION contract remains an architectural discovery
-question at the current checkpoint.
+The exact TEAM → MISSION contract is established through architectural
+reasoning rather than assumed from lower-stage implementation details.
 
 ------------------------------------------------------------------------
 
@@ -212,9 +212,9 @@ Lakshya distinguishes four different questions:
 
 These questions are not interchangeable.
 
-The discovery that FUND Resilience is not required by the current TEAM
-surface is an example of this discipline. It remains meaningful FUND
-evidence without automatically becoming TEAM state.
+The distinction between FUND evidence and TEAM consumption is an example
+of this discipline. Evidence can remain meaningful at its originating
+stage without automatically becoming downstream state.
 
 ------------------------------------------------------------------------
 
@@ -245,78 +245,12 @@ chosen.
 
 ------------------------------------------------------------------------
 
-## Current Implementation Checkpoint
+## Stage Specifications
 
-### FUND
+The detailed architectural specifications currently include:
 
-FUND is implemented, tested and has previously been validated against the
-admissible Fund universe and persisted NAV evidence. Its behavioural
-fingerprint establishes the individual Fund evidence from which TEAM may
-consume only what its own contract requires.
+- `docs/Lakshya_Fund_Behavioural_Fingerprint.md`
+- `docs/Lakshya_Team_Behavioural_Fingerprint.md`
 
-### TEAM
-
-TEAM's structural and analytical foundation is implemented and tested,
-including:
-
-- deterministic singleton/pair/trio candidate generation;
-- collective evidence construction;
-- Team behavioural fingerprinting;
-- the 40-dimensional comparator surface;
-- unavailable-evidence handling;
-- exact non-dominated frontier calculation;
-- streaming frontier operation; and
-- a thin public TEAM-stage orchestration boundary.
-
-The current automated test checkpoint is:
-
-> **159 passed, 1 skipped**
-
-This is a unit/integration validation checkpoint. It is **not yet the
-real-data commissioning result**.
-
-### Real-data commissioning
-
-The complete real-data FUND → TEAM → MISSION run is deliberately
-postponed until MISSION is fully established and tested.
-
-This prevents intermediate analytical artefacts from being persisted
-before Lakshya has established which information genuinely deserves to
-survive each abstraction boundary.
-
-------------------------------------------------------------------------
-
-## Current Architectural Direction
-
-The current state is:
-
-```text
-FUND
-  │
-  │ individual behavioural evidence
-  ▼
-TEAM
-  │
-  │ collective behavioural evidence
-  │
-  │ non-dominated Team frontier
-  ▼
-MISSION
-  │
-  │ purpose / goals / constraints
-  ▼
-FUTURE ENVIRONMENT
-```
-
-The next architectural task is **TEAM → MISSION boundary discovery**:
-
-- determine what MISSION genuinely needs from TEAM;
-- identify what remains TEAM-internal or transient;
-- distinguish calculated evidence from durable state;
-- avoid carrying information upward merely because it exists; and
-- avoid generalising abstractions before the higher-order requirement is
-  known.
-
-Only after that boundary is established should Lakshya commission the
-full real-data chain and decide the appropriate durable analytical
-outputs.
+Additional stage specifications will be introduced when the corresponding
+architecture has been sufficiently established.
