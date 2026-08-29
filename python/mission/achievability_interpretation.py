@@ -1,4 +1,4 @@
-"""Purpose-relative interpretation of observed TEAM Elevation evidence."""
+"""Purpose-relative interpretation of observed Composition Elevation evidence."""
 
 from __future__ import annotations
 
@@ -12,9 +12,9 @@ from .models import Purpose
 class AchievabilityAssessment:
     """A deliberately qualitative MISSION interpretation.
 
-    The assessment does not forecast returns or score a Team. It only places
-    the Purpose's required return against the highest observed rolling-return
-    terrain available from the Team fingerprint.
+    The assessment does not forecast returns or score a Composition. It only
+    places the Purpose's required return against the highest observed rolling
+    return terrain available from the Composition fingerprint.
     """
 
     status: str
@@ -38,10 +38,10 @@ def _rolling_evidence(elevation: Any, years: int) -> Any:
 
 def assess_achievability(
     purpose: Purpose,
-    team_fingerprint: Any,
+    composition_fingerprint: Any,
     required_return: float | None,
 ) -> AchievabilityAssessment:
-    """Interpret a Purpose requirement against a Team's observed Elevation.
+    """Interpret a Purpose requirement against observed Composition Elevation.
 
     The gate is intentionally weak and qualitative:
 
@@ -71,7 +71,7 @@ def assess_achievability(
             observed_upper_return=None,
         )
 
-    evidence = _rolling_evidence(team_fingerprint.elevation, horizon)
+    evidence = _rolling_evidence(composition_fingerprint.elevation, horizon)
     if evidence is None or evidence.maximum is None:
         return AchievabilityAssessment(
             status="insufficient_evidence",
