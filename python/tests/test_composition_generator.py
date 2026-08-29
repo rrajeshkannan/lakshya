@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lakshya_core.models import Fund
-from team_analysis.composition_generator import generate_compositions
+from team_analysis.generate_compositions import generate_compositions
 from team_analysis.team import Team
 
 
@@ -40,4 +40,4 @@ def test_two_member_team_generates_twenty_one_compositions():
 def test_generator_supports_custom_grid_step():
     team = Team(members=(_fund("A"), _fund("B")))
 
-    assert len(generate_compositions(team, step_pct=10)) == 11
+    assert len(generate_compositions(team, step=0.10)) == 11
