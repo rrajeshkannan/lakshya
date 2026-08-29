@@ -1,7 +1,7 @@
 """Purpose-relative achievability interpretation for MISSION.
 
 This module deliberately separates a Purpose's required return from the
-historical Team evidence used to interpret that requirement.
+historical Composition evidence used to interpret that requirement.
 
 The result is qualitative. Historical evidence is not treated as a forecast.
 """
@@ -27,7 +27,7 @@ class AchievabilityStatus(str, Enum):
 
 @dataclass(frozen=True)
 class AchievabilityAssessment:
-    """Purpose-relative interpretation of a Team's historical elevation."""
+    """Purpose-relative interpretation of a Composition's historical elevation."""
 
     status: AchievabilityStatus
     required_annual_return: float | None
@@ -46,12 +46,15 @@ def _supported_elevation(purpose_horizon: int, elevation: Any):
     return None, None
 
 
-def assess_achievability(purpose: Purpose, team_fingerprint: Any) -> AchievabilityAssessment:
-    """Interpret a Purpose requirement against observed Team elevation terrain.
+def assess_achievability(
+    purpose: Purpose, composition_fingerprint: Any
+) -> AchievabilityAssessment:
+    """Interpret a Purpose requirement against observed Composition elevation.
 
-    The Team's maximum observed rolling CAGR on the longest supported horizon
-    not exceeding the Purpose horizon is used as the upper observed terrain.
-    This is a historical observation, not a forecast or probability estimate.
+    The Composition's maximum observed rolling CAGR on the longest supported
+    horizon not exceeding the Purpose horizon is used as the upper observed
+    terrain. This is a historical observation, not a forecast or probability
+    estimate.
     """
     required = required_annual_return(purpose)
 
@@ -64,7 +67,7 @@ def assess_achievability(purpose: Purpose, team_fingerprint: Any) -> Achievabili
         )
 
     evidence_horizon, evidence = _supported_elevation(
-        purpose.horizon_years, team_fingerprint.elevation
+        purpose.horizon_years, composition_fingerprint.elevation
     )
     if evidence is None:
         return AchievabilityAssessment(
