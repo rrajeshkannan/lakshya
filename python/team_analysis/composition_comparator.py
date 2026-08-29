@@ -16,10 +16,16 @@ def _evidence_for_horizon(elevation: Any, horizon: int) -> Any:
     return getattr(elevation, f"rolling_{horizon}y")
 
 
+def _metric(evidence: Any, metric: str) -> Any:
+    if isinstance(evidence, Mapping):
+        return evidence.get(metric)
+    return getattr(evidence, metric)
+
+
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
     prefix = f"elevation_{horizon}y_"
     for metric in ROLLING_METRICS:
-        values[prefix + metric] = None if evidence is None else getattr(evidence, metric)
+        values[prefix + metric] = None if evidence is None else _metric(evidence, metric)
 
 
 def composition_comparator_values(
@@ -32,17 +38,20 @@ def composition_comparator_values(
 
     protection = fingerprint.protection
     values.update({
-        "protection_median_severity_pct": protection.median_severity_pct,
-        "protection_percentile_75_severity_pct": protection.percentile_75_severity_pct,
-        "protection_percentile_90_severity_pct": protection.percentile_90_severity_pct,
-        "protection_percentile_95_severity_pct": protection.percentile_95_severity_pct,
-        "protection_percentile_99_severity_pct": protection.percentile_99_severity_pct,
-        "protection_maximum_severity_pct": protection.maximum_severity_pct,
+        "protection_median_severity_pct": _metric(protection, "median_severity_pct"),
+        "protection_percentile_75_severity_pct": _metric(protection, "percentile_75_severity_pct"),
+        "protection_percentile_90_severity_pct": _metric(protection, "percentile_90_severity_pct"),
+        "protection_percentile_95_severity_pct": _metric(protection, "percentile_95_severity_pct"),
+        "protection_percentile_99_severity_pct": _metric(protection, "percentile_99_severity_pct"),
+        "protection_maximum_severity_pct": _metric(protection, "maximum_severity_pct"),
     })
+    threshold_values = (
+        protection.get("pct_days_at_or_above_threshold")
+        if isinstance(protection, Mapping)
+        else protection.pct_days_at_or_above_threshold
+    )
     for threshold in (5, 10, 15, 20, 25, 30):
-        values[f"protection_pct_days_at_or_above_{threshold}"] = (
-            protection.pct_days_at_or_above_threshold.get(threshold)
-        )
+        values[f"protection_pct_days_at_or_above_{threshold}"] = threshold_values.get(threshold)
 
     expected = {dimension.name for dimension in fund_team_dimensions()}
     if set(values) != expected:
