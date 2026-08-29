@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+from team_analysis.composition import Composition
+
 
 @dataclass(frozen=True)
 class Purpose:
@@ -19,3 +21,11 @@ class Purpose:
     desired_target: Optional[float] = None
     horizon_years: Optional[int] = None
     monthly_contribution: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class Mission:
+    """A purpose applied to one surviving Composition."""
+
+    purpose: Purpose
+    composition: Composition
