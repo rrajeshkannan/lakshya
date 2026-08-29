@@ -3,7 +3,7 @@ import json
 import pytest
 
 from fund_analysis.fingerprint_evidence import FingerprintEvidenceStore
-from lakshya_core.models import ElevationEvidence, Fund, FundBehaviouralFingerprint, ProtectionEvidence, ResilienceEvidence
+from lakshya_core.models import ElevationEvidence, Fund, FundFingerprint, ProtectionEvidence, ResilienceEvidence
 
 
 def test_fingerprint_evidence_store_creates_artifact(tmp_path):
@@ -120,8 +120,8 @@ def test_fingerprint_evidence_store_rejects_overwrite(tmp_path):
         )
 
 
-def test_fund_behavioural_fingerprint_contains_three_compass_dimensions():
-    # A fund's behavioural fingerprint contains three compass dimensions: elevation, protection, and resilience.
+def test_fund_fingerprint_contains_three_compass_dimensions():
+    # A fund's fingerprint contains three compass dimensions: elevation, protection, and resilience.
     elevation = ElevationEvidence(
         rolling_3y=None,
         rolling_5y=None,
@@ -174,7 +174,7 @@ def test_fund_behavioural_fingerprint_contains_three_compass_dimensions():
         category="Flexi Cap",
     )
 
-    fingerprint = FundBehaviouralFingerprint(
+    fingerprint = FundFingerprint(
         fund=fund,
         elevation=elevation,
         protection=protection,
@@ -187,8 +187,8 @@ def test_fund_behavioural_fingerprint_contains_three_compass_dimensions():
     assert fingerprint.resilience is resilience
 
 
-def test_fund_behavioural_fingerprint_composes_three_evidence_dimensions():
-    # The Fund Behavioural Fingerprint is a composition of the three
+def test_fund_fingerprint_composes_three_evidence_dimensions():
+    # The Fund Fingerprint is a composition of the three
     # independent Fund-stage compass dimensions.
     #
     # Composition does not calculate, score, rank, weight, or judge them.
@@ -234,7 +234,7 @@ def test_fund_behavioural_fingerprint_composes_three_evidence_dimensions():
         median_underwater_days_ongoing=None,
     )
 
-    fingerprint = FundBehaviouralFingerprint(
+    fingerprint = FundFingerprint(
         fund=fund,
         elevation=elevation,
         protection=protection,
