@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 
 from .composition import Composition
 from .composition_comparator import composition_comparator_values, composition_dimensions
