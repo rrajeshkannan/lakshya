@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 from lakshya_core.dominance import Dimension
 
-from .comparator_surface import ROLLING_METRICS, fund_team_dimensions
+from .comparator_surface import ROLLING_METRICS, ROLLING_HORIZONS, fund_team_dimensions
 from .composition_fingerprint import CompositionFingerprint
+
+
+def _evidence_for_horizon(elevation: Any, horizon: int) -> Any:
+    if isinstance(elevation, Mapping):
+        return elevation.get(horizon)
+    return getattr(elevation, f"rolling_{horizon}y")
 
 
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
@@ -21,11 +27,8 @@ def composition_comparator_values(
 ) -> dict[str, Any]:
     """Map fresh Composition evidence onto the complete behavioural gate surface."""
     values: dict[str, Any] = {}
-    elevation = fingerprint.elevation
-    _put_rolling(values, 3, elevation.rolling_3y)
-    _put_rolling(values, 5, elevation.rolling_5y)
-    _put_rolling(values, 7, elevation.rolling_7y)
-    _put_rolling(values, 10, elevation.rolling_10y)
+    for horizon in ROLLING_HORIZONS:
+        _put_rolling(values, horizon, _evidence_for_horizon(fingerprint.elevation, horizon))
 
     protection = fingerprint.protection
     values.update({
