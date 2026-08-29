@@ -10,22 +10,24 @@ from .comparator_surface import ROLLING_METRICS, ROLLING_HORIZONS, fund_team_dim
 from .composition_fingerprint import CompositionFingerprint
 
 
+def _getitem_or_attr(value: Any, key: str) -> Any:
+    try:
+        return value[key]
+    except (KeyError, TypeError, IndexError):
+        return getattr(value, key)
+
+
 def _evidence_for_horizon(elevation: Any, horizon: int) -> Any:
     if isinstance(elevation, Mapping):
         return elevation.get(horizon)
     try:
         return elevation[horizon]
-    except (TypeError, KeyError, IndexError):
+    except (KeyError, TypeError, IndexError):
         return getattr(elevation, f"rolling_{horizon}y")
 
 
 def _metric(evidence: Any, metric: str) -> Any:
-    if isinstance(evidence, Mapping):
-        return evidence.get(metric)
-    try:
-        return evidence[metric]
-    except (TypeError, KeyError, IndexError):
-        return getattr(evidence, metric)
+    return _getitem_or_attr(evidence, metric)
 
 
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
@@ -43,21 +45,14 @@ def composition_comparator_values(
         _put_rolling(values, horizon, _evidence_for_horizon(fingerprint.elevation, horizon))
 
     protection = fingerprint.protection
-    values.update({
-        "protection_median_severity_pct": _metric(protection, "median_severity_pct"),
-        "protection_percentile_75_severity_pct": _metric(protection, "percentile_75_severity_pct"),
-        "protection_percentile_90_severity_pct": _metric(protection, "percentile_90_severity_pct"),
-        "protection_percentile_95_severity_pct": _metric(protection, "percentile_95_severity_pct"),
-        "protection_percentile_99_severity_pct": _metric(protection, "percentile_99_severity_pct"),
-        "protection_maximum_severity_pct": _metric(protection, "maximum_severity_pct"),
-    })
-    if isinstance(protection, Mapping):
-        threshold_values = protection.get("pct_days_at_or_above_threshold", {})
-    else:
-        try:
-            threshold_values = protection["pct_days_at_or_above_threshold"]
-        except (TypeError, KeyError, IndexError):
-            threshold_values = protection.pct_days_at_or_above_threshold
+    for metric in (
+        "median_severity_pct", "percentile_75_severity_pct",
+        "percentile_90_severity_pct", "percentile_95_severity_pct",
+        "percentile_99_severity_pct", "maximum_severity_pct",
+    ):
+        values[f"protection_{metric}"] = _metric(protection, metric)
+
+    threshold_values = _getitem_or_attr(protection, "pct_days_at_or_above_threshold")
     for threshold in (5, 10, 15, 20, 25, 30):
         values[f"protection_pct_days_at_or_above_{threshold}"] = threshold_values.get(threshold)
 
