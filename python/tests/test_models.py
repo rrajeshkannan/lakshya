@@ -7,7 +7,7 @@ from lakshya_core.models import (
     ElevationEvidence,
     ProtectionEvidence,
     ResilienceEvidence,
-    FundBehaviouralFingerprint,
+    FundFingerprint,
 )
 from fund_analysis.fingerprint_serialization import fingerprint_to_dict
 
@@ -27,14 +27,14 @@ def test_goal_can_be_created():
     assert goal.target_corpus == 8_50_00_000
 
 
-def test_fund_behavioural_fingerprint_can_be_serialized_to_evidence_dict():
+def test_fund_fingerprint_can_be_serialized_to_evidence_dict():
     fund = Fund(
         name="Test Fund",
         isin="TEST123",
         category="Flexi Cap",
     )
 
-    fingerprint = FundBehaviouralFingerprint(
+    fingerprint = FundFingerprint(
         fund=fund,
         elevation=ElevationEvidence(
             rolling_3y=None,
@@ -81,14 +81,14 @@ def test_fund_behavioural_fingerprint_can_be_serialized_to_evidence_dict():
     assert evidence["resilience"]["episode_count"] == 2
 
 
-def test_fund_behavioural_fingerprint_serialization_is_json_safe():
+def test_fund_fingerprint_serialization_is_json_safe():
     fund = Fund(
         name="Test Fund",
         isin="TEST123",
         category="Flexi Cap",
     )
 
-    fingerprint = FundBehaviouralFingerprint(
+    fingerprint = FundFingerprint(
         fund=fund,
         elevation=ElevationEvidence(
             rolling_3y=None,
@@ -116,7 +116,6 @@ def test_fund_behavioural_fingerprint_serialization_is_json_safe():
             median_decline_days_recovered=0.0,
             median_recovery_days=0.0,
             median_underwater_days_recovered=0.0,
-            median_underwater_days_ongoing=0.0,
             episodes=[],
         ),
     )
