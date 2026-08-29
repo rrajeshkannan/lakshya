@@ -116,6 +116,7 @@ def test_fund_fingerprint_serialization_is_json_safe():
             median_decline_days_recovered=0.0,
             median_recovery_days=0.0,
             median_underwater_days_recovered=0.0,
+            median_underwater_days_ongoing=0.0,
             episodes=[],
         ),
     )
