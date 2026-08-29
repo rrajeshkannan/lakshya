@@ -25,8 +25,8 @@ class AchievabilityAssessment:
 
     status: AchievabilityStatus
     required_annual_return: float | None
-    evidence_horizon_years: int | None
-    observed_upper_terrain: float | None
+    comparison_horizon_years: int | None
+    observed_upper_return: float | None
 
 
 def _comparison_horizon(purpose: Purpose) -> int | None:
@@ -55,8 +55,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.NOT_APPLICABLE,
             required_annual_return=None,
-            evidence_horizon_years=None,
-            observed_upper_terrain=None,
+            comparison_horizon_years=None,
+            observed_upper_return=None,
         )
 
     horizon = _comparison_horizon(purpose)
@@ -64,8 +64,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            evidence_horizon_years=None,
-            observed_upper_terrain=None,
+            comparison_horizon_years=None,
+            observed_upper_return=None,
         )
 
     evidence = _rolling_evidence(composition_fingerprint.elevation, horizon)
@@ -73,8 +73,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            evidence_horizon_years=horizon,
-            observed_upper_terrain=None,
+            comparison_horizon_years=horizon,
+            observed_upper_return=None,
         )
 
     observed_upper = evidence.maximum
@@ -87,6 +87,6 @@ def assess_achievability(
     return AchievabilityAssessment(
         status=status,
         required_annual_return=required_return,
-        evidence_horizon_years=horizon,
-        observed_upper_terrain=observed_upper,
+        comparison_horizon_years=horizon,
+        observed_upper_return=observed_upper,
     )
