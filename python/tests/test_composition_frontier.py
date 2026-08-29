@@ -73,5 +73,5 @@ def test_composition_frontier_retains_incomparable_compositions():
 
     assert global_composition_frontier([
         (first, _fingerprint(first, elevation=2.0, protection=1.0)),
-        (second, _fingerprint(second, elevation=1.0, protection=2.0)),
+        (second, _fingerprint(second, elevation=1.0, protection=0.5)),
     ]) == [first, second]
