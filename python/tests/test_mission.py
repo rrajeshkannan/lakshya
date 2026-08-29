@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lakshya_core.models import Fund
-from mission import Goal, Mission, Purpose
+from mission import Mission, Purpose
 from team_analysis.composition import Composition
 from team_analysis.team import Team
 
@@ -15,7 +15,10 @@ def _composition() -> Composition:
 def test_mission_contract_carries_purpose_and_surviving_composition():
     purpose = Purpose(
         name="Long-term family goal",
-        goals=(Goal(name="Education", horizon_years=10, target_corpus=1_000_000),),
+        current_capital=500_000,
+        desired_target=1_000_000,
+        horizon_years=10,
+        monthly_contribution=5_000,
     )
     composition = _composition()
 
@@ -28,10 +31,12 @@ def test_mission_contract_carries_purpose_and_surviving_composition():
 def test_mission_contract_does_not_score_or_rank_composition():
     purpose = Purpose(
         name="Retirement",
-        goals=(Goal(name="Retirement corpus", horizon_years=15),),
+        current_capital=500_000,
+        desired_target=2_000_000,
+        horizon_years=15,
     )
     mission = Mission(purpose=purpose, composition=_composition())
 
-    assert mission.purpose.goals[0].horizon_years == 15
+    assert mission.purpose.horizon_years == 15
     assert not hasattr(mission, "score")
     assert not hasattr(mission, "rank")
