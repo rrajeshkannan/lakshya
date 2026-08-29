@@ -27,15 +27,11 @@ def _fund(isin: str) -> Fund:
     return Fund(name=f"Fund {isin}", isin=isin, category="Test")
 
 
-def _fingerprint(composition: Composition, value: float) -> _Fingerprint:
-    metrics = (
+def _fingerprint(composition: Composition, *, elevation: float, protection: float) -> _Fingerprint:
+    elevation_metrics = (
         "minimum", "percentile_25", "median", "percentile_75",
         "maximum", "mean", "positive_period_pct",
     )
-    elevation = {
-        years: _Evidence({metric: value for metric in metrics})
-        for years in (3, 5, 7, 10)
-    }
     protection_metrics = (
         "median_severity_pct", "percentile_75_severity_pct",
         "percentile_90_severity_pct", "percentile_95_severity_pct",
@@ -46,8 +42,11 @@ def _fingerprint(composition: Composition, value: float) -> _Fingerprint:
     )
     return _Fingerprint(
         composition=composition,
-        elevation=elevation,
-        protection=_Evidence({metric: value for metric in protection_metrics}),
+        elevation={
+            years: _Evidence({metric: elevation for metric in elevation_metrics})
+            for years in (3, 5, 7, 10)
+        },
+        protection=_Evidence({metric: protection for metric in protection_metrics}),
     )
 
 
@@ -59,8 +58,8 @@ def test_composition_frontier_is_global_across_team_provenance():
     dominated = Composition(team=team_b, weights={"C": 0.95, "D": 0.05})
 
     frontier = global_composition_frontier([
-        (superior, _fingerprint(superior, 2.0)),
-        (dominated, _fingerprint(dominated, 1.0)),
+        (superior, _fingerprint(superior, elevation=2.0, protection=1.0)),
+        (dominated, _fingerprint(dominated, elevation=1.0, protection=2.0)),
     ])
 
     assert frontier == [superior]
@@ -72,24 +71,7 @@ def test_composition_frontier_retains_incomparable_compositions():
     first = Composition(team=team_a, weights={"A": 0.95, "B": 0.05})
     second = Composition(team=team_b, weights={"C": 0.95, "D": 0.05})
 
-    first_values = _fingerprint(first, 2.0)
-    second_values = _fingerprint(second, 2.0)
-    second_values = _Fingerprint(
-        composition=second,
-        elevation={
-            years: _Evidence({
-                metric: (3.0 if metric == "minimum" else 1.0)
-                for metric in (
-                    "minimum", "percentile_25", "median", "percentile_75",
-                    "maximum", "mean", "positive_period_pct",
-                )
-            })
-            for years in (3, 5, 7, 10)
-        },
-        protection=second_values.protection,
-    )
-
     assert global_composition_frontier([
-        (first, first_values),
-        (second, second_values),
+        (first, _fingerprint(first, elevation=2.0, protection=1.0)),
+        (second, _fingerprint(second, elevation=1.0, protection=2.0)),
     ]) == [first, second]
