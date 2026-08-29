@@ -3,8 +3,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from mission.achievability import required_annual_return
-from mission.achievability_assessment import (
-    AchievabilityStatus,
+from mission.achievability_interpretation import (
+    AchievabilityAssessment,
     assess_achievability,
 )
 from mission.models import Purpose
@@ -44,11 +44,11 @@ def test_achievability_uses_composition_evidence_on_nearest_lower_horizon():
         )
     )
 
-    assessment = assess_achievability(purpose, fingerprint)
+    assessment = assess_achievability(purpose, fingerprint, required)
 
-    assert assessment.status is AchievabilityStatus.WITHIN_OBSERVED_TERRAIN
-    assert assessment.evidence_horizon_years == 7
-    assert assessment.observed_upper_terrain == required + 0.01
+    assert assessment.status == "within_observed_terrain"
+    assert assessment.comparison_horizon_years == 7
+    assert assessment.observed_upper_return == required + 0.01
 
 
 def test_achievability_rejects_composition_below_required_elevation():
@@ -58,19 +58,19 @@ def test_achievability_rejects_composition_below_required_elevation():
         _elevation(rolling_10y=SimpleNamespace(maximum=required - 0.01))
     )
 
-    assessment = assess_achievability(purpose, fingerprint)
+    assessment = assess_achievability(purpose, fingerprint, required)
 
-    assert assessment.status is AchievabilityStatus.BEYOND_OBSERVED_TERRAIN
-    assert assessment.evidence_horizon_years == 10
-    assert assessment.observed_upper_terrain == required - 0.01
+    assert assessment.status == "beyond_observed_terrain"
+    assert assessment.comparison_horizon_years == 10
+    assert assessment.observed_upper_return == required - 0.01
 
 
 def test_achievability_reports_insufficient_composition_evidence():
     purpose = _purpose(horizon_years=10)
     fingerprint = _fingerprint(_elevation())
 
-    assessment = assess_achievability(purpose, fingerprint)
+    assessment = assess_achievability(purpose, fingerprint, required_annual_return(purpose))
 
-    assert assessment.status is AchievabilityStatus.INSUFFICIENT_EVIDENCE
-    assert assessment.evidence_horizon_years is None
-    assert assessment.observed_upper_terrain is None
+    assert assessment.status == "insufficient_evidence"
+    assert assessment.comparison_horizon_years == 10
+    assert assessment.observed_upper_return is None
