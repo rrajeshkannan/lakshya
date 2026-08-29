@@ -1,7 +1,8 @@
 from types import SimpleNamespace
 
 from lakshya_core.rolling_returns import RollingReturnEvidence
-from mission.achievability_assessment import AchievabilityStatus, assess_achievability
+from mission.achievability_interpretation import AchievabilityStatus, assess_achievability
+from mission.achievability import required_annual_return
 from mission.models import Purpose
 
 
@@ -36,52 +37,56 @@ def fingerprint(*, rolling_3y=None, rolling_5y=None, rolling_7y=None, rolling_10
 
 def test_requirement_within_observed_terrain():
     purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=10)
-    fp = fingerprint(rolling_10y=evidence(10, 0.10))
+    required = required_annual_return(purpose)
+    fp = fingerprint(rolling_10y=evidence(10, required))
 
-    assessment = assess_achievability(purpose, fp)
+    assessment = assess_achievability(purpose, fp, required)
 
-    assert assessment.status is AchievabilityStatus.WITHIN_OBSERVED_TERRAIN
-    assert assessment.evidence_horizon_years == 10
-    assert assessment.observed_upper_terrain == 0.10
+    assert assessment.status == "within_observed_terrain"
+    assert assessment.comparison_horizon_years == 10
+    assert assessment.observed_upper_return == required
 
 
 def test_requirement_beyond_observed_terrain():
     purpose = Purpose("Retirement", 100.0, desired_target=300.0, horizon_years=10)
-    fp = fingerprint(rolling_10y=evidence(10, 0.10))
+    required = required_annual_return(purpose)
+    fp = fingerprint(rolling_10y=evidence(10, required - 0.01))
 
-    assessment = assess_achievability(purpose, fp)
+    assessment = assess_achievability(purpose, fp, required)
 
-    assert assessment.status is AchievabilityStatus.BEYOND_OBSERVED_TERRAIN
+    assert assessment.status == "beyond_observed_terrain"
 
 
 def test_uses_longest_supported_horizon_not_exceeding_purpose_horizon():
     purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=8)
+    required = required_annual_return(purpose)
     fp = fingerprint(
-        rolling_7y=evidence(7, 0.10),
-        rolling_10y=evidence(10, 0.20),
+        rolling_7y=evidence(7, required),
+        rolling_10y=evidence(10, required + 0.10),
     )
 
-    assessment = assess_achievability(purpose, fp)
+    assessment = assess_achievability(purpose, fp, required)
 
-    assert assessment.evidence_horizon_years == 7
-    assert assessment.observed_upper_terrain == 0.10
+    assert assessment.comparison_horizon_years == 7
+    assert assessment.observed_upper_return == required
 
 
 def test_returns_insufficient_evidence_when_no_supported_horizon_exists():
     purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=2)
+    required = required_annual_return(purpose)
     fp = fingerprint()
 
-    assessment = assess_achievability(purpose, fp)
+    assessment = assess_achievability(purpose, fp, required)
 
-    assert assessment.status is AchievabilityStatus.INSUFFICIENT_EVIDENCE
-    assert assessment.required_annual_return is not None
+    assert assessment.status == "insufficient_evidence"
+    assert assessment.required_annual_return == required
 
 
 def test_open_ended_purpose_is_not_applicable():
     purpose = Purpose("Stitch", 100.0)
     fp = fingerprint(rolling_10y=evidence(10, 0.10))
 
-    assessment = assess_achievability(purpose, fp)
+    assessment = assess_achievability(purpose, fp, required_annual_return(purpose))
 
-    assert assessment.status is AchievabilityStatus.NOT_APPLICABLE
+    assert assessment.status == "not_applicable"
     assert assessment.required_annual_return is None
