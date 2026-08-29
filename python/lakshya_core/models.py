@@ -19,8 +19,7 @@ them:
     drawdown_episodes.py
         -> DrawdownEpisode
 
-The Fund Behavioural Fingerprint then composes the three Fund Compass
-dimensions:
+The Fund Fingerprint then composes the three Fund Compass dimensions:
 
     Elevation
     Protection
@@ -177,7 +176,7 @@ class ResilienceEvidence:
 
 
 @dataclass(frozen=True)
-class FundBehaviouralFingerprint:
+class FundFingerprint:
     """
     The Fund-stage behavioural description of a fund.
 
