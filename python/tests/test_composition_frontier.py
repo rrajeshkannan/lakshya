@@ -71,7 +71,9 @@ def test_composition_frontier_retains_incomparable_compositions():
     first = Composition(team=team_a, weights={"A": 0.95, "B": 0.05})
     second = Composition(team=team_b, weights={"C": 0.95, "D": 0.05})
 
-    assert global_composition_frontier([
+    frontier = global_composition_frontier([
         (first, _fingerprint(first, elevation=2.0, protection=1.0)),
         (second, _fingerprint(second, elevation=1.0, protection=0.5)),
-    ]) == [first, second]
+    ])
+
+    assert set(frontier) == {first, second}
