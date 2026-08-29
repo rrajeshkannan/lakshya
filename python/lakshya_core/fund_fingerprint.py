@@ -1,5 +1,5 @@
 from .elevation import calculate_elevation
-from .models import Fund, FundBehaviouralFingerprint
+from .models import Fund, FundFingerprint
 from .drawdown_severity import calculate_protection
 from .drawdown_episodes import (
     identify_drawdown_episodes,
@@ -25,9 +25,9 @@ DRAWDOWN_EPISODE_THRESHOLD = 0.05
 def build_fund_behavioural_fingerprint(
     fund: Fund,
     nav: pd.DataFrame,
-) -> FundBehaviouralFingerprint:
+) -> FundFingerprint:
     """
-    Build the complete Fund-stage Behavioural Fingerprint.
+    Build the complete Fund-stage Fingerprint.
 
     This is an orchestration function, not a new analytical engine.
 
@@ -38,7 +38,7 @@ def build_fund_behavioural_fingerprint(
         Protection  -> adversity severity
         Resilience  -> behaviour after adversity begins
 
-    The resulting evidence is composed into a single Fund Compass.
+    The resulting evidence is composed into a single Fund Fingerprint.
 
     No scoring, ranking, weighting, suitability judgement, or benchmark
     comparison occurs here.
@@ -55,7 +55,7 @@ def build_fund_behavioural_fingerprint(
 
     resilience = calculate_resilience(episodes)
 
-    return FundBehaviouralFingerprint(
+    return FundFingerprint(
         fund=fund,
         elevation=elevation,
         protection=protection,
