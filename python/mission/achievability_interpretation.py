@@ -25,8 +25,8 @@ class AchievabilityAssessment:
 
     status: AchievabilityStatus
     required_annual_return: float | None
-    comparison_horizon_years: int | None
-    observed_upper_return: float | None
+    evidence_horizon_years: int | None
+    observed_upper_terrain: float | None
 
 
 def _comparison_horizon(purpose: Purpose) -> int | None:
@@ -47,13 +47,7 @@ def assess_achievability(
     composition_fingerprint: Any,
     required_return: float | None = None,
 ) -> AchievabilityAssessment:
-    """Interpret a Purpose requirement against observed Composition Elevation.
-
-    ``required_return`` may be supplied by the caller, preserving the original
-    MISSION boundary where the Purpose-derived hurdle is computed upstream.
-    When omitted, it is derived here from the Purpose. In either form this is
-    a qualitative historical-terrain comparison, not a forecast.
-    """
+    """Interpret a Purpose requirement against observed Composition Elevation."""
     if required_return is None:
         required_return = required_annual_return(purpose)
 
@@ -61,8 +55,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.NOT_APPLICABLE,
             required_annual_return=None,
-            comparison_horizon_years=None,
-            observed_upper_return=None,
+            evidence_horizon_years=None,
+            observed_upper_terrain=None,
         )
 
     horizon = _comparison_horizon(purpose)
@@ -70,8 +64,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            comparison_horizon_years=None,
-            observed_upper_return=None,
+            evidence_horizon_years=None,
+            observed_upper_terrain=None,
         )
 
     evidence = _rolling_evidence(composition_fingerprint.elevation, horizon)
@@ -79,8 +73,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            comparison_horizon_years=horizon,
-            observed_upper_return=None,
+            evidence_horizon_years=horizon,
+            observed_upper_terrain=None,
         )
 
     observed_upper = evidence.maximum
@@ -93,6 +87,6 @@ def assess_achievability(
     return AchievabilityAssessment(
         status=status,
         required_annual_return=required_return,
-        comparison_horizon_years=horizon,
-        observed_upper_return=observed_upper,
+        evidence_horizon_years=horizon,
+        observed_upper_terrain=observed_upper,
     )
