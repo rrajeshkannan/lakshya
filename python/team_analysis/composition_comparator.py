@@ -52,9 +52,9 @@ def composition_comparator_values(
     ):
         values[f"protection_{metric}"] = _metric(protection, metric)
 
-    threshold_values = _getitem_or_attr(protection, "pct_days_at_or_above_threshold")
     for threshold in (5, 10, 15, 20, 25, 30):
-        values[f"protection_pct_days_at_or_above_{threshold}"] = threshold_values.get(threshold)
+        key = f"pct_days_at_or_above_{threshold}"
+        values[f"protection_{key}"] = _metric(protection, key)
 
     expected = {dimension.name for dimension in fund_team_dimensions()}
     if set(values) != expected:
