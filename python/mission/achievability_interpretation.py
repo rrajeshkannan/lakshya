@@ -3,33 +3,30 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum
 from typing import Any
 
 from .achievability import required_annual_return
 from .models import Purpose
 
 
-class AchievabilityStatus(Enum):
-    NOT_APPLICABLE = auto()
-    INSUFFICIENT_EVIDENCE = auto()
-    WITHIN_OBSERVED_TERRAIN = auto()
-    BEYOND_OBSERVED_TERRAIN = auto()
+class AchievabilityStatus(str, Enum):
+    """Qualitative MISSION interpretation of a Purpose requirement."""
+
+    NOT_APPLICABLE = "not_applicable"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    WITHIN_OBSERVED_TERRAIN = "within_observed_terrain"
+    BEYOND_OBSERVED_TERRAIN = "beyond_observed_terrain"
 
 
 @dataclass(frozen=True)
 class AchievabilityAssessment:
-    """A deliberately qualitative MISSION interpretation.
-
-    The assessment does not forecast returns or score a Composition. It only
-    places the Purpose's required return against the highest observed rolling
-    return terrain available from the Composition fingerprint.
-    """
+    """A deliberately qualitative MISSION interpretation."""
 
     status: AchievabilityStatus
     required_annual_return: float | None
-    evidence_horizon_years: int | None
-    observed_upper_terrain: float | None
+    comparison_horizon_years: int | None
+    observed_upper_return: float | None
 
 
 def _comparison_horizon(purpose: Purpose) -> int | None:
@@ -48,27 +45,24 @@ def _rolling_evidence(elevation: Any, years: int) -> Any:
 def assess_achievability(
     purpose: Purpose,
     composition_fingerprint: Any,
+    required_return: float | None = None,
 ) -> AchievabilityAssessment:
     """Interpret a Purpose requirement against observed Composition Elevation.
 
-    The gate is intentionally weak and qualitative:
-
-    * ``NOT_APPLICABLE`` — the Purpose has no complete target/horizon;
-    * ``INSUFFICIENT_EVIDENCE`` — no supported rolling horizon is available;
-    * ``WITHIN_OBSERVED_TERRAIN`` — the required return does not exceed the
-      maximum historically observed return on the comparison horizon;
-    * ``BEYOND_OBSERVED_TERRAIN`` — the requirement sits above that observed
-      upper terrain.
-
-    This is not a probability, forecast, or promise of future return.
+    ``required_return`` may be supplied by the caller, preserving the original
+    MISSION boundary where the Purpose-derived hurdle is computed upstream.
+    When omitted, it is derived here from the Purpose. In either form this is
+    a qualitative historical-terrain comparison, not a forecast.
     """
-    required_return = required_annual_return(purpose)
+    if required_return is None:
+        required_return = required_annual_return(purpose)
+
     if required_return is None:
         return AchievabilityAssessment(
             status=AchievabilityStatus.NOT_APPLICABLE,
             required_annual_return=None,
-            evidence_horizon_years=None,
-            observed_upper_terrain=None,
+            comparison_horizon_years=None,
+            observed_upper_return=None,
         )
 
     horizon = _comparison_horizon(purpose)
@@ -76,8 +70,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            evidence_horizon_years=None,
-            observed_upper_terrain=None,
+            comparison_horizon_years=None,
+            observed_upper_return=None,
         )
 
     evidence = _rolling_evidence(composition_fingerprint.elevation, horizon)
@@ -85,8 +79,8 @@ def assess_achievability(
         return AchievabilityAssessment(
             status=AchievabilityStatus.INSUFFICIENT_EVIDENCE,
             required_annual_return=required_return,
-            evidence_horizon_years=horizon,
-            observed_upper_terrain=None,
+            comparison_horizon_years=horizon,
+            observed_upper_return=None,
         )
 
     observed_upper = evidence.maximum
@@ -99,6 +93,6 @@ def assess_achievability(
     return AchievabilityAssessment(
         status=status,
         required_annual_return=required_return,
-        evidence_horizon_years=horizon,
-        observed_upper_terrain=observed_upper,
+        comparison_horizon_years=horizon,
+        observed_upper_return=observed_upper,
     )
