@@ -13,13 +13,19 @@ from .composition_fingerprint import CompositionFingerprint
 def _evidence_for_horizon(elevation: Any, horizon: int) -> Any:
     if isinstance(elevation, Mapping):
         return elevation.get(horizon)
-    return getattr(elevation, f"rolling_{horizon}y")
+    try:
+        return elevation[horizon]
+    except (TypeError, KeyError, IndexError):
+        return getattr(elevation, f"rolling_{horizon}y")
 
 
 def _metric(evidence: Any, metric: str) -> Any:
     if isinstance(evidence, Mapping):
         return evidence.get(metric)
-    return getattr(evidence, metric)
+    try:
+        return evidence[metric]
+    except (TypeError, KeyError, IndexError):
+        return getattr(evidence, metric)
 
 
 def _put_rolling(values: dict[str, Any], horizon: int, evidence: Any) -> None:
@@ -45,11 +51,13 @@ def composition_comparator_values(
         "protection_percentile_99_severity_pct": _metric(protection, "percentile_99_severity_pct"),
         "protection_maximum_severity_pct": _metric(protection, "maximum_severity_pct"),
     })
-    threshold_values = (
-        protection.get("pct_days_at_or_above_threshold")
-        if isinstance(protection, Mapping)
-        else protection.pct_days_at_or_above_threshold
-    )
+    if isinstance(protection, Mapping):
+        threshold_values = protection.get("pct_days_at_or_above_threshold", {})
+    else:
+        try:
+            threshold_values = protection["pct_days_at_or_above_threshold"]
+        except (TypeError, KeyError, IndexError):
+            threshold_values = protection.pct_days_at_or_above_threshold
     for threshold in (5, 10, 15, 20, 25, 30):
         values[f"protection_pct_days_at_or_above_{threshold}"] = threshold_values.get(threshold)
 
