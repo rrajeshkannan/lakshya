@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from itertools import product
-
 from .composition import Composition
 from .team import Team
 
@@ -36,7 +34,7 @@ def generate_compositions(team: Team, step: float = 0.05) -> list[Composition]:
 
     for allocation in partitions(units, len(members)):
         weights = {
-            isin: allocation[index] * step
+            isin: round(allocation[index] * step, 10)
             for index, isin in enumerate(members)
         }
         compositions.append(Composition(team=team, weights=weights))
