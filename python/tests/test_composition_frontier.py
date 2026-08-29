@@ -76,4 +76,6 @@ def test_composition_frontier_retains_incomparable_compositions():
         (second, _fingerprint(second, elevation=1.0, protection=0.5)),
     ])
 
-    assert set(frontier) == {first, second}
+    assert len(frontier) == 2
+    assert any(candidate is first for candidate in frontier)
+    assert any(candidate is second for candidate in frontier)
