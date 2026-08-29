@@ -9,6 +9,7 @@ from team_analysis.composition_comparator import (
     composition_comparator_values,
     composition_dimensions,
 )
+from team_analysis.comparator_surface import fund_team_dimensions
 from team_analysis.team import Team
 
 
@@ -16,12 +17,9 @@ def _fund(isin: str) -> Fund:
     return Fund(name=f"Fund {isin}", isin=isin, category="Test")
 
 
-def test_composition_comparator_exposes_the_same_40_dimensions_as_team():
+def test_composition_comparator_reuses_the_same_40_dimensions_as_team():
     assert len(composition_dimensions()) == 40
-    assert [dimension.name for dimension in composition_dimensions()] == [
-        dimension.name
-        for dimension in composition_dimensions()
-    ]
+    assert composition_dimensions() == fund_team_dimensions()
 
 
 def test_composition_comparator_maps_fresh_evidence():
