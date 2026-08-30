@@ -1,7 +1,7 @@
 """Experimental MISSION Protection sequencing.
 
 This is deliberately a sequencing instrument, not a Protection score or
-selection rule.  The ladder is provisional and exists to test whether the
+selection rule. The ladder is provisional and exists to test whether the
 strongest observed severity distinctions usefully reduce the Composition
 candidate space after Elevation qualification.
 """
@@ -31,7 +31,13 @@ PROTECTION_SEVERITY_LADDER = (
 
 
 def _compare(a: Mapping[str, float], b: Mapping[str, float], ladder: Sequence[str]) -> int:
-    """Compare two candidates lexicographically, conservatively on missing data."""
+    """Compare two candidates conservatively when evidence is unavailable.
+
+    A missing value is unknown, never zero and never better/worse. Therefore
+    a metric can establish an ordering only when both candidates have an
+    observed value for that metric. If either side is unavailable, the ladder
+    moves on without claiming a distinction from that metric.
+    """
     for metric in ladder:
         av = a.get(metric)
         bv = b.get(metric)
@@ -50,10 +56,10 @@ def protection_lexicographic_order(
 ) -> list[Mapping[str, float]]:
     """Order candidates from lower to higher observed Protection severity.
 
-    Equal candidates remain equal through the entire ladder.  The function
-    does not eliminate candidates and does not claim that the resulting order
-    is a decision rule; it only exposes whether the provisional ladder creates
-    useful distinctions.
+    Equal or unresolved candidates remain tied through the entire ladder.
+    The function does not eliminate candidates and does not claim that the
+    resulting order is a decision rule; it only exposes whether the
+    provisional ladder creates useful distinctions.
     """
     return sorted(
         candidates,
