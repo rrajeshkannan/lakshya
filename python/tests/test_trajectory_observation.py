@@ -33,11 +33,13 @@ def test_preserves_full_path_and_normalizes_only_to_observed_start():
 
 
 def test_same_horizon_and_same_outcome_can_preserve_different_paths():
-    smooth = observe_trajectory(nav([100, 110, 120, 130, 140, 150, 150, 150]), 5)
-    turbulent = observe_trajectory(nav([100, 140, 80, 120, 100, 150, 150, 150]), 5)
+    smooth = observe_trajectory(nav([100, 110, 100, 110, 130, 150, 150, 150]), 5)
+    turbulent = observe_trajectory(nav([100, 140, 100, 120, 90, 130, 150, 150]), 5)
 
     assert smooth.start_date == turbulent.start_date
     assert smooth.end_date == turbulent.end_date
+    assert smooth.points[0].nav == turbulent.points[0].nav
+    assert smooth.points[-1].nav == turbulent.points[-1].nav
     assert smooth.points[-1].normalized_nav == pytest.approx(
         turbulent.points[-1].normalized_nav
     )
@@ -47,7 +49,10 @@ def test_same_horizon_and_same_outcome_can_preserve_different_paths():
 
 
 def test_insufficient_history_is_explicit():
-    short = nav([100, 110, 120])
+    short = pd.DataFrame({
+        "date": pd.to_datetime(["2023-01-01", "2024-01-01", "2025-01-01"]),
+        "nav": [100, 110, 120],
+    })
 
     with pytest.raises(ValueError, match="Insufficient history"):
         observe_trajectory(short, 5)
