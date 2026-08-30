@@ -18,16 +18,20 @@ from .trajectory_observation import TrajectoryObservation, observe_trajectory
 def observe_survivors_for_purpose(
     survivors: Iterable[tuple[Composition, CompositionFingerprint]],
     purpose_horizon_years: float,
-) -> dict[Composition, TrajectoryObservation]:
+) -> dict[str, TrajectoryObservation]:
     """Observe raw Composite-NAV paths for already-surviving Compositions.
 
     The Purpose contributes only its horizon. The function does not inspect
-    target corpus, current capital, contributions, or required return, and it
-    performs no scoring, ordering, pruning, or interpretation.
+    target corpus, current capital, contributions, or required return, and
+    it performs no scoring, ordering, pruning, or interpretation.
 
     A non-integral horizon is supported by requiring an integer observed
     horizon not exceeding the Purpose horizon. This keeps the observation on
     whole-year rolling windows while never exceeding the Purpose horizon.
+
+    Results are keyed by a stable textual Composition identity rather than
+    by the Composition object itself, because Composition is intentionally
+    mutable and therefore unhashable.
     """
     if purpose_horizon_years <= 0:
         raise ValueError("purpose_horizon_years must be positive")
@@ -36,7 +40,11 @@ def observe_survivors_for_purpose(
     if supported_years <= 0:
         raise ValueError("purpose horizon must support at least one full year")
 
-    return {
-        composition: observe_trajectory(fingerprint.nav, supported_years)
-        for composition, fingerprint in survivors
-    }
+    observations: dict[str, TrajectoryObservation] = {}
+    for composition, fingerprint in survivors:
+        identity = repr(composition)
+        if identity in observations:
+            raise ValueError(f"duplicate Composition identity: {identity}")
+        observations[identity] = observe_trajectory(fingerprint.nav, supported_years)
+
+    return observations
