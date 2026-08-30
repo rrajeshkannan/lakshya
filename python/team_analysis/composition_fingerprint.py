@@ -19,5 +19,6 @@ class CompositionFingerprint:
 
     def __init__(self, composition: Composition, nav: pd.DataFrame) -> None:
         self.composition = composition
-        self.elevation = calculate_elevation(nav)
-        self.protection = calculate_protection(nav)
+        self.nav = nav.copy()
+        self.elevation = calculate_elevation(self.nav)
+        self.protection = calculate_protection(self.nav)
