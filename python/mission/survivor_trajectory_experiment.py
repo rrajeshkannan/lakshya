@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.composition import Composition
 
 from .trajectory_observation import TrajectoryObservation, observe_trajectory
 
@@ -29,9 +29,9 @@ def observe_survivors_for_purpose(
     horizon not exceeding the Purpose horizon. This keeps the observation on
     whole-year rolling windows while never exceeding the Purpose horizon.
 
-    Results are keyed by a stable textual Composition identity rather than
-    by the Composition object itself, because Composition is intentionally
-    mutable and therefore unhashable.
+    Results use the same canonical value identity as every other pipeline
+    stage. This prevents the runner from depending on ``repr(Composition)``
+    and avoids object-hash issues because Composition contains a dict.
     """
     if purpose_horizon_years <= 0:
         raise ValueError("purpose_horizon_years must be positive")
@@ -42,7 +42,7 @@ def observe_survivors_for_purpose(
 
     observations: dict[str, TrajectoryObservation] = {}
     for composition, fingerprint in survivors:
-        identity = repr(composition)
+        identity = composition_identity(composition)
         if identity in observations:
             raise ValueError(f"duplicate Composition identity: {identity}")
         observations[identity] = observe_trajectory(fingerprint.nav, supported_years)
