@@ -38,11 +38,18 @@ PURPOSES_PATH = PROJECT_ROOT / "data" / "purpose" / "purposes.csv"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
 
+def _log(message: str) -> None:
+    """Emit a flushed progress marker for this deliberately transparent runner."""
+    print(f"[trajectory-runner] {message}", flush=True)
+
+
 def _load_fund_histories(funds) -> dict[str, pd.DataFrame]:
     """Load and canonically normalize persisted NAV evidence for each Fund."""
     histories: dict[str, pd.DataFrame] = {}
-    for fund in funds:
+    _log(f"Loading NAV histories for {len(funds)} admitted funds")
+    for index, fund in enumerate(funds, start=1):
         path = NAV_DIR / f"{fund.isin}.json"
+        _log(f"  NAV {index}/{len(funds)}: {fund.isin}")
         if not path.exists():
             raise FileNotFoundError(f"Missing NAV evidence for {fund.isin}: {path}")
         with path.open("r", encoding="utf-8") as handle:
@@ -97,6 +104,13 @@ def _load_purposes(as_of: pd.Timestamp) -> list[Purpose]:
                 monthly_contribution=float(row["monthly_plan"]),
             )
         )
+    _log(
+        "Loaded purposes: "
+        + ", ".join(
+            f"{purpose.name}={purpose.horizon_years}Y"
+            for purpose in purposes
+        )
+    )
     return purposes
 
 
@@ -112,6 +126,7 @@ def _composition_key(composition: Composition) -> str:
 def _write_rows(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(path, index=False)
+    _log(f"  wrote {path.relative_to(PROJECT_ROOT)} ({len(rows)} rows)")
 
 
 def run(as_of: str) -> None:
@@ -121,11 +136,21 @@ def run(as_of: str) -> None:
     trajectory_output = output / "trajectory_observations"
     output.mkdir(parents=True, exist_ok=True)
 
+    _log(f"START as-of {valuation_date.date()}")
+
+    _log("[1/7] Loading admitted funds")
     funds = load_admissible_funds()
+    _log(f"  admitted funds: {len(funds)}")
+
+    _log("[2/7] Loading persisted NAV evidence")
     fund_histories = _load_fund_histories(funds)
+
+    _log("[3/7] Loading Purpose inputs")
     purposes = _load_purposes(valuation_date)
 
+    _log("[4/7] Running TEAM pipeline — this may be computationally heavy")
     teams = run_team_pipeline(funds=funds, fund_histories=fund_histories)
+    _log(f"  TEAM survivors: {len(teams)}")
     _write_rows(
         output / "team_survivors.csv",
         [
@@ -137,7 +162,9 @@ def run(as_of: str) -> None:
         ],
     )
 
+    _log("[5/7] Generating Composition fingerprints")
     candidates = list(stream_composition_fingerprints(teams, fund_histories))
+    _log(f"  Composition candidates: {len(candidates)}")
     _write_rows(
         output / "composition_candidates.csv",
         [
@@ -153,12 +180,10 @@ def run(as_of: str) -> None:
         _composition_key(composition): fingerprint
         for composition, fingerprint in candidates
     }
-    compositions_by_key = {
-        _composition_key(composition): composition
-        for composition, _ in candidates
-    }
 
+    _log("[6/7] Applying existing MISSION gates")
     global_survivors = global_composition_frontier(candidates)
+    _log(f"  global Composition frontier: {len(global_survivors)}")
     global_pairs = [
         (composition, fingerprints[_composition_key(composition)])
         for composition in global_survivors
@@ -170,8 +195,10 @@ def run(as_of: str) -> None:
 
     for purpose in purposes:
         if purpose.horizon_years is None:
+            _log(f"  {purpose.name}: no finite horizon; skipping MISSION trajectory")
             continue
 
+        _log(f"  {purpose.name}: assessing {len(global_pairs)} global survivors")
         achievability_survivors: list[tuple[Composition, CompositionFingerprint]] = []
         assessments: list[dict] = []
         for composition, fingerprint in global_pairs:
@@ -189,8 +216,10 @@ def run(as_of: str) -> None:
                 achievability_survivors.append((composition, fingerprint))
 
         _write_rows(output / f"achievability_{purpose.name}.csv", assessments)
+        _log(f"  {purpose.name}: achievability survivors: {len(achievability_survivors)}")
 
         protected = protection_frontier(achievability_survivors)
+        _log(f"  {purpose.name}: protection survivors: {len(protected)}")
         protected_pairs = [
             (composition, fingerprints[_composition_key(composition)])
             for composition in protected
@@ -200,6 +229,7 @@ def run(as_of: str) -> None:
             [{"composition": _composition_key(composition)} for composition in protected],
         )
 
+        _log(f"  {purpose.name}: observing trajectories")
         observations = observe_survivors_for_purpose(
             protected_pairs,
             purpose.horizon_years,
@@ -229,6 +259,7 @@ def run(as_of: str) -> None:
             {"stage": "global_composition_frontier", "count": len(global_survivors)},
         ],
     )
+    _log("DONE")
 
 
 def main() -> None:
