@@ -1,4 +1,5 @@
 data/cache/
+python/lakshya.egg-info/
 bin/
 obj/
 __pycache__/
