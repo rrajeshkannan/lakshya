@@ -8,6 +8,3 @@ testpaths = [
 norecursedirs = [
     "python/tests/parked"
 ]
-
-[tool.lakshya]
-pythonpath = "python"
