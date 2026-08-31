@@ -1,5 +1,4 @@
 data/cache/
-output/
 bin/
 obj/
 __pycache__/
