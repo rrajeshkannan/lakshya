@@ -219,19 +219,22 @@ def run(as_of: str, resume_from: str | None = None) -> None:
     purposes = _load_purposes(valuation_date)
 
     _log("[4/7] Running TEAM pipeline — this may be computationally heavy")
+    stage_started = time.perf_counter()
     teams = run_team_pipeline(funds=funds, fund_histories=fund_histories)
-    _log(f"  TEAM survivors: {len(teams)}")
+    _log(f"  TEAM survivors: {len(teams)} | elapsed={time.perf_counter() - stage_started:.1f}s")
     _write_rows(OUTPUT_DIR / "team_survivors.csv", [{"team": "|".join(member.isin for member in team.members), "members": len(team.members)} for team in teams])
 
     _log("[5/7] Generating Composition fingerprints")
     candidates: list[tuple[Composition, CompositionFingerprint]] = []
+    expected_total = sum({1: 1, 2: 19, 3: 171}[team.cardinality] for team in teams)
+    _log(f"  expected Composition grid size: {expected_total}")
     started = time.perf_counter()
     for index, pair in enumerate(stream_composition_fingerprints(teams, fund_histories), start=1):
         candidates.append(pair)
         if index % 1000 == 0:
             elapsed = time.perf_counter() - started
             rate = index / elapsed if elapsed else 0.0
-            eta = max(0.0, (len(teams) * 231 - index) / rate) if rate else 0.0
+            eta = max(0.0, (expected_total - index) / rate) if rate else 0.0
             _log(f"  Composition progress: {index} candidates | elapsed={elapsed:.1f}s | rate={rate:.1f}/s | ETA~{eta:.0f}s")
     _log(f"  Composition candidates: {len(candidates)} | elapsed={time.perf_counter() - started:.1f}s")
     _write_rows(OUTPUT_DIR / "composition_candidates.csv", [{"composition": composition_identity(composition), "team": "|".join(member.isin for member in composition.team.members)} for composition, _ in candidates])
@@ -239,8 +242,9 @@ def run(as_of: str, resume_from: str | None = None) -> None:
     fingerprints = {composition_identity(composition): fingerprint for composition, fingerprint in candidates}
 
     _log("[6/7] Applying existing MISSION gates")
+    stage_started = time.perf_counter()
     global_survivors = global_composition_frontier(candidates)
-    _log(f"  global Composition frontier: {len(global_survivors)}")
+    _log(f"  global Composition frontier: {len(global_survivors)} | elapsed={time.perf_counter() - stage_started:.1f}s")
     global_pairs = [(composition, fingerprints[composition_identity(composition)]) for composition in global_survivors]
     _write_rows(OUTPUT_DIR / "global_survivors.csv", [{"composition": composition_identity(composition)} for composition in global_survivors])
 
