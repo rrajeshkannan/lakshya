@@ -4,8 +4,8 @@ Core invariant:
 
     compute -> persist -> consume
 
-Expensive Composition fingerprints are durable evidence.  Downstream stages
-load that evidence rather than reconstructing it.  The runner is restart-safe
+Expensive Composition fingerprints are durable evidence. Downstream stages
+load that evidence rather than reconstructing it. The runner is restart-safe
 across interruption, sleep, worker failure, and process crashes.
 """
 
@@ -68,7 +68,7 @@ def _detail(message: str) -> None:
 
 
 def _log(message: str) -> None:
-    """Write a macro console heartbeat and the same event to the log."""
+    """Emit a macro operational event and mirror it to the flight recorder."""
     _console(message)
     _detail(message)
 
@@ -130,16 +130,20 @@ def _load_purposes(as_of: pd.Timestamp) -> list[Purpose]:
 
 
 def _write_rows(path: Path, rows: list[dict]) -> None:
+    """Atomically replace a CSV checkpoint after fully materializing its rows."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(path, index=False)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    pd.DataFrame(rows).to_csv(temporary, index=False)
+    temporary.replace(path)
     _log(f"  wrote {path.relative_to(PROJECT_ROOT)} ({len(rows)} rows)")
 
 
 def _write_composition_candidates(teams) -> int:
     path = OUTPUT_DIR / "composition_candidates.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
     count = 0
-    with path.open("w", newline="", encoding="utf-8") as handle:
+    with temporary.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=("composition", "team"))
         writer.writeheader()
         for team in teams:
@@ -151,6 +155,7 @@ def _write_composition_candidates(teams) -> int:
                     }
                 )
                 count += 1
+    temporary.replace(path)
     _log(f"  wrote {path.relative_to(PROJECT_ROOT)} ({count} rows)")
     return count
 
@@ -166,27 +171,45 @@ def _persist_composition_evidence(
     *,
     max_workers: int | None,
 ) -> int:
-    """Compute only missing fingerprints and persist each result immediately."""
-    all_compositions = list(_candidate_compositions(teams))
-    missing = [c for c in all_compositions if not has_fingerprint(FINGERPRINT_DIR, c)]
-    existing = len(all_compositions) - len(missing)
+    """Compute only missing fingerprints and persist each result immediately.
+
+    The checkpoint scan deliberately uses two generator passes rather than
+    materializing all Composition objects or all missing work units in memory.
+    Composition generation is cheap and deterministic; expensive fingerprint
+    computation is the part protected by durable per-Composition checkpoints.
+    """
+    total = 0
+    existing = 0
+    missing = 0
+    for composition in _candidate_compositions(teams):
+        total += 1
+        if has_fingerprint(FINGERPRINT_DIR, composition):
+            existing += 1
+        else:
+            missing += 1
+
     _log(
-        f"  fingerprint checkpoint scan: total={len(all_compositions)} "
-        f"existing={existing} missing={len(missing)}"
+        f"  fingerprint checkpoint scan: total={total} "
+        f"existing={existing} missing={missing}"
     )
     _detail(
-        f"FINGERPRINT_CHECKPOINT_SCAN total={len(all_compositions)} "
-        f"existing={existing} missing={len(missing)} workers={max_workers or 'auto'}"
+        f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} "
+        f"missing={missing} workers={max_workers or 'auto'}"
     )
-    if not missing:
+    if missing == 0:
         _log("  all Composition fingerprints already persisted; no recomputation required")
-        return len(all_compositions)
+        return total
+
+    def missing_compositions():
+        for composition in _candidate_compositions(teams):
+            if not has_fingerprint(FINGERPRINT_DIR, composition):
+                yield composition
 
     started = time.perf_counter()
     completed = 0
     failed = 0
     for composition, fingerprint, error in analyze_compositions_parallel_resilient(
-        missing,
+        missing_compositions(),
         fund_histories,
         max_workers=max_workers,
     ):
@@ -198,26 +221,26 @@ def _persist_composition_evidence(
         destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
         completed += 1
         _detail(
-            f"FINGERPRINT_PERSISTED index={completed}/{len(missing)} "
+            f"FINGERPRINT_PERSISTED index={completed}/{missing} "
             f"composition={identity} path={destination.relative_to(PROJECT_ROOT)}"
         )
         processed = completed + failed
-        if processed % 1000 == 0 or processed == len(missing):
+        if processed % 1000 == 0 or processed == missing:
             elapsed = time.perf_counter() - started
             rate = processed / elapsed if elapsed else 0.0
-            eta = (len(missing) - processed) / rate if rate else 0.0
+            eta = (missing - processed) / rate if rate else 0.0
             _log(
-                f"  Composition evidence: {processed}/{len(missing)} missing work units "
+                f"  Composition evidence: {processed}/{missing} missing work units "
                 f"| persisted={completed} failed={failed} | rate={rate:.1f}/s | ETA~{eta:.0f}s"
             )
 
     if failed:
         raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
     _log(
-        f"  Composition evidence complete: {len(all_compositions)} persisted | "
+        f"  Composition evidence complete: {total} persisted | "
         f"newly computed={completed} | elapsed={time.perf_counter() - started:.1f}s"
     )
-    return len(all_compositions)
+    return total
 
 
 def _load_global_pairs_for_frontier(teams):
@@ -366,6 +389,10 @@ def _observe_persisted_mission_outputs(
         df = pd.read_csv(mission_path, keep_default_na=False)
         jobs.append((purpose, df["composition"].tolist()))
 
+    if not jobs:
+        _log("No persisted MISSION outputs require trajectory observation")
+        return
+
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin): purpose.name
@@ -463,3 +490,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     run(args.as_of, args.resume_from, args.workers)
+
+
+if __name__ == "__main__":
+    main()
