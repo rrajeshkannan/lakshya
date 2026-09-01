@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import pytest
 
-from lakshya_core.models import ElevationEvidence, ProtectionEvidence
+from lakshya_core.models import Fund
 from team_analysis.analyze_composition import analyze_composition
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint_store import (
@@ -18,7 +18,6 @@ from team_analysis.team import Team
 
 
 def _fund(isin: str):
-    from lakshya_core.models import Fund
     return Fund(name=f"Fund {isin}", isin=isin, category="Test")
 
 
@@ -60,7 +59,7 @@ def test_corrupt_checkpoint_is_detected_on_load(tmp_path):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{not valid json", encoding="utf-8")
 
-    assert has_fingerprint(tmp_path, composition)
+    assert not has_fingerprint(tmp_path, composition)
     with pytest.raises(json.JSONDecodeError):
         load_fingerprint(path, composition)
 
@@ -75,6 +74,6 @@ def test_checkpoint_with_wrong_identity_is_rejected_on_load(tmp_path):
         encoding="utf-8",
     )
 
-    assert has_fingerprint(tmp_path, composition)
+    assert not has_fingerprint(tmp_path, composition)
     with pytest.raises(ValueError, match="Composition identity mismatch"):
         load_fingerprint(path, composition)
