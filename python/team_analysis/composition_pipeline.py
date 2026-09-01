@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Iterable, Iterator, Mapping
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 
 import pandas as pd
 
@@ -58,7 +59,7 @@ def stream_composition_fingerprints_parallel(
     *,
     max_workers: int | None = None,
 ) -> Iterator[tuple[Composition, CompositionFingerprint]]:
-    """Yield fresh Composition fingerprints using process-level parallelism."""
+    """Yield fresh Composition fingerprints using bounded process parallelism."""
     compositions = (
         composition
         for team in teams
@@ -76,18 +77,22 @@ def analyze_compositions_parallel(
     fund_histories: Mapping[str, pd.DataFrame],
     *,
     max_workers: int | None = None,
+    max_in_flight: int | None = None,
 ) -> Iterator[tuple[Composition, CompositionFingerprint]]:
-    """Analyze independent Composition work units in parallel.
+    """Analyze independent Composition work units with bounded in-flight work.
 
-    Results are yielded as workers complete.  The caller therefore controls
-    persistence and can checkpoint each result immediately.
+    The input remains a stream: we never materialize all candidates or submit
+    an unbounded number of futures.  A bounded work window provides parallelism
+    without turning a large experiment into a huge in-memory future queue.
+    Results are yielded as soon as workers complete.
     """
-    with ProcessPoolExecutor(
+    yield from _parallel_results(
+        compositions,
+        fund_histories,
         max_workers=max_workers,
-        initializer=_initialize_worker,
-        initargs=(dict(fund_histories),),
-    ) as executor:
-        yield from executor.map(_analyze_composition_worker, compositions, chunksize=1)
+        max_in_flight=max_in_flight,
+        resilient=False,
+    )
 
 
 def analyze_compositions_parallel_resilient(
@@ -95,29 +100,89 @@ def analyze_compositions_parallel_resilient(
     fund_histories: Mapping[str, pd.DataFrame],
     *,
     max_workers: int | None = None,
+    max_in_flight: int | None = None,
 ) -> Iterator[tuple[Composition, CompositionFingerprint, Exception | None]]:
     """Analyze Composition work units while isolating individual failures.
 
     A failed work unit becomes an error result rather than terminating the
     entire experiment.  Successful results remain independently checkpointable.
+    The source iterable is consumed incrementally and only a bounded number of
+    futures can be outstanding at once.
     """
-    from concurrent.futures import as_completed
-
-    composition_list = list(compositions)
-    with ProcessPoolExecutor(
+    yield from _parallel_results(
+        compositions,
+        fund_histories,
         max_workers=max_workers,
+        max_in_flight=max_in_flight,
+        resilient=True,
+    )
+
+
+def _parallel_results(
+    compositions: Iterable[Composition],
+    fund_histories: Mapping[str, pd.DataFrame],
+    *,
+    max_workers: int | None,
+    max_in_flight: int | None,
+    resilient: bool,
+):
+    """Shared bounded-process execution engine.
+
+    ``max_in_flight`` defaults to a small multiple of the worker count.  It is
+    intentionally independent of the total experiment size so memory use stays
+    bounded for 10s or 100s of thousands of compositions.
+    """
+    workers = max_workers
+    if workers is None:
+        # Ask the executor for its platform-appropriate default, but keep the
+        # submission window bounded without needing to know the CPU count here.
+        probe_workers = None
+        window = 16
+    else:
+        if workers < 1:
+            raise ValueError("max_workers must be at least 1")
+        probe_workers = workers
+        window = workers * 4
+
+    if max_in_flight is not None:
+        if max_in_flight < 1:
+            raise ValueError("max_in_flight must be at least 1")
+        window = max_in_flight
+
+    source = iter(compositions)
+    pending: dict = {}
+    buffered: deque[Composition] = deque()
+
+    with ProcessPoolExecutor(
+        max_workers=probe_workers,
         initializer=_initialize_worker,
         initargs=(dict(fund_histories),),
     ) as executor:
-        futures = {
-            executor.submit(_analyze_composition_worker, composition): composition
-            for composition in composition_list
-        }
-        for future in as_completed(futures):
-            composition = futures[future]
-            try:
-                result = future.result()
-            except Exception as exc:
-                yield composition, None, exc
-            else:
-                yield result[0], result[1], None
+        exhausted = False
+
+        def fill_window() -> None:
+            nonlocal exhausted
+            while not exhausted and len(pending) < window:
+                try:
+                    composition = next(source)
+                except StopIteration:
+                    exhausted = True
+                    break
+                future = executor.submit(_analyze_composition_worker, composition)
+                pending[future] = composition
+
+        fill_window()
+        while pending:
+            done, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in done:
+                composition = pending.pop(future)
+                if resilient:
+                    try:
+                        result = future.result()
+                    except Exception as exc:
+                        yield composition, None, exc
+                    else:
+                        yield result[0], result[1], None
+                else:
+                    yield future.result()
+            fill_window()
