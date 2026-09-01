@@ -14,7 +14,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import platform
 import time
+import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -49,6 +51,9 @@ PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
+MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
+
+_RUN_MANIFEST: dict | None = None
 
 
 def _wall_timestamp() -> str:
@@ -75,6 +80,32 @@ def _log(message: str) -> None:
     channels. Callers use ``_detail`` for persistent forensic events.
     """
     _console(message)
+
+
+def _write_manifest() -> None:
+    if _RUN_MANIFEST is None:
+        return
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    temporary = MANIFEST_PATH.with_suffix(MANIFEST_PATH.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        json.dump(_RUN_MANIFEST, handle, ensure_ascii=False, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+    temporary.replace(MANIFEST_PATH)
+
+
+def _manifest_update(stage: str, status: str, **metrics) -> None:
+    """Atomically checkpoint parent-owned pipeline state after each milestone."""
+    if _RUN_MANIFEST is None:
+        return
+    entry = {"status": status, "updated_at": _wall_timestamp()}
+    entry.update(metrics)
+    _RUN_MANIFEST["stages"][stage] = entry
+    _write_manifest()
+    _detail(
+        "MANIFEST_UPDATE "
+        + " ".join([f"stage={stage}", f"status={status}"] + [f"{key}={value}" for key, value in metrics.items()])
+    )
 
 
 def _load_fund_histories(funds) -> dict[str, pd.DataFrame]:
@@ -186,13 +217,7 @@ def _persist_composition_evidence(
     *,
     max_workers: int | None,
 ) -> int:
-    """Compute only missing fingerprints and persist each result immediately.
-
-    The checkpoint scan deliberately uses two generator passes rather than
-    materializing all Composition objects or all missing work units in memory.
-    Composition generation is cheap and deterministic; expensive fingerprint
-    computation is the part protected by durable per-Composition checkpoints.
-    """
+    """Compute only missing fingerprints and persist each result immediately."""
     total = 0
     existing = 0
     missing = 0
@@ -211,9 +236,11 @@ def _persist_composition_evidence(
         f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} "
         f"missing={missing} workers={max_workers or 'auto'}"
     )
+    _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
     if missing == 0:
         _log("  all Composition fingerprints already persisted; no recomputation required")
         _detail("FINGERPRINT_STAGE_SKIPPED reason=all_checkpoints_present")
+        _manifest_update("composition_evidence", "complete", total=total, newly_computed=0, reused=existing)
         return total
 
     def missing_compositions():
@@ -253,17 +280,37 @@ def _persist_composition_evidence(
                 f"FINGERPRINT_PROGRESS processed={processed} total_missing={missing} "
                 f"persisted={completed} failed={failed} rate={rate:.3f} eta_seconds={eta:.1f}"
             )
+            _manifest_update(
+                "composition_evidence",
+                "running",
+                total=total,
+                existing=existing,
+                missing=missing,
+                processed=processed,
+                persisted=completed,
+                failed=failed,
+            )
 
     if failed:
         _detail(f"FINGERPRINT_STAGE_FAILED failed={failed} total_missing={missing}")
+        _manifest_update("composition_evidence", "failed", total=total, newly_computed=completed, failed=failed)
         raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
+    elapsed = time.perf_counter() - started
     _log(
         f"  Composition evidence complete: {total} persisted | "
-        f"newly computed={completed} | elapsed={time.perf_counter() - started:.1f}s"
+        f"newly computed={completed} | elapsed={elapsed:.1f}s"
     )
     _detail(
         f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} "
-        f"elapsed_seconds={time.perf_counter() - started:.3f}"
+        f"elapsed_seconds={elapsed:.3f}"
+    )
+    _manifest_update(
+        "composition_evidence",
+        "complete",
+        total=total,
+        reused=existing,
+        newly_computed=completed,
+        elapsed_seconds=round(elapsed, 3),
     )
     return total
 
@@ -357,6 +404,7 @@ def _run_mission_from_global(
     if not runnable:
         _log("No Purpose requires MISSION work")
         _detail("MISSION_SKIPPED reason=no_runnable_purposes")
+        _manifest_update("mission", "complete", purposes=0, global_survivors=len(identities))
         return
 
     _log(
@@ -367,6 +415,7 @@ def _run_mission_from_global(
         f"MISSION_STAGE_START purposes={len(runnable)} identities={len(identities)} "
         f"workers={max_workers or 'auto'} skip_existing={skip_existing}"
     )
+    _manifest_update("mission", "running", purposes=len(runnable), global_survivors=len(identities))
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(_run_one_purpose, purpose, identities, funds_by_isin): purpose.name
@@ -387,8 +436,10 @@ def _run_mission_from_global(
                 )
             except Exception as exc:
                 _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
+                _manifest_update("mission", "failed", failed_purpose=purpose_name, error=repr(exc))
                 raise
     _detail("MISSION_STAGE_COMPLETE")
+    _manifest_update("mission", "complete", purposes=len(runnable), global_survivors=len(identities))
 
 
 def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin) -> tuple[int, int]:
@@ -443,9 +494,11 @@ def _observe_persisted_mission_outputs(
     if not jobs:
         _log("No persisted MISSION outputs require trajectory observation")
         _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
+        _manifest_update("trajectory", "complete", purposes=0)
         return
 
     _detail(f"TRAJECTORY_STAGE_START purposes={len(jobs)} workers={max_workers or 'auto'}")
+    _manifest_update("trajectory", "running", purposes=len(jobs))
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin): purpose.name
@@ -460,18 +513,33 @@ def _observe_persisted_mission_outputs(
                 _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} rows={rows}")
             except Exception as exc:
                 _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
+                _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
                 raise
     _log("RESUME DONE")
     _detail("TRAJECTORY_STAGE_COMPLETE")
+    _manifest_update("trajectory", "complete", purposes=len(jobs))
 
 
 def run(as_of: str, resume_from: str | None = None, workers: int | None = None) -> None:
+    global _RUN_MANIFEST
     valuation_date = pd.Timestamp(as_of)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    run_id = uuid.uuid4().hex[:12]
+    _RUN_MANIFEST = {
+        "run_id": run_id,
+        "started_at": _wall_timestamp(),
+        "as_of": str(valuation_date.date()),
+        "mode": resume_from or "full",
+        "workers": workers or "auto",
+        "python": platform.python_version(),
+        "pipeline": "resilient_pipeline",
+        "stages": {},
+    }
+    _write_manifest()
     _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'}")
     _detail(
-        f"RUN_START as_of={valuation_date.date()} mode={resume_from or 'full'} "
-        f"workers={workers or 'auto'} log={LOG_PATH}"
+        f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} "
+        f"workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}"
     )
 
     funds = load_admissible_funds()
@@ -484,7 +552,11 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
         _log("[RESUME MISSION] Loading persisted Purpose checkpoints")
         _detail("RESUME_MISSION_START")
         _observe_persisted_mission_outputs(purposes, funds_by_isin, max_workers=workers)
+        _log("RESUME MISSION DONE")
         _detail("RESUME_MISSION_COMPLETE")
+        _RUN_MANIFEST["completed_at"] = _wall_timestamp()
+        _RUN_MANIFEST["status"] = "complete"
+        _write_manifest()
         return
 
     if resume_from == "global":
@@ -493,20 +565,28 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
         _run_mission_from_global(purposes, funds_by_isin, max_workers=workers, skip_existing=True)
         _log("RESUME GLOBAL DONE")
         _detail("RESUME_GLOBAL_COMPLETE")
+        _RUN_MANIFEST["completed_at"] = _wall_timestamp()
+        _RUN_MANIFEST["status"] = "complete"
+        _write_manifest()
         return
 
     _log("[1/7] Loading admitted funds")
     _log(f"  admitted funds: {len(funds)}")
     _detail(f"STAGE_1_COMPLETE admitted_funds={len(funds)}")
+    _manifest_update("admitted_funds", "complete", count=len(funds))
     _log("[2/7] Loading persisted NAV evidence")
     _log("[3/7] Loading Purpose inputs")
     _detail(f"STAGE_2_3_COMPLETE nav_funds={len(histories)} purposes={len(purposes)}")
+    _manifest_update("inputs", "complete", nav_funds=len(histories), purposes=len(purposes))
     _log("[4/7] Running TEAM pipeline — this may be computationally heavy")
     stage_started = time.perf_counter()
     _detail("TEAM_STAGE_START")
+    _manifest_update("team", "running")
     teams = run_team_pipeline(funds=funds, fund_histories=histories)
-    _log(f"  TEAM survivors: {len(teams)} | elapsed={time.perf_counter() - stage_started:.1f}s")
-    _detail(f"TEAM_STAGE_COMPLETE survivors={len(teams)} elapsed_seconds={time.perf_counter() - stage_started:.3f}")
+    team_elapsed = time.perf_counter() - stage_started
+    _log(f"  TEAM survivors: {len(teams)} | elapsed={team_elapsed:.1f}s")
+    _detail(f"TEAM_STAGE_COMPLETE survivors={len(teams)} elapsed_seconds={team_elapsed:.3f}")
+    _manifest_update("team", "complete", survivors=len(teams), elapsed_seconds=round(team_elapsed, 3))
     _write_rows(
         OUTPUT_DIR / "team_survivors.csv",
         [{"team": "|".join(member.isin for member in team.members), "members": len(team.members)} for team in teams],
@@ -519,14 +599,23 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
     _log("[6/7] Applying existing MISSION gates")
     stage_started = time.perf_counter()
     _detail("GLOBAL_FRONTIER_STAGE_START")
+    _manifest_update("global_frontier", "running", candidates=expected_total)
     global_survivors = global_composition_frontier(_load_global_pairs_for_frontier(teams))
+    global_elapsed = time.perf_counter() - stage_started
     _log(
         f"  global Composition frontier: {len(global_survivors)} | "
-        f"elapsed={time.perf_counter() - stage_started:.1f}s"
+        f"elapsed={global_elapsed:.1f}s"
     )
     _detail(
         f"GLOBAL_FRONTIER_STAGE_COMPLETE survivors={len(global_survivors)} "
-        f"elapsed_seconds={time.perf_counter() - stage_started:.3f}"
+        f"elapsed_seconds={global_elapsed:.3f}"
+    )
+    _manifest_update(
+        "global_frontier",
+        "complete",
+        candidates=expected_total,
+        survivors=len(global_survivors),
+        elapsed_seconds=round(global_elapsed, 3),
     )
     _write_rows(
         OUTPUT_DIR / "global_survivors.csv",
@@ -547,6 +636,9 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
     )
     _log("DONE")
     _detail("RUN_COMPLETE")
+    _RUN_MANIFEST["completed_at"] = _wall_timestamp()
+    _RUN_MANIFEST["status"] = "complete"
+    _write_manifest()
 
 
 def main() -> None:
