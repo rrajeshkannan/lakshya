@@ -1,4 +1,4 @@
-"""Local experimental runner for the surviving-Composition trajectory study.
+"""Experimental runner for the surviving-Composition trajectory study.
 
 This module is orchestration only. It reconstructs the existing FUND -> TEAM
 -> COMPOSITION -> MISSION path from persisted inputs, then hands surviving
@@ -6,8 +6,14 @@ Compositions to the descriptive trajectory experiment.
 
 Generated intermediate evidence is intentionally written under ``output/``.
 It is an experimental checkpoint, not part of Lakshya's decision architecture.
-The runner also supports resuming from persisted MISSION survivor files so a
-late-stage failure does not repeat the expensive upstream computation.
+The runner supports two useful recovery points:
+
+* ``--resume-from mission`` consumes Purpose-specific MISSION survivor files
+  already written by a previous run and continues with trajectory observation.
+* ``--resume-from global`` consumes the persisted global Composition frontier,
+  reconstructs its fingerprints, and runs MISSION for any Purpose checkpoints
+  that are missing. This is the recovery path after a run that crashed during
+  the first Purpose before later Purpose checkpoints were created.
 """
 
 from __future__ import annotations
@@ -143,12 +149,123 @@ def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
     return Composition(team=Team(members=members), weights=weights)
 
 
+def _reconstruct_global_survivors(
+    funds_by_isin,
+    fund_histories: dict[str, pd.DataFrame],
+) -> list[tuple[Composition, CompositionFingerprint]]:
+    """Rebuild fingerprints for the persisted global Composition frontier.
+
+    The global frontier CSV is a checkpoint of identities, not analytical
+    fingerprints. Fingerprints are therefore reconstructed from the original
+    NAV evidence. This is still vastly cheaper than rerunning TEAM and
+    Composition generation, and it gives MISSION a complete upstream input.
+    """
+    path = OUTPUT_DIR / "global_survivors.csv"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing global frontier checkpoint: {path}")
+
+    df = pd.read_csv(path, keep_default_na=False)
+    if "composition" not in df.columns:
+        raise ValueError(f"Invalid global frontier checkpoint: {path}")
+
+    identities = df["composition"].tolist()
+    _log(f"[RESUME GLOBAL] Reconstructing {len(identities)} global survivor fingerprints")
+    pairs: list[tuple[Composition, CompositionFingerprint]] = []
+    started = time.perf_counter()
+    for index, identity in enumerate(identities, start=1):
+        composition = _composition_from_identity(identity, funds_by_isin)
+        histories = {member.isin: fund_histories[member.isin] for member in composition.team.members}
+        pairs.append((composition, analyze_composition(composition, histories)))
+        if index == len(identities) or index % 1000 == 0:
+            elapsed = time.perf_counter() - started
+            rate = index / elapsed if elapsed else 0.0
+            eta = max(0.0, (len(identities) - index) / rate) if rate else 0.0
+            _log(f"  global reconstruction: {index}/{len(identities)} | elapsed={elapsed:.1f}s | rate={rate:.1f}/s | ETA~{eta:.0f}s")
+
+    _log(f"[RESUME GLOBAL] Reconstruction complete | elapsed={time.perf_counter() - started:.1f}s")
+    return pairs
+
+
+def _observe_mission_survivors(
+    purpose: Purpose,
+    protected: list[tuple[Composition, CompositionFingerprint]],
+) -> None:
+    """Persist descriptive trajectory observations for one Purpose."""
+    if purpose.horizon_years is None:
+        _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
+        return
+
+    _log(f"  {purpose.name}: observing trajectories for {len(protected)} survivors")
+    observations = observe_survivors_for_purpose(protected, purpose.horizon_years)
+    trajectory_rows: list[dict] = []
+    for composition, _ in protected:
+        observation = observations[composition_identity(composition)]
+        for point in observation.points:
+            trajectory_rows.append(
+                {
+                    "composition": composition_identity(composition),
+                    "horizon_years": observation.horizon_years,
+                    "date": point.date.strftime("%Y-%m-%d"),
+                    "elapsed_days": point.elapsed_days,
+                    "nav": point.nav,
+                    "normalized_nav": point.normalized_nav,
+                }
+            )
+    _write_rows(OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv", trajectory_rows)
+
+
+def _run_mission_for_purposes(
+    purposes: list[Purpose],
+    global_pairs: list[tuple[Composition, CompositionFingerprint]],
+    *,
+    skip_existing_checkpoints: bool,
+) -> None:
+    """Apply existing MISSION gates and observe trajectories for each Purpose."""
+    for purpose in purposes:
+        if purpose.horizon_years is None:
+            _log(f"  {purpose.name}: no finite horizon; skipping MISSION trajectory")
+            continue
+
+        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+        if skip_existing_checkpoints and mission_path.exists():
+            _log(f"  {purpose.name}: MISSION checkpoint exists; preserving it")
+            continue
+
+        _log(f"  {purpose.name}: assessing {len(global_pairs)} global survivors")
+        achievability_survivors: list[tuple[Composition, CompositionFingerprint]] = []
+        assessments: list[dict] = []
+        for composition, fingerprint in global_pairs:
+            assessment = assess_achievability(purpose, fingerprint)
+            assessments.append(
+                {
+                    "composition": composition_identity(composition),
+                    "status": assessment.status.value,
+                    "required_annual_return": assessment.required_annual_return,
+                    "comparison_horizon_years": assessment.comparison_horizon_years,
+                    "observed_upper_return": assessment.observed_upper_return,
+                }
+            )
+            if assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
+                achievability_survivors.append((composition, fingerprint))
+
+        _write_rows(OUTPUT_DIR / f"achievability_{purpose.name}.csv", assessments)
+        _log(f"  {purpose.name}: achievability survivors: {len(achievability_survivors)}")
+
+        protected = protection_frontier(achievability_survivors)
+        _log(f"  {purpose.name}: protection survivors: {len(protected)}")
+        _write_rows(
+            mission_path,
+            [{"composition": composition_identity(composition)} for composition in protected],
+        )
+        _observe_mission_survivors(purpose, protected)
+
+
 def _observe_persisted_mission_outputs(
     purposes: list[Purpose],
     funds_by_isin,
     fund_histories: dict[str, pd.DataFrame],
 ) -> None:
-    """Resume only the trajectory tail from persisted MISSION survivor CSVs."""
+    """Resume trajectory observation from Purpose-specific MISSION checkpoints."""
     for purpose in purposes:
         if purpose.horizon_years is None:
             _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
@@ -173,22 +290,7 @@ def _observe_persisted_mission_outputs(
                 elapsed = time.perf_counter() - started
                 _log(f"  {purpose.name}: reconstructed {index}/{len(identities)} fingerprints | elapsed={elapsed:.1f}s")
 
-        observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
-        rows: list[dict] = []
-        for composition, _ in pairs:
-            observation = observations[composition_identity(composition)]
-            for point in observation.points:
-                rows.append(
-                    {
-                        "composition": composition_identity(composition),
-                        "horizon_years": observation.horizon_years,
-                        "date": point.date.strftime("%Y-%m-%d"),
-                        "elapsed_days": point.elapsed_days,
-                        "nav": point.nav,
-                        "normalized_nav": point.normalized_nav,
-                    }
-                )
-        _write_rows(OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv", rows)
+        _observe_mission_survivors(purpose, pairs)
 
     _log("RESUME DONE")
 
@@ -199,13 +301,23 @@ def run(as_of: str, resume_from: str | None = None) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'}")
 
-    if resume_from == "mission":
+    if resume_from in {"mission", "global"}:
         _log("[RESUME] Loading admitted funds, NAV evidence and Purpose inputs")
         funds = load_admissible_funds()
         histories = _load_fund_histories(funds)
         purposes = _load_purposes(valuation_date)
         funds_by_isin = {fund.isin: fund for fund in funds}
-        _observe_persisted_mission_outputs(purposes, funds_by_isin, histories)
+
+        if resume_from == "mission":
+            _observe_persisted_mission_outputs(purposes, funds_by_isin, histories)
+        else:
+            global_pairs = _reconstruct_global_survivors(funds_by_isin, histories)
+            _run_mission_for_purposes(
+                purposes,
+                global_pairs,
+                skip_existing_checkpoints=True,
+            )
+            _log("RESUME GLOBAL DONE")
         return
 
     _log("[1/7] Loading admitted funds")
@@ -248,52 +360,7 @@ def run(as_of: str, resume_from: str | None = None) -> None:
     global_pairs = [(composition, fingerprints[composition_identity(composition)]) for composition in global_survivors]
     _write_rows(OUTPUT_DIR / "global_survivors.csv", [{"composition": composition_identity(composition)} for composition in global_survivors])
 
-    for purpose in purposes:
-        if purpose.horizon_years is None:
-            _log(f"  {purpose.name}: no finite horizon; skipping MISSION trajectory")
-            continue
-
-        _log(f"  {purpose.name}: assessing {len(global_pairs)} global survivors")
-        achievability_survivors: list[tuple[Composition, CompositionFingerprint]] = []
-        assessments: list[dict] = []
-        for composition, fingerprint in global_pairs:
-            assessment = assess_achievability(purpose, fingerprint)
-            assessments.append(
-                {
-                    "composition": composition_identity(composition),
-                    "status": assessment.status.value,
-                    "required_annual_return": assessment.required_annual_return,
-                    "comparison_horizon_years": assessment.comparison_horizon_years,
-                    "observed_upper_return": assessment.observed_upper_return,
-                }
-            )
-            if assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
-                achievability_survivors.append((composition, fingerprint))
-
-        _write_rows(OUTPUT_DIR / f"achievability_{purpose.name}.csv", assessments)
-        _log(f"  {purpose.name}: achievability survivors: {len(achievability_survivors)}")
-
-        protected = protection_frontier(achievability_survivors)
-        _log(f"  {purpose.name}: protection survivors: {len(protected)}")
-        _write_rows(OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv", [{"composition": composition_identity(composition)} for composition in protected])
-
-        _log(f"  {purpose.name}: observing trajectories")
-        observations = observe_survivors_for_purpose([(composition, fingerprints[composition_identity(composition)]) for composition in protected], purpose.horizon_years)
-        trajectory_rows: list[dict] = []
-        for composition in protected:
-            observation = observations[composition_identity(composition)]
-            for point in observation.points:
-                trajectory_rows.append(
-                    {
-                        "composition": composition_identity(composition),
-                        "horizon_years": observation.horizon_years,
-                        "date": point.date.strftime("%Y-%m-%d"),
-                        "elapsed_days": point.elapsed_days,
-                        "nav": point.nav,
-                        "normalized_nav": point.normalized_nav,
-                    }
-                )
-        _write_rows(OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv", trajectory_rows)
+    _run_mission_for_purposes(purposes, global_pairs, skip_existing_checkpoints=False)
 
     _write_rows(
         OUTPUT_DIR / "pipeline_summary.csv",
@@ -310,7 +377,11 @@ def run(as_of: str, resume_from: str | None = None) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--as-of", required=True, help="Purpose valuation date, e.g. 2026-08-31")
-    parser.add_argument("--resume-from", choices=("mission",), help="Resume from persisted MISSION survivor checkpoints")
+    parser.add_argument(
+        "--resume-from",
+        choices=("mission", "global"),
+        help="Resume from persisted MISSION checkpoints or the persisted global frontier",
+    )
     args = parser.parse_args()
     run(args.as_of, args.resume_from)
 
