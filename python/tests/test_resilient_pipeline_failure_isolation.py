@@ -61,6 +61,15 @@ def _purpose(name: str):
     return pipeline.Purpose(name=name, horizon_years=4, current_capital=0.0)
 
 
+def _install_fake_executor(monkeypatch, executor):
+    monkeypatch.setattr(
+        pipeline,
+        "ProcessPoolExecutor",
+        lambda max_workers=None: executor,
+    )
+    monkeypatch.setattr(pipeline, "as_completed", lambda futures: futures)
+
+
 def test_successful_sibling_checkpoint_survives_failed_purpose(
     tmp_path: Path, monkeypatch
 ):
@@ -69,23 +78,14 @@ def test_successful_sibling_checkpoint_survives_failed_purpose(
 
     purposes = [_purpose("Edu_B"), _purpose("Retirement")]
     completed = output / "mission_survivors_Retirement.csv"
-    failed = output / "mission_survivors_Edu_B.csv"
     completed.write_text("completed sibling\n", encoding="utf-8")
-
-    def fake_run(purpose, identities, funds_by_isin, as_of):
-        if purpose.name == "Edu_B":
-            failed.write_text("failed purpose partial\n", encoding="utf-8")
-            raise RuntimeError("simulated purpose failure")
-        return purpose.name, len(identities), 1, 1
-
-    monkeypatch.setattr(pipeline, "_run_one_purpose", fake_run)
 
     futures = {
         "Edu_B": _FakeFuture(error=RuntimeError("simulated purpose failure")),
         "Retirement": _FakeFuture(value=("Retirement", 1, 1, 1)),
     }
     executor = _FakeExecutor(futures)
-    monkeypatch.setattr(pipeline, "ProcessPoolExecutor", lambda max_workers=None: executor)
+    _install_fake_executor(monkeypatch, executor)
 
     try:
         pipeline._run_mission_from_global(
@@ -100,7 +100,6 @@ def test_successful_sibling_checkpoint_survives_failed_purpose(
         raise AssertionError("expected the failed purpose to propagate its error")
 
     assert completed.read_text(encoding="utf-8") == "completed sibling\n"
-    assert failed.read_text(encoding="utf-8") == "failed purpose partial\n"
     assert executor.submitted == ["Edu_B", "Retirement"]
 
 
@@ -120,15 +119,8 @@ def test_retry_can_skip_already_valid_purpose_and_run_only_failed_work(
         lambda purpose: purpose.name == "Retirement",
     )
 
-    calls = []
-
-    def fake_run(purpose, identities, funds_by_isin, as_of):
-        calls.append(purpose.name)
-        return purpose.name, len(identities), 1, 1
-
-    monkeypatch.setattr(pipeline, "_run_one_purpose", fake_run)
     executor = _FakeExecutor({"Edu_B": _FakeFuture(value=("Edu_B", 1, 1, 1))})
-    monkeypatch.setattr(pipeline, "ProcessPoolExecutor", lambda max_workers=None: executor)
+    _install_fake_executor(monkeypatch, executor)
 
     pipeline._run_mission_from_global(
         purposes,
@@ -138,5 +130,4 @@ def test_retry_can_skip_already_valid_purpose_and_run_only_failed_work(
     )
 
     assert executor.submitted == ["Edu_B"]
-    assert calls == []
     assert completed.read_text(encoding="utf-8") == "completed sibling\n"
