@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-from collections import deque
 from collections.abc import Iterable, Iterator, Mapping
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 
@@ -146,7 +145,6 @@ def _parallel_results(
 
     source = iter(compositions)
     pending: dict = {}
-    buffered: deque[Composition] = deque()
 
     with ProcessPoolExecutor(
         max_workers=probe_workers,
