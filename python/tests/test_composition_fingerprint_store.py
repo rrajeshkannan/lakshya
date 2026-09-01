@@ -38,7 +38,11 @@ def test_composition_fingerprint_round_trips_without_recalculation(tmp_path):
 
 
 def test_fingerprint_path_uses_canonical_composition_identity(tmp_path):
-    team = Team(members=(_fund("B"), _fund("A")))
+    team = Team(members=(_fund("A"), _fund("B")))
     composition = Composition(team=team, weights={"B": 0.70, "A": 0.30})
+    equivalent_weight_order = Composition(team=team, weights={"A": 0.30, "B": 0.70})
 
+    assert fingerprint_path(tmp_path, composition) == fingerprint_path(
+        tmp_path, equivalent_weight_order
+    )
     assert composition_identity(composition) in fingerprint_path(tmp_path, composition).name
