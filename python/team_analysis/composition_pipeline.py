@@ -8,7 +8,7 @@ from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
 
 from .analyze_composition import analyze_composition
-from .composition import Composition
+from .composition import Composition, composition_identity
 from .composition_fingerprint import CompositionFingerprint
 from .generate_compositions import generate_compositions
 from .team import Team
@@ -58,23 +58,66 @@ def stream_composition_fingerprints_parallel(
     *,
     max_workers: int | None = None,
 ) -> Iterator[tuple[Composition, CompositionFingerprint]]:
-    """Yield fresh Composition fingerprints using process-level parallelism.
-
-    ``max_workers=None`` deliberately delegates worker sizing to Python's
-    ProcessPoolExecutor.  The caller can override it when an experiment needs
-    an explicit resource envelope.
-
-    Results are yielded as workers complete, so callers can persist each
-    completed fingerprint immediately instead of accumulating a giant list.
-    """
+    """Yield fresh Composition fingerprints using process-level parallelism."""
     compositions = (
         composition
         for team in teams
         for composition in generate_compositions(team)
     )
+    yield from analyze_compositions_parallel(
+        compositions,
+        fund_histories,
+        max_workers=max_workers,
+    )
+
+
+def analyze_compositions_parallel(
+    compositions: Iterable[Composition],
+    fund_histories: Mapping[str, pd.DataFrame],
+    *,
+    max_workers: int | None = None,
+) -> Iterator[tuple[Composition, CompositionFingerprint]]:
+    """Analyze independent Composition work units in parallel.
+
+    Results are yielded as workers complete.  The caller therefore controls
+    persistence and can checkpoint each result immediately.
+    """
     with ProcessPoolExecutor(
         max_workers=max_workers,
         initializer=_initialize_worker,
         initargs=(dict(fund_histories),),
     ) as executor:
         yield from executor.map(_analyze_composition_worker, compositions, chunksize=1)
+
+
+def analyze_compositions_parallel_resilient(
+    compositions: Iterable[Composition],
+    fund_histories: Mapping[str, pd.DataFrame],
+    *,
+    max_workers: int | None = None,
+) -> Iterator[tuple[Composition, CompositionFingerprint, Exception | None]]:
+    """Analyze Composition work units while isolating individual failures.
+
+    A failed work unit becomes an error result rather than terminating the
+    entire experiment.  Successful results remain independently checkpointable.
+    """
+    from concurrent.futures import as_completed
+
+    composition_list = list(compositions)
+    with ProcessPoolExecutor(
+        max_workers=max_workers,
+        initializer=_initialize_worker,
+        initargs=(dict(fund_histories),),
+    ) as executor:
+        futures = {
+            executor.submit(_analyze_composition_worker, composition): composition
+            for composition in composition_list
+        }
+        for future in as_completed(futures):
+            composition = futures[future]
+            try:
+                result = future.result()
+            except Exception as exc:
+                yield composition, None, exc
+            else:
+                yield result[0], result[1], None
