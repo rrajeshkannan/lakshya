@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections import deque
 from collections.abc import Iterable, Iterator, Mapping
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
@@ -79,13 +80,7 @@ def analyze_compositions_parallel(
     max_workers: int | None = None,
     max_in_flight: int | None = None,
 ) -> Iterator[tuple[Composition, CompositionFingerprint]]:
-    """Analyze independent Composition work units with bounded in-flight work.
-
-    The input remains a stream: we never materialize all candidates or submit
-    an unbounded number of futures.  A bounded work window provides parallelism
-    without turning a large experiment into a huge in-memory future queue.
-    Results are yielded as soon as workers complete.
-    """
+    """Analyze independent Composition work units with bounded process parallelism."""
     yield from _parallel_results(
         compositions,
         fund_histories,
@@ -105,7 +100,7 @@ def analyze_compositions_parallel_resilient(
     """Analyze Composition work units while isolating individual failures.
 
     A failed work unit becomes an error result rather than terminating the
-    entire experiment.  Successful results remain independently checkpointable.
+    entire experiment. Successful results remain independently checkpointable.
     The source iterable is consumed incrementally and only a bounded number of
     futures can be outstanding at once.
     """
@@ -128,16 +123,16 @@ def _parallel_results(
 ):
     """Shared bounded-process execution engine.
 
-    ``max_in_flight`` defaults to a small multiple of the worker count.  It is
-    intentionally independent of the total experiment size so memory use stays
-    bounded for 10s or 100s of thousands of compositions.
+    ``max_in_flight`` defaults to four times the platform's process-worker
+    capacity, with a minimum of 16. This keeps the queue bounded while still
+    allowing the executor's platform-appropriate default worker count to stay
+    busy on larger machines.
     """
     workers = max_workers
     if workers is None:
-        # Ask the executor for its platform-appropriate default, but keep the
-        # submission window bounded without needing to know the CPU count here.
         probe_workers = None
-        window = 16
+        detected_workers = os.process_cpu_count() or 1
+        window = max(16, detected_workers * 4)
     else:
         if workers < 1:
             raise ValueError("max_workers must be at least 1")
