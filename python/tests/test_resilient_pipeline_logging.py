@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 
 from mission import resilient_pipeline
@@ -22,7 +23,7 @@ def test_macro_console_and_forensic_log_are_distinct(tmp_path, monkeypatch, caps
 
     assert "FINGERPRINT_PERSISTED composition=ABC" in forensic
     assert "MACRO_STAGE_COMPLETE" not in forensic
-    assert re.match(r"^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}[+-]\\d{2}:\\d{2} \\| ", forensic)
+    assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2} \| ", forensic)
 
 
 def test_detail_is_flush_visible_for_live_tail(tmp_path, monkeypatch):
@@ -35,3 +36,23 @@ def test_detail_is_flush_visible_for_live_tail(tmp_path, monkeypatch):
 
     assert log_path.exists()
     assert log_path.read_text(encoding="utf-8").endswith("WORK_UNIT_COMPLETE id=17\n")
+
+
+def test_run_manifest_is_atomic_and_records_stage_state(tmp_path, monkeypatch):
+    output_dir = tmp_path / "output"
+    manifest_path = output_dir / "pipeline_run_manifest.json"
+    monkeypatch.setattr(resilient_pipeline, "OUTPUT_DIR", output_dir)
+    monkeypatch.setattr(resilient_pipeline, "MANIFEST_PATH", manifest_path)
+    monkeypatch.setattr(resilient_pipeline, "LOG_PATH", output_dir / "trajectory_pipeline.log")
+
+    monkeypatch.setattr(
+        resilient_pipeline,
+        "_RUN_MANIFEST",
+        {"run_id": "test", "stages": {}},
+    )
+    resilient_pipeline._manifest_update("composition_evidence", "running", processed=37)
+
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert payload["stages"]["composition_evidence"]["status"] == "running"
+    assert payload["stages"]["composition_evidence"]["processed"] == 37
+    assert not manifest_path.with_suffix(manifest_path.suffix + ".tmp").exists()
