@@ -1,13 +1,12 @@
 """Resilient execution engine for the surviving-Composition experiment.
 
-The runner is deliberately checkpoint-first:
+Core invariant:
 
     compute -> persist -> consume
 
 Expensive Composition fingerprints are durable evidence.  Downstream stages
-load that evidence rather than reconstructing it.  Every expensive boundary
-is therefore restartable after interruption, sleep, worker failure, or a
-process crash.
+load that evidence rather than reconstructing it.  The runner is restart-safe
+across interruption, sleep, worker failure, and process crashes.
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ import argparse
 import csv
 import json
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -24,7 +23,6 @@ import pandas as pd
 
 from fund_analysis.admissible_funds import load_admissible_funds
 from lakshya_core.nav_history import normalize_nav_history
-from team_analysis.analyze_composition import analyze_composition
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition_fingerprint_store import (
@@ -34,7 +32,10 @@ from team_analysis.composition_fingerprint_store import (
     persist_fingerprint,
 )
 from team_analysis.composition_frontier import global_composition_frontier
-from team_analysis.composition_pipeline import stream_composition_fingerprints_parallel
+from team_analysis.composition_pipeline import (
+    analyze_compositions_parallel_resilient,
+)
+from team_analysis.generate_compositions import generate_compositions
 from team_analysis.protection_frontier import protection_frontier
 from team_analysis.run_team_pipeline import run_team_pipeline
 from team_analysis.team import Team
@@ -61,7 +62,7 @@ def _console(message: str) -> None:
 
 
 def _detail(message: str) -> None:
-    """Append forensic detail to the persistent flight-recorder log only."""
+    """Write forensic detail to the persistent flight-recorder log only."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     with LOG_PATH.open("a", encoding="utf-8") as handle:
         handle.write(f"{_wall_timestamp()} | {message}\n")
@@ -69,7 +70,7 @@ def _detail(message: str) -> None:
 
 
 def _log(message: str) -> None:
-    """Write a macro console heartbeat and its corresponding log record."""
+    """Write a macro console heartbeat and the same event to the log."""
     _console(message)
     _detail(message)
 
@@ -126,7 +127,6 @@ def _load_purposes(as_of: pd.Timestamp) -> list[Purpose]:
                 monthly_contribution=float(row["monthly_plan"]),
             )
         )
-
     _log("Loaded purposes: " + ", ".join(f"{p.name}={p.horizon_years}Y" for p in purposes))
     return purposes
 
@@ -138,7 +138,6 @@ def _write_rows(path: Path, rows: list[dict]) -> None:
 
 
 def _write_composition_candidates(teams) -> int:
-    """Write the cheap identity inventory independently of fingerprint computation."""
     path = OUTPUT_DIR / "composition_candidates.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
@@ -146,7 +145,7 @@ def _write_composition_candidates(teams) -> int:
         writer = csv.DictWriter(handle, fieldnames=("composition", "team"))
         writer.writeheader()
         for team in teams:
-            for composition in __import__("team_analysis.generate_compositions", fromlist=["generate_compositions"]).generate_compositions(team):
+            for composition in generate_compositions(team):
                 writer.writerow(
                     {
                         "composition": composition_identity(composition),
@@ -158,22 +157,7 @@ def _write_composition_candidates(teams) -> int:
     return count
 
 
-def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
-    members_raw, weights_raw = identity.split("|", 1)
-    member_isins = [value for value in members_raw.split(",") if value]
-    weights: dict[str, float] = {}
-    for token in weights_raw.split(","):
-        isin, value = token.split("=", 1)
-        weights[isin] = float(value)
-    if set(member_isins) != set(weights):
-        raise ValueError(f"Composition identity has inconsistent members/weights: {identity}")
-    members = tuple(funds_by_isin[isin] for isin in sorted(member_isins))
-    return Composition(team=Team(members=members), weights=weights)
-
-
 def _candidate_compositions(teams):
-    from team_analysis.generate_compositions import generate_compositions
-
     for team in teams:
         yield from generate_compositions(team)
 
@@ -184,13 +168,9 @@ def _persist_composition_evidence(
     *,
     max_workers: int | None,
 ) -> int:
-    """Compute only missing fingerprints and persist each one immediately."""
+    """Compute only missing fingerprints and persist each result immediately."""
     all_compositions = list(_candidate_compositions(teams))
-    missing = [
-        composition
-        for composition in all_compositions
-        if not has_fingerprint(FINGERPRINT_DIR, composition)
-    ]
+    missing = [c for c in all_compositions if not has_fingerprint(FINGERPRINT_DIR, c)]
     existing = len(all_compositions) - len(missing)
     _log(
         f"  fingerprint checkpoint scan: total={len(all_compositions)} "
@@ -207,52 +187,39 @@ def _persist_composition_evidence(
     started = time.perf_counter()
     completed = 0
     failed = 0
-    missing_teams = [Team(members=composition.team.members) for composition in missing]
-    # The parallel primitive accepts Teams, but generated compositions are the
-    # actual work units.  Grouping by singleton synthetic Team preserves each
-    # exact Composition and avoids regenerating the full candidate space.
-    synthetic_teams = []
-    for composition in missing:
-        synthetic_teams.append(Team(members=composition.team.members))
-
-    # Use a direct process pool here so persisted checkpoints can be written by
-    # the parent immediately as each completed worker result arrives.
-    from concurrent.futures import as_completed
-    from team_analysis.composition_pipeline import _analyze_composition_worker, _initialize_worker
-
     with ProcessPoolExecutor(
         max_workers=max_workers,
-        initializer=_initialize_worker,
-        initargs=(dict(fund_histories),),
-    ) as executor:
-        futures = {
-            executor.submit(_analyze_composition_worker, composition): composition
-            for composition in missing
-        }
-        for future in as_completed(futures):
-            composition = futures[future]
-            identity = composition_identity(composition)
-            try:
-                _, fingerprint = future.result()
-                destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
-                completed += 1
-                _detail(
-                    f"FINGERPRINT_PERSISTED index={completed}/{len(missing)} "
-                    f"composition={identity} path={destination.relative_to(PROJECT_ROOT)}"
-                )
-            except Exception as exc:  # keep unrelated work alive
-                failed += 1
-                _detail(f"FINGERPRINT_FAILED composition={identity} error={exc!r}")
+        initializer=None,
+    ) as _unused:
+        pass
 
-            if completed and (completed % 1000 == 0 or completed + failed == len(missing)):
-                elapsed = time.perf_counter() - started
-                processed = completed + failed
-                rate = processed / elapsed if elapsed else 0.0
-                eta = (len(missing) - processed) / rate if rate else 0.0
-                _log(
-                    f"  Composition evidence: {processed}/{len(missing)} missing work units "
-                    f"| persisted={completed} failed={failed} | rate={rate:.1f}/s | ETA~{eta:.0f}s"
-                )
+    # The resilient helper owns the worker pool and converts one failed work
+    # unit into an error result, so unrelated completed work remains durable.
+    for composition, fingerprint, error in analyze_compositions_parallel_resilient(
+        missing,
+        fund_histories,
+        max_workers=max_workers,
+    ):
+        identity = composition_identity(composition)
+        if error is not None:
+            failed += 1
+            _detail(f"FINGERPRINT_FAILED composition={identity} error={error!r}")
+            continue
+        destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
+        completed += 1
+        _detail(
+            f"FINGERPRINT_PERSISTED index={completed}/{len(missing)} "
+            f"composition={identity} path={destination.relative_to(PROJECT_ROOT)}"
+        )
+        processed = completed + failed
+        if processed % 1000 == 0 or processed == len(missing):
+            elapsed = time.perf_counter() - started
+            rate = processed / elapsed if elapsed else 0.0
+            eta = (len(missing) - processed) / rate if rate else 0.0
+            _log(
+                f"  Composition evidence: {processed}/{len(missing)} missing work units "
+                f"| persisted={completed} failed={failed} | rate={rate:.1f}/s | ETA~{eta:.0f}s"
+            )
 
     if failed:
         raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
@@ -263,8 +230,8 @@ def _persist_composition_evidence(
     return len(all_compositions)
 
 
-def _load_global_pairs_for_frontier(teams, funds_by_isin):
-    """Stream persisted fingerprints into the global frontier without retaining all NAVs."""
+def _load_global_pairs_for_frontier(teams):
+    """Stream persisted fingerprints into the global frontier."""
     for composition in _candidate_compositions(teams):
         path = fingerprint_path(FINGERPRINT_DIR, composition)
         if not path.is_file():
@@ -282,15 +249,23 @@ def _load_global_identities() -> list[str]:
     return df["composition"].tolist()
 
 
-def _run_one_purpose(
-    purpose: Purpose,
-    identities: list[str],
-    funds_by_isin,
-) -> tuple[str, int, int, int]:
+def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
+    members_raw, weights_raw = identity.split("|", 1)
+    member_isins = [value for value in members_raw.split(",") if value]
+    weights = {}
+    for token in weights_raw.split(","):
+        isin, value = token.split("=", 1)
+        weights[isin] = float(value)
+    if set(member_isins) != set(weights):
+        raise ValueError(f"Composition identity has inconsistent members/weights: {identity}")
+    members = tuple(funds_by_isin[isin] for isin in sorted(member_isins))
+    return Composition(team=Team(members=members), weights=weights)
+
+
+def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin):
     """Run one independent Purpose from durable global Composition evidence."""
     if purpose.horizon_years is None:
         return purpose.name, 0, 0, 0
-
     achievability_survivors: list[tuple[Composition, CompositionFingerprint]] = []
     assessments: list[dict] = []
     for identity in identities:
@@ -315,49 +290,47 @@ def _run_one_purpose(
         OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv",
         [{"composition": composition_identity(composition)} for composition in protected],
     )
-    _detail(
-        f"PURPOSE_COMPLETE purpose={purpose.name} assessed={len(identities)} "
-        f"achievability={len(achievability_survivors)} protection={len(protected)}"
-    )
     return purpose.name, len(identities), len(achievability_survivors), len(protected)
 
 
-def _observe_persisted_mission_outputs(
+def _run_mission_from_global(
     purposes: list[Purpose],
     funds_by_isin,
     *,
     max_workers: int | None,
+    skip_existing: bool,
 ) -> None:
-    """Observe Purpose checkpoints using persisted Composition fingerprints."""
-    from concurrent.futures import as_completed
+    identities = _load_global_identities()
+    runnable = [
+        purpose
+        for purpose in purposes
+        if purpose.horizon_years is not None
+        and not (skip_existing and (OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv").exists())
+    ]
+    if not runnable:
+        _log("No Purpose requires MISSION work")
+        return
 
-    jobs = []
-    for purpose in purposes:
-        if purpose.horizon_years is None:
-            _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
-            continue
-        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-        if not mission_path.exists():
-            _log(f"  {purpose.name}: no persisted MISSION checkpoint; skipping")
-            continue
-        df = pd.read_csv(mission_path, keep_default_na=False)
-        identities = df["composition"].tolist()
-        jobs.append((purpose, identities))
-
+    _log(
+        f"[MISSION] running {len(runnable)} independent Purpose gates from "
+        f"{len(identities)} persisted global survivors"
+    )
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin): purpose.name
-            for purpose, identities in jobs
+            executor.submit(_run_one_purpose, purpose, identities, funds_by_isin): purpose.name
+            for purpose in runnable
         }
         for future in as_completed(futures):
             purpose_name = futures[future]
             try:
-                count, rows = future.result()
-                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
+                name, assessed, achievable, protected = future.result()
+                _log(
+                    f"  {name}: assessed={assessed} achievability={achievable} "
+                    f"protection={protected}"
+                )
             except Exception as exc:
-                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
+                _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
                 raise
-    _log("RESUME DONE")
 
 
 def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin) -> tuple[int, int]:
@@ -385,46 +358,38 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin)
     return len(pairs), len(rows)
 
 
-def _run_mission_from_global(
+def _observe_persisted_mission_outputs(
     purposes: list[Purpose],
     funds_by_isin,
     *,
     max_workers: int | None,
-    skip_existing: bool,
 ) -> None:
-    identities = _load_global_identities()
-    runnable = [
-        purpose
-        for purpose in purposes
-        if purpose.horizon_years is not None
-        and not (skip_existing and (OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv").exists())
-    ]
-    if not runnable:
-        _log("No Purpose requires MISSION work")
-        return
-
-    _log(
-        f"[MISSION] running {len(runnable)} independent Purpose gates from "
-        f"{len(identities)} persisted global survivors"
-    )
-    from concurrent.futures import as_completed
+    jobs = []
+    for purpose in purposes:
+        if purpose.horizon_years is None:
+            _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
+            continue
+        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+        if not mission_path.exists():
+            _log(f"  {purpose.name}: no persisted MISSION checkpoint; skipping")
+            continue
+        df = pd.read_csv(mission_path, keep_default_na=False)
+        jobs.append((purpose, df["composition"].tolist()))
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(_run_one_purpose, purpose, identities, funds_by_isin): purpose.name
-            for purpose in runnable
+            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin): purpose.name
+            for purpose, identities in jobs
         }
         for future in as_completed(futures):
             purpose_name = futures[future]
             try:
-                name, assessed, achievable, protected = future.result()
-                _log(
-                    f"  {name}: assessed={assessed} achievability={achievable} "
-                    f"protection={protected}"
-                )
+                count, rows = future.result()
+                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
             except Exception as exc:
-                _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
+                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
                 raise
+    _log("RESUME DONE")
 
 
 def run(as_of: str, resume_from: str | None = None, workers: int | None = None) -> None:
@@ -464,11 +429,10 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
     _log("[5/7] Generating and persisting Composition fingerprints")
     expected_total = _write_composition_candidates(teams)
     _persist_composition_evidence(teams, histories, max_workers=workers)
-    _log(f"  Composition evidence inventory: {expected_total} candidates")
 
     _log("[6/7] Applying existing MISSION gates")
     stage_started = time.perf_counter()
-    global_survivors = global_composition_frontier(_load_global_pairs_for_frontier(teams, funds_by_isin))
+    global_survivors = global_composition_frontier(_load_global_pairs_for_frontier(teams))
     _log(
         f"  global Composition frontier: {len(global_survivors)} | "
         f"elapsed={time.perf_counter() - stage_started:.1f}s"
