@@ -6,8 +6,10 @@ from lakshya_core.models import Fund
 from team_analysis.composition_pipeline import (
     stream_composition_fingerprints,
     stream_composition_fingerprints_parallel,
+    analyze_compositions_parallel_resilient,
 )
 from team_analysis.composition import composition_identity
+from team_analysis.generate_compositions import generate_compositions
 from team_analysis.team import Team
 
 
@@ -59,3 +61,29 @@ def test_parallel_result_set_is_deterministic_across_runs():
     first_ids = sorted(composition_identity(c) for c, _ in first)
     second_ids = sorted(composition_identity(c) for c, _ in second)
     assert first_ids == second_ids
+
+
+def test_resilient_parallel_pipeline_isolates_failed_work_units():
+    fund_a = _fund("A")
+    fund_b = _fund("B")
+    singleton = Team(members=(fund_a,))
+    twin = Team(members=(fund_a, fund_b))
+    dates = pd.date_range("2010-01-01", periods=30, freq="D")
+    histories = {
+        "A": pd.DataFrame({"date": dates, "nav": [100.0 + i for i in range(30)]}),
+    }
+    compositions = [generate_compositions(singleton)[0], generate_compositions(twin)[0]]
+
+    results = list(
+        analyze_compositions_parallel_resilient(
+            compositions, histories, max_workers=2
+        )
+    )
+
+    assert len(results) == 2
+    successful = [item for item in results if item[2] is None]
+    failed = [item for item in results if item[2] is not None]
+    assert len(successful) == 1
+    assert len(failed) == 1
+    assert successful[0][0].team.members[0].isin == "A"
+    assert isinstance(failed[0][2], KeyError)
