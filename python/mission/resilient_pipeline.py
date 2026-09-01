@@ -203,6 +203,7 @@ def _write_rows(
     *,
     stage: str | None = None,
     inputs: dict[str, str] | None = None,
+    as_of: str | None = None,
 ) -> int:
     """Write a CSV atomically; stage outputs also receive a durable marker."""
     if stage is None:
@@ -212,7 +213,8 @@ def _write_rows(
         temporary.replace(path)
         count = len(rows)
     else:
-        count = write_csv_checkpoint(path, rows, stage=stage, as_of=_as_of_string(), inputs=inputs)
+        checkpoint_as_of = as_of if as_of is not None else _as_of_string()
+        count = write_csv_checkpoint(path, rows, stage=stage, as_of=checkpoint_as_of, inputs=inputs)
     _log(f"  wrote {path.relative_to(PROJECT_ROOT)} ({count} rows)")
     _detail(
         f"CHECKPOINT_WRITTEN path={path.relative_to(PROJECT_ROOT)} rows={count}"
@@ -379,7 +381,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
         "global_checkpoint_stage": "global_frontier",
     }
     achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
-    _write_rows(achievability_path, assessments, stage="mission_achievability", inputs=global_inputs)
+    _write_rows(achievability_path, assessments, stage="mission_achievability", inputs=global_inputs, as_of=as_of)
     protected = protection_frontier(achievability_survivors)
     mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
     _write_rows(
@@ -387,6 +389,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
         [{"composition": composition_identity(composition)} for composition in protected],
         stage="mission",
         inputs={"achievability_sha256": _sha256(achievability_path)},
+        as_of=as_of,
     )
     _detail(f"MISSION_PURPOSE_COMPLETE purpose={purpose.name} assessed={len(identities)} achievability={len(achievability_survivors)} protection={len(protected)}")
     return purpose.name, len(identities), len(achievability_survivors), len(protected)
@@ -482,6 +485,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         rows,
         stage="trajectory",
         inputs={"mission_sha256": _sha256(mission_path)},
+        as_of=as_of,
     )
     _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} rows={len(rows)}")
     return len(pairs), len(rows)
