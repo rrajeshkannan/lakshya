@@ -7,6 +7,7 @@ from team_analysis.analyze_composition import analyze_composition
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint_store import (
     fingerprint_path,
+    has_fingerprint,
     load_fingerprint,
     persist_fingerprint,
 )
@@ -46,3 +47,26 @@ def test_fingerprint_path_uses_canonical_composition_identity(tmp_path):
         tmp_path, equivalent_weight_order
     )
     assert composition_identity(composition) in fingerprint_path(tmp_path, composition).name
+
+
+def test_corrupt_checkpoint_is_not_considered_complete(tmp_path):
+    team = Team(members=(_fund("A"), _fund("B")))
+    composition = Composition(team=team, weights={"A": 0.50, "B": 0.50})
+    path = fingerprint_path(tmp_path, composition)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{not valid json", encoding="utf-8")
+
+    assert not has_fingerprint(tmp_path, composition)
+
+
+def test_checkpoint_with_wrong_identity_is_not_considered_complete(tmp_path):
+    team = Team(members=(_fund("A"), _fund("B")))
+    composition = Composition(team=team, weights={"A": 0.50, "B": 0.50})
+    path = fingerprint_path(tmp_path, composition)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        '{"schema_version":1,"kind":"composition_fingerprint","composition":"wrong"}',
+        encoding="utf-8",
+    )
+
+    assert not has_fingerprint(tmp_path, composition)
