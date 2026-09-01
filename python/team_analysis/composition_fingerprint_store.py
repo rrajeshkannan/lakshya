@@ -93,6 +93,8 @@ def load_fingerprint(path: Path, composition: Composition) -> CompositionFingerp
         raise ValueError(
             f"Unsupported Composition fingerprint schema in {path}: {payload.get('schema_version')}"
         )
+    if payload.get("kind") != "composition_fingerprint":
+        raise ValueError(f"Invalid Composition fingerprint kind in {path}: {payload.get('kind')!r}")
 
     expected_identity = composition_identity(composition)
     if payload.get("composition") != expected_identity:
@@ -123,5 +125,23 @@ def load_fingerprint(path: Path, composition: Composition) -> CompositionFingerp
 
 
 def has_fingerprint(root: Path, composition: Composition) -> bool:
-    """Return whether a fingerprint checkpoint exists for a Composition."""
-    return fingerprint_path(root, composition).is_file()
+    """Return whether a valid fingerprint checkpoint exists for a Composition.
+
+    Existence alone is not a safe checkpoint criterion: a crash can leave a
+    truncated/corrupt JSON artifact behind. Validate the small checkpoint
+    envelope and stable identity here so the resilient runner treats such an
+    artifact as missing and recomputes only that work unit.
+    """
+    path = fingerprint_path(root, composition)
+    if not path.is_file():
+        return False
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        payload.get("schema_version") == FINGERPRINT_SCHEMA_VERSION
+        and payload.get("kind") == "composition_fingerprint"
+        and payload.get("composition") == composition_identity(composition)
+    )
