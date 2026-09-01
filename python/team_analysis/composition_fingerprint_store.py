@@ -1,9 +1,4 @@
-"""Durable persistence for COMPOSITION-stage behavioural evidence.
-
-A CompositionFingerprint is expensive analytical evidence.  Once computed,
-it must become a durable reusable artifact rather than remaining only in RAM.
-This module owns the persistence boundary; it performs no analytical work.
-"""
+"""Durable persistence for COMPOSITION-stage behavioural evidence."""
 
 from __future__ import annotations
 
@@ -29,16 +24,6 @@ def fingerprint_path(root: Path, composition: Composition) -> Path:
     return root / f"{composition_identity(composition)}.json"
 
 
-def _json_safe(value: Any) -> Any:
-    if isinstance(value, dict):
-        return {str(key): _json_safe(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(item) for item in value]
-    if isinstance(value, (pd.Timestamp,)):
-        return value.isoformat()
-    return value
-
-
 def _rolling_to_dict(value: RollingReturnEvidence | None) -> dict | None:
     return None if value is None else asdict(value)
 
@@ -53,15 +38,23 @@ def _nav_to_records(nav: pd.DataFrame) -> list[dict[str, Any]]:
 def fingerprint_to_payload(fingerprint: CompositionFingerprint) -> dict[str, Any]:
     """Convert the complete Composition evidence to a JSON-safe payload."""
     composition = fingerprint.composition
+    protection = asdict(fingerprint.protection)
+    # JSON object keys are strings. Preserve integer threshold keys explicitly
+    # so loading restores the domain object's exact key types.
+    protection["days_at_or_above_threshold"] = {
+        str(key): value
+        for key, value in fingerprint.protection.days_at_or_above_threshold.items()
+    }
+    protection["pct_days_at_or_above_threshold"] = {
+        str(key): value
+        for key, value in fingerprint.protection.pct_days_at_or_above_threshold.items()
+    }
     return {
         "schema_version": FINGERPRINT_SCHEMA_VERSION,
         "kind": "composition_fingerprint",
         "composition": composition_identity(composition),
         "members": [member.isin for member in composition.team.members],
-        "weights": {
-            isin: float(composition.weights[isin])
-            for isin in sorted(composition.weights)
-        },
+        "weights": {isin: float(composition.weights[isin]) for isin in sorted(composition.weights)},
         "nav": _nav_to_records(fingerprint.nav),
         "elevation": {
             "rolling_3y": _rolling_to_dict(fingerprint.elevation.rolling_3y),
@@ -69,21 +62,17 @@ def fingerprint_to_payload(fingerprint: CompositionFingerprint) -> dict[str, Any
             "rolling_7y": _rolling_to_dict(fingerprint.elevation.rolling_7y),
             "rolling_10y": _rolling_to_dict(fingerprint.elevation.rolling_10y),
         },
-        "protection": asdict(fingerprint.protection),
+        "protection": protection,
     }
 
 
-def persist_fingerprint(
-    fingerprint: CompositionFingerprint,
-    root: Path,
-) -> Path:
+def persist_fingerprint(fingerprint: CompositionFingerprint, root: Path) -> Path:
     """Atomically persist one complete Composition fingerprint."""
     root.mkdir(parents=True, exist_ok=True)
     destination = fingerprint_path(root, fingerprint.composition)
     temporary = destination.with_suffix(destination.suffix + ".tmp")
-    payload = fingerprint_to_payload(fingerprint)
     with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
+        json.dump(fingerprint_to_payload(fingerprint), handle, ensure_ascii=False, separators=(",", ":"))
         handle.write("\n")
         handle.flush()
         os.fsync(handle.fileno())
@@ -95,18 +84,14 @@ def _rolling_from_dict(value: dict | None) -> RollingReturnEvidence | None:
     return None if value is None else RollingReturnEvidence(**value)
 
 
-def load_fingerprint(
-    path: Path,
-    composition: Composition,
-) -> CompositionFingerprint:
+def load_fingerprint(path: Path, composition: Composition) -> CompositionFingerprint:
     """Load a persisted fingerprint without recalculating any metrics."""
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
 
     if payload.get("schema_version") != FINGERPRINT_SCHEMA_VERSION:
         raise ValueError(
-            f"Unsupported Composition fingerprint schema in {path}: "
-            f"{payload.get('schema_version')}"
+            f"Unsupported Composition fingerprint schema in {path}: {payload.get('schema_version')}"
         )
 
     expected_identity = composition_identity(composition)
@@ -124,12 +109,16 @@ def load_fingerprint(
         rolling_7y=_rolling_from_dict(elevation_payload["rolling_7y"]),
         rolling_10y=_rolling_from_dict(elevation_payload["rolling_10y"]),
     )
-    protection = ProtectionEvidence(**payload["protection"])
+    protection_payload = dict(payload["protection"])
+    protection_payload["days_at_or_above_threshold"] = {
+        int(key): value for key, value in protection_payload["days_at_or_above_threshold"].items()
+    }
+    protection_payload["pct_days_at_or_above_threshold"] = {
+        int(key): value for key, value in protection_payload["pct_days_at_or_above_threshold"].items()
+    }
+    protection = ProtectionEvidence(**protection_payload)
     return CompositionFingerprint.from_persisted(
-        composition=composition,
-        nav=nav,
-        elevation=elevation,
-        protection=protection,
+        composition=composition, nav=nav, elevation=elevation, protection=protection
     )
 
 
