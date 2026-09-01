@@ -32,9 +32,7 @@ from team_analysis.composition_fingerprint_store import (
     persist_fingerprint,
 )
 from team_analysis.composition_frontier import global_composition_frontier
-from team_analysis.composition_pipeline import (
-    analyze_compositions_parallel_resilient,
-)
+from team_analysis.composition_pipeline import analyze_compositions_parallel_resilient
 from team_analysis.generate_compositions import generate_compositions
 from team_analysis.protection_frontier import protection_frontier
 from team_analysis.run_team_pipeline import run_team_pipeline
@@ -187,14 +185,6 @@ def _persist_composition_evidence(
     started = time.perf_counter()
     completed = 0
     failed = 0
-    with ProcessPoolExecutor(
-        max_workers=max_workers,
-        initializer=None,
-    ) as _unused:
-        pass
-
-    # The resilient helper owns the worker pool and converts one failed work
-    # unit into an error result, so unrelated completed work remains durable.
     for composition, fingerprint, error in analyze_compositions_parallel_resilient(
         missing,
         fund_histories,
