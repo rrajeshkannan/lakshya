@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-import pandas as pd
+import json
 
-from lakshya_core.models import Fund
+import pandas as pd
+import pytest
+
+from lakshya_core.models import ElevationEvidence, ProtectionEvidence
 from team_analysis.analyze_composition import analyze_composition
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint_store import (
@@ -14,7 +17,8 @@ from team_analysis.composition_fingerprint_store import (
 from team_analysis.team import Team
 
 
-def _fund(isin: str) -> Fund:
+def _fund(isin: str):
+    from lakshya_core.models import Fund
     return Fund(name=f"Fund {isin}", isin=isin, category="Test")
 
 
@@ -49,17 +53,19 @@ def test_fingerprint_path_uses_canonical_composition_identity(tmp_path):
     assert composition_identity(composition) in fingerprint_path(tmp_path, composition).name
 
 
-def test_corrupt_checkpoint_is_not_considered_complete(tmp_path):
+def test_corrupt_checkpoint_is_detected_on_load(tmp_path):
     team = Team(members=(_fund("A"), _fund("B")))
     composition = Composition(team=team, weights={"A": 0.50, "B": 0.50})
     path = fingerprint_path(tmp_path, composition)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{not valid json", encoding="utf-8")
 
-    assert not has_fingerprint(tmp_path, composition)
+    assert has_fingerprint(tmp_path, composition)
+    with pytest.raises(json.JSONDecodeError):
+        load_fingerprint(path, composition)
 
 
-def test_checkpoint_with_wrong_identity_is_not_considered_complete(tmp_path):
+def test_checkpoint_with_wrong_identity_is_rejected_on_load(tmp_path):
     team = Team(members=(_fund("A"), _fund("B")))
     composition = Composition(team=team, weights={"A": 0.50, "B": 0.50})
     path = fingerprint_path(tmp_path, composition)
@@ -69,4 +75,6 @@ def test_checkpoint_with_wrong_identity_is_not_considered_complete(tmp_path):
         encoding="utf-8",
     )
 
-    assert not has_fingerprint(tmp_path, composition)
+    assert has_fingerprint(tmp_path, composition)
+    with pytest.raises(ValueError, match="Composition identity mismatch"):
+        load_fingerprint(path, composition)
