@@ -50,7 +50,10 @@ from .durable_stage_output import (
     write_csv_checkpoint,
 )
 from .models import Purpose
-from .survivor_trajectory_experiment import observe_survivors_for_purpose
+from .survivor_trajectory_experiment import (
+    TRAJECTORY_CONTRACT_VERSION,
+    observe_survivors_for_purpose,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
@@ -467,11 +470,28 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         pairs.append((composition, fingerprint))
     observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
     rows: list[dict] = []
+    coverage_rows: list[dict] = []
     for composition, _ in pairs:
-        observation = observations[composition_identity(composition)]
+        identity = composition_identity(composition)
+        observation = observations.get(identity)
+        if observation is None:
+            coverage_rows.append({
+                "composition": identity,
+                "purpose_horizon_years": purpose.horizon_years,
+                "trajectory_horizon_years": "",
+                "status": "insufficient_history",
+            })
+            continue
+        coverage_rows.append({
+            "composition": identity,
+            "purpose_horizon_years": purpose.horizon_years,
+            "trajectory_horizon_years": observation.horizon_years,
+            "status": "observed",
+        })
         for point in observation.points:
             rows.append({
-                "composition": composition_identity(composition),
+                "composition": identity,
+                "purpose_horizon_years": purpose.horizon_years,
                 "horizon_years": observation.horizon_years,
                 "date": point.date.strftime("%Y-%m-%d"),
                 "elapsed_days": point.elapsed_days,
@@ -479,29 +499,56 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
                 "normalized_nav": point.normalized_nav,
             })
     mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+    trajectory_inputs = {
+        "mission_sha256": _sha256(mission_path),
+        "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
+    }
     trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
+    coverage_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}_coverage.csv"
     _write_rows(
         trajectory_path,
         rows,
         stage="trajectory",
-        inputs={"mission_sha256": _sha256(mission_path)},
+        inputs=trajectory_inputs,
         as_of=as_of,
     )
-    _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} rows={len(rows)}")
-    return len(pairs), len(rows)
+    _write_rows(
+        coverage_path,
+        coverage_rows,
+        stage="trajectory_coverage",
+        inputs=trajectory_inputs,
+        as_of=as_of,
+    )
+    observed = sum(1 for row in coverage_rows if row["status"] == "observed")
+    unavailable = len(coverage_rows) - observed
+    _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} observed={observed} insufficient_history={unavailable} rows={len(rows)}")
+    return len(pairs), len(rows), observed, unavailable
 
 
 def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
     trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
+    coverage_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}_coverage.csv"
     mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    if not mission_path.is_file() or not trajectory_path.is_file():
+    if not mission_path.is_file() or not trajectory_path.is_file() or not coverage_path.is_file():
         return False
     try:
-        return is_valid_csv_checkpoint(
-            trajectory_path,
-            stage="trajectory",
-            as_of=_as_of_string(),
-            inputs={"mission_sha256": _sha256(mission_path)},
+        inputs = {
+            "mission_sha256": _sha256(mission_path),
+            "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
+        }
+        return (
+            is_valid_csv_checkpoint(
+                trajectory_path,
+                stage="trajectory",
+                as_of=_as_of_string(),
+                inputs=inputs,
+            )
+            and is_valid_csv_checkpoint(
+                coverage_path,
+                stage="trajectory_coverage",
+                as_of=_as_of_string(),
+                inputs=inputs,
+            )
         )
     except (FileNotFoundError, OSError):
         return False
@@ -549,9 +596,9 @@ def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) 
         for future in as_completed(futures):
             purpose_name = futures[future]
             try:
-                count, rows = future.result()
-                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
-                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} rows={rows}")
+                count, rows, observed, unavailable = future.result()
+                _log(f"  {purpose_name}: trajectory complete survivors={count} observed={observed} insufficient_history={unavailable} rows={rows}")
+                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} observed={observed} insufficient_history={unavailable} rows={rows}")
             except Exception as exc:
                 _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
                 _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
