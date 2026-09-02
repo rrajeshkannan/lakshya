@@ -16,6 +16,9 @@ from .observation_horizon import nearest_supported_horizon
 from .trajectory_observation import TrajectoryObservation, observe_trajectory
 
 
+TRAJECTORY_CONTRACT_VERSION = 2
+
+
 def observe_survivors_for_purpose(
     survivors: Iterable[tuple[Composition, CompositionFingerprint]],
     purpose_horizon_years: float,
