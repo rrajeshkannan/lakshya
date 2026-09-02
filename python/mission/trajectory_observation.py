@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from .observation_horizon import SUPPORTED_OBSERVATION_HORIZONS
+
 
 @dataclass(frozen=True)
 class TrajectoryPoint:
@@ -33,17 +35,7 @@ class TrajectoryObservation:
     points: tuple[TrajectoryPoint, ...]
 
 
-def observe_trajectory(nav: pd.DataFrame, years: int) -> TrajectoryObservation:
-    """Preserve a trailing Composite-NAV path using the rolling-time convention.
-
-    The starting point is the latest observed NAV on or before the requested
-    lookback date, matching the existing rolling-CAGR convention. The full
-    observed path between that start and the latest observation is preserved.
-    No CAGR, smoothing, scoring, pruning, or path-shape judgement is made.
-    """
-    if years <= 0:
-        raise ValueError("Trajectory horizon must be positive.")
-
+def _prepare_nav(nav: pd.DataFrame) -> pd.DataFrame:
     if set(nav.columns) != {"date", "nav"}:
         raise ValueError("NAV trajectory must contain exactly 'date' and 'nav' columns.")
 
@@ -55,6 +47,46 @@ def observe_trajectory(nav: pd.DataFrame, years: int) -> TrajectoryObservation:
         raise ValueError("NAV trajectory cannot be empty.")
     if data["nav"].isna().any() or (data["nav"] <= 0).any():
         raise ValueError("NAV trajectory must contain positive, non-null NAV values.")
+    return data
+
+
+def select_observable_horizon(nav: pd.DataFrame, requested_horizon_years: float) -> int | None:
+    """Select the longest canonical horizon supported by this NAV history.
+
+    The selected horizon is the longest member of 3Y/5Y/7Y/10Y that is both
+    not beyond the requested Purpose horizon and actually observable in the
+    NAV history. This is the same less-than-or-equal rolling-time convention
+    used by the analytical horizon ladder, applied per Composition.
+    """
+    if requested_horizon_years <= 0:
+        raise ValueError("requested_horizon_years must be positive")
+
+    data = _prepare_nav(nav)
+    end_date = data["date"].iloc[-1]
+
+    eligible_requested = [
+        years for years in SUPPORTED_OBSERVATION_HORIZONS
+        if years <= requested_horizon_years
+    ]
+    for years in reversed(eligible_requested):
+        target_start = end_date - pd.DateOffset(years=years)
+        if (data["date"] <= target_start).any():
+            return years
+    return None
+
+
+def observe_trajectory(nav: pd.DataFrame, years: int) -> TrajectoryObservation:
+    """Preserve a trailing Composite-NAV path using the rolling-time convention.
+
+    The starting point is the latest observed NAV on or before the requested
+    lookback date, matching the existing rolling-CAGR convention. The full
+    observed path between that start and the latest observation is preserved.
+    No CAGR, smoothing, scoring, pruning, or path-shape judgement is made.
+    """
+    if years <= 0:
+        raise ValueError("Trajectory horizon must be positive.")
+
+    data = _prepare_nav(nav)
 
     end_date = data["date"].iloc[-1]
     target_start = end_date - pd.DateOffset(years=years)
