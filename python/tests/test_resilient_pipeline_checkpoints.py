@@ -93,3 +93,45 @@ def test_global_checkpoint_output_mutation_is_detected(tmp_path: Path, monkeypat
 
     with pytest.raises((ValueError, FileNotFoundError)):
         pipeline._load_global_identities()
+
+
+def _write_mission_checkpoint(output: Path):
+    mission_path = output / "mission_survivors_Edu_B.csv"
+    write_csv_checkpoint(
+        mission_path,
+        [{"composition": "A|A=1.0"}],
+        stage="mission",
+        as_of=AS_OF,
+        inputs={"achievability_sha256": "achievability-placeholder"},
+    )
+    return mission_path
+
+
+def test_trajectory_checkpoint_requires_current_contract_version(tmp_path: Path, monkeypatch):
+    output = _configure(tmp_path, monkeypatch)
+    mission_path = _write_mission_checkpoint(output)
+    trajectory_path = output / "trajectory_observations" / "Edu_B.csv"
+    coverage_path = output / "trajectory_observations" / "Edu_B_coverage.csv"
+    old_inputs = {
+        "mission_sha256": pipeline._sha256(mission_path),
+        "trajectory_contract_version": str(pipeline.TRAJECTORY_CONTRACT_VERSION - 1),
+    }
+
+    write_csv_checkpoint(
+        trajectory_path,
+        [{"composition": "A|A=1.0", "horizon_years": 5}],
+        stage="trajectory",
+        as_of=AS_OF,
+        inputs=old_inputs,
+    )
+    write_csv_checkpoint(
+        coverage_path,
+        [{"composition": "A|A=1.0", "trajectory_horizon_years": 5, "status": "observed"}],
+        stage="trajectory_coverage",
+        as_of=AS_OF,
+        inputs=old_inputs,
+    )
+
+    assert not pipeline._trajectory_checkpoint_valid(
+        pipeline.Purpose(name="Edu_B", horizon_years=4)
+    )
