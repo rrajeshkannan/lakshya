@@ -52,6 +52,36 @@ def _write_mission(output: Path):
     )
 
 
+def _write_trajectory_checkpoints(output: Path):
+    mission = output / "mission_survivors_Edu_B.csv"
+    trajectory = output / "trajectory_observations" / "Edu_B.csv"
+    coverage = output / "trajectory_observations" / "Edu_B_coverage.csv"
+    inputs = {
+        "mission_sha256": pipeline._sha256(mission),
+        "trajectory_contract_version": str(pipeline.TRAJECTORY_CONTRACT_VERSION),
+    }
+    write_csv_checkpoint(
+        trajectory,
+        [{"composition": "A|A=1.0", "date": "2026-08-31", "nav": 100.0}],
+        stage="trajectory",
+        as_of=AS_OF,
+        inputs=inputs,
+    )
+    write_csv_checkpoint(
+        coverage,
+        [{
+            "composition": "A|A=1.0",
+            "purpose_horizon_years": 4,
+            "nominal_trajectory_horizon_years": 3,
+            "trajectory_horizon_years": 3,
+            "status": "observed",
+        }],
+        stage="trajectory_coverage",
+        as_of=AS_OF,
+        inputs=inputs,
+    )
+
+
 def test_valid_mission_checkpoint_is_reusable(tmp_path: Path, monkeypatch):
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
@@ -77,15 +107,7 @@ def test_valid_trajectory_checkpoint_is_reusable(tmp_path: Path, monkeypatch):
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
     _write_mission(output)
-    mission = output / "mission_survivors_Edu_B.csv"
-    trajectory = output / "trajectory_observations" / "Edu_B.csv"
-    write_csv_checkpoint(
-        trajectory,
-        [{"composition": "A|A=1.0", "date": "2026-08-31", "nav": 100.0}],
-        stage="trajectory",
-        as_of=AS_OF,
-        inputs={"mission_sha256": pipeline._sha256(mission)},
-    )
+    _write_trajectory_checkpoints(output)
 
     purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
     assert pipeline._trajectory_checkpoint_valid(purpose)
@@ -95,15 +117,8 @@ def test_trajectory_becomes_stale_when_mission_changes(tmp_path: Path, monkeypat
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
     _write_mission(output)
+    _write_trajectory_checkpoints(output)
     mission = output / "mission_survivors_Edu_B.csv"
-    trajectory = output / "trajectory_observations" / "Edu_B.csv"
-    write_csv_checkpoint(
-        trajectory,
-        [{"composition": "A|A=1.0", "date": "2026-08-31", "nav": 100.0}],
-        stage="trajectory",
-        as_of=AS_OF,
-        inputs={"mission_sha256": pipeline._sha256(mission)},
-    )
 
     frame = pd.read_csv(mission)
     frame.loc[0, "composition"] = "B|B=1.0"
@@ -117,15 +132,8 @@ def test_trajectory_checkpoint_missing_marker_is_not_reusable(tmp_path: Path, mo
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
     _write_mission(output)
-    mission = output / "mission_survivors_Edu_B.csv"
     trajectory = output / "trajectory_observations" / "Edu_B.csv"
-    write_csv_checkpoint(
-        trajectory,
-        [{"composition": "A|A=1.0", "date": "2026-08-31", "nav": 100.0}],
-        stage="trajectory",
-        as_of=AS_OF,
-        inputs={"mission_sha256": pipeline._sha256(mission)},
-    )
+    _write_trajectory_checkpoints(output)
     trajectory.with_suffix(trajectory.suffix + ".complete.json").unlink()
 
     purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
