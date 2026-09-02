@@ -50,6 +50,7 @@ from .durable_stage_output import (
     write_csv_checkpoint,
 )
 from .models import Purpose
+from .observation_horizon import nearest_supported_horizon
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -468,6 +469,8 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         composition = _composition_from_identity(identity, funds_by_isin)
         fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
         pairs.append((composition, fingerprint))
+
+    nominal_horizon = nearest_supported_horizon(purpose.horizon_years) if purpose.horizon_years is not None else None
     observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
     rows: list[dict] = []
     coverage_rows: list[dict] = []
@@ -478,6 +481,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
             coverage_rows.append({
                 "composition": identity,
                 "purpose_horizon_years": purpose.horizon_years,
+                "nominal_trajectory_horizon_years": nominal_horizon if nominal_horizon is not None else "",
                 "trajectory_horizon_years": "",
                 "status": "insufficient_history",
             })
@@ -485,6 +489,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         coverage_rows.append({
             "composition": identity,
             "purpose_horizon_years": purpose.horizon_years,
+            "nominal_trajectory_horizon_years": nominal_horizon,
             "trajectory_horizon_years": observation.horizon_years,
             "status": "observed",
         })
@@ -492,6 +497,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
             rows.append({
                 "composition": identity,
                 "purpose_horizon_years": purpose.horizon_years,
+                "nominal_trajectory_horizon_years": nominal_horizon,
                 "horizon_years": observation.horizon_years,
                 "date": point.date.strftime("%Y-%m-%d"),
                 "elapsed_days": point.elapsed_days,
