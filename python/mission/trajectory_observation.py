@@ -50,25 +50,28 @@ def _prepare_nav(nav: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def select_observable_horizon(nav: pd.DataFrame, requested_horizon_years: float) -> int | None:
-    """Select the longest canonical horizon supported by this NAV history.
+def select_observable_horizon(nav: pd.DataFrame, nominal_horizon_years: int) -> int | None:
+    """Select the longest canonical horizon observable in this NAV history.
 
-    The selected horizon is the longest member of 3Y/5Y/7Y/10Y that is both
-    not beyond the requested Purpose horizon and actually observable in the
-    NAV history. This is the same less-than-or-equal rolling-time convention
-    used by the analytical horizon ladder, applied per Composition.
+    ``nominal_horizon_years`` is deliberately required to be one of the
+    canonical analytical horizons. The Purpose-to-canonical mapping belongs
+    to the caller; this function only performs the per-Composition history
+    fallback (10Y -> 7Y -> 5Y -> 3Y, bounded by the nominal horizon).
     """
-    if requested_horizon_years <= 0:
-        raise ValueError("requested_horizon_years must be positive")
+    if nominal_horizon_years not in SUPPORTED_OBSERVATION_HORIZONS:
+        raise ValueError(
+            "nominal_horizon_years must be one of the canonical analytical horizons: "
+            f"{SUPPORTED_OBSERVATION_HORIZONS}"
+        )
 
     data = _prepare_nav(nav)
     end_date = data["date"].iloc[-1]
 
-    eligible_requested = [
+    eligible_horizons = [
         years for years in SUPPORTED_OBSERVATION_HORIZONS
-        if years <= requested_horizon_years
+        if years <= nominal_horizon_years
     ]
-    for years in reversed(eligible_requested):
+    for years in reversed(eligible_horizons):
         target_start = end_date - pd.DateOffset(years=years)
         if (data["date"] <= target_start).any():
             return years
