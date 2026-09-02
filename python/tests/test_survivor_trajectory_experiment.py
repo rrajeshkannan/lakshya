@@ -17,9 +17,9 @@ def nav(values):
     )
 
 
-def make_fingerprint(values):
-    fund = Fund(name="Fund A", isin="A", category="Test")
-    composition = Composition(team=Team(members=(fund,)), weights={"A": 1.0})
+def make_fingerprint(values, isin="A"):
+    fund = Fund(name=f"Fund {isin}", isin=isin, category="Test")
+    composition = Composition(team=Team(members=(fund,)), weights={isin: 1.0})
     return composition, CompositionFingerprint(composition, nav(values))
 
 
@@ -59,10 +59,19 @@ def test_trajectory_uses_longest_supported_horizon_not_beyond_purpose():
 
 
 def test_trajectory_falls_back_to_nearest_available_lower_horizon_per_survivor():
-    survivors = [make_fingerprint([100 + i for i in range(9)])]
+    # The 9Y Purpose nominally selects 7Y. Survivor A has 7Y history,
+    # while survivor B only has 5Y, so each Composition gets its own lens.
+    survivors = [
+        make_fingerprint([100 + i for i in range(9)], "A"),
+        make_fingerprint([100 + i for i in range(7)], "B"),
+    ]
     result = observe_survivors_for_purpose(survivors, 9)
-    observation = next(iter(result.values()))
-    assert observation.horizon_years == 7
+
+    observations = {
+        composition.split("|", 1)[0]: observation.horizon_years
+        for composition, observation in result.items()
+    }
+    assert observations == {"A": 7, "B": 5}
 
 
 def test_short_history_survivor_is_not_rejected_by_trajectory():
