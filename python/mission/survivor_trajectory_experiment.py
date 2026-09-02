@@ -12,6 +12,7 @@ from collections.abc import Iterable
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 
+from .observation_horizon import nearest_supported_horizon
 from .trajectory_observation import TrajectoryObservation, observe_trajectory
 
 
@@ -21,24 +22,25 @@ def observe_survivors_for_purpose(
 ) -> dict[str, TrajectoryObservation]:
     """Observe raw Composite-NAV paths for already-surviving Compositions.
 
-    The Purpose contributes only its horizon. The function does not inspect
-    target corpus, current capital, contributions, or required return, and
-    it performs no scoring, ordering, pruning, or interpretation.
+    The Purpose contributes only its horizon as a request for the canonical
+    analytical horizon. The observation itself uses the same 3Y/5Y/7Y/10Y
+    ladder as MISSION's Elevation comparison, selecting the longest supported
+    horizon not beyond the Purpose horizon. The Purpose horizon is never
+    passed directly to the trajectory observer.
 
-    A non-integral horizon is supported by requiring an integer observed
-    horizon not exceeding the Purpose horizon. This keeps the observation on
-    whole-year rolling windows while never exceeding the Purpose horizon.
+    This function does not inspect target corpus, current capital,
+    contributions, or required return, and it performs no scoring, ordering,
+    pruning, or interpretation.
 
     Results use the same canonical value identity as every other pipeline
     stage. This prevents the runner from depending on ``repr(Composition)``
     and avoids object-hash issues because Composition contains a dict.
     """
-    if purpose_horizon_years <= 0:
-        raise ValueError("purpose_horizon_years must be positive")
-
-    supported_years = int(purpose_horizon_years)
-    if supported_years <= 0:
-        raise ValueError("purpose horizon must support at least one full year")
+    supported_years = nearest_supported_horizon(purpose_horizon_years)
+    if supported_years is None:
+        raise ValueError(
+            "Purpose horizon is below the minimum supported analytical horizon."
+        )
 
     observations: dict[str, TrajectoryObservation] = {}
     for composition, fingerprint in survivors:
