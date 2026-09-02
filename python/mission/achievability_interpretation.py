@@ -8,6 +8,7 @@ from typing import Any
 
 from .achievability import required_annual_return
 from .models import Purpose
+from .observation_horizon import nearest_supported_horizon
 
 
 class AchievabilityStatus(str, Enum):
@@ -30,12 +31,10 @@ class AchievabilityAssessment:
 
 
 def _comparison_horizon(purpose: Purpose) -> int | None:
-    """Choose the longest supported observed horizon not beyond the Purpose horizon."""
+    """Choose the canonical analytical horizon not beyond the Purpose horizon."""
     if purpose.horizon_years is None:
         return None
-    supported = (3, 5, 7, 10)
-    eligible = [years for years in supported if years <= purpose.horizon_years]
-    return max(eligible) if eligible else None
+    return nearest_supported_horizon(purpose.horizon_years)
 
 
 def _rolling_evidence(elevation: Any, years: int) -> Any:

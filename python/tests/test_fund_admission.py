@@ -40,21 +40,18 @@ def test_valid_potential_fund():
     ) == "ADMIT"
 
 
+def test_regular_and_direct_plans_have_same_admission_treatment():
+    direct = make_fund(plan="Direct")
+    regular = make_fund(plan="Regular")
+
+    assert evaluate_potential_fund(direct, REVIEW_DATE) == "ADMIT"
+    assert evaluate_potential_fund(regular, REVIEW_DATE) == "ADMIT"
+
+
 def test_elss_is_rejected():
     fund = make_fund(
         category="Equity Scheme - ELSS Fund",
         category_sub="ELSS",
-    )
-
-    assert evaluate_potential_fund(
-        fund,
-        REVIEW_DATE,
-    ) == "REJECT"
-
-
-def test_regular_plan_is_rejected():
-    fund = make_fund(
-        plan="Regular",
     )
 
     assert evaluate_potential_fund(
@@ -116,26 +113,3 @@ def test_inactive_fund_is_rejected():
         fund,
         REVIEW_DATE,
     ) == "REJECT"
-
-
-if __name__ == "__main__":
-    print("Fund Admission unit tests")
-    print("=========================")
-
-    tests = [
-        test_valid_potential_fund,
-        test_elss_is_rejected,
-        test_regular_plan_is_rejected,
-        test_non_growth_option_is_rejected,
-        test_young_fund_is_waitlisted,
-        test_exactly_eight_years_is_admitted,
-        test_closed_ended_fund_is_rejected,
-        test_inactive_fund_is_rejected,
-    ]
-
-    for test in tests:
-        test()
-        print(f"PASS: {test.__name__}")
-
-    print()
-    print(f"All {len(tests)} tests passed.")
