@@ -1,6 +1,14 @@
 data/cache/
+data/fingerprints/composition/
 python/lakshya.egg-info/
 bin/
 obj/
 __pycache__/
 *.pyc
+
+# Generated Lakshya analytical/runtime output
+output/*
+!output/.gitkeep
+
+# macOS metadata
+.DS_Store
