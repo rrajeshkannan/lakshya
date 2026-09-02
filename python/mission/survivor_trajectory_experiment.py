@@ -12,44 +12,53 @@ from collections.abc import Iterable
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 
-from .observation_horizon import nearest_supported_horizon
-from .trajectory_observation import TrajectoryObservation, observe_trajectory
+from .trajectory_observation import (
+    TrajectoryObservation,
+    observe_trajectory,
+    select_observable_horizon,
+)
 
 
-TRAJECTORY_CONTRACT_VERSION = 2
+TRAJECTORY_CONTRACT_VERSION = 3
 
 
 def observe_survivors_for_purpose(
     survivors: Iterable[tuple[Composition, CompositionFingerprint]],
     purpose_horizon_years: float,
 ) -> dict[str, TrajectoryObservation]:
-    """Observe raw Composite-NAV paths for already-surviving Compositions.
+    """Observe the richest supported lived path for each survivor.
 
-    The Purpose contributes only its horizon as a request for the canonical
-    analytical horizon. The observation itself uses the same 3Y/5Y/7Y/10Y
-    ladder as MISSION's Elevation comparison, selecting the longest supported
-    horizon not beyond the Purpose horizon. The Purpose horizon is never
-    passed directly to the trajectory observer.
+    The Purpose horizon is only the upper bound for the analytical horizon.
+    For each Composition independently, the function selects the longest
+    observable member of the canonical 3Y/5Y/7Y/10Y ladder that does not
+    exceed the Purpose horizon. A shorter-lived CURRENT fund therefore uses
+    the nearest lower supported trajectory rather than being rejected.
 
-    This function does not inspect target corpus, current capital,
-    contributions, or required return, and it performs no scoring, ordering,
-    pruning, or interpretation.
+    A Composition with less than 3Y lived history has no trajectory
+    observation, but remains a MISSION survivor; absence of trajectory
+    evidence is deliberately not a decision gate.
 
-    Results use the same canonical value identity as every other pipeline
-    stage. This prevents the runner from depending on ``repr(Composition)``
-    and avoids object-hash issues because Composition contains a dict.
+    The function performs no scoring, ordering, pruning, or interpretation.
     """
-    supported_years = nearest_supported_horizon(purpose_horizon_years)
-    if supported_years is None:
-        raise ValueError(
-            "Purpose horizon is below the minimum supported analytical horizon."
-        )
+    if purpose_horizon_years <= 0:
+        raise ValueError("purpose_horizon_years must be positive")
 
     observations: dict[str, TrajectoryObservation] = {}
     for composition, fingerprint in survivors:
         identity = composition_identity(composition)
         if identity in observations:
             raise ValueError(f"duplicate Composition identity: {identity}")
-        observations[identity] = observe_trajectory(fingerprint.nav, supported_years)
+
+        selected_horizon = select_observable_horizon(
+            fingerprint.nav,
+            purpose_horizon_years,
+        )
+        if selected_horizon is None:
+            continue
+
+        observations[identity] = observe_trajectory(
+            fingerprint.nav,
+            selected_horizon,
+        )
 
     return observations
