@@ -12,6 +12,7 @@ from collections.abc import Iterable
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 
+from .observation_horizon import nearest_supported_horizon
 from .trajectory_observation import (
     TrajectoryObservation,
     observe_trajectory,
@@ -19,7 +20,7 @@ from .trajectory_observation import (
 )
 
 
-TRAJECTORY_CONTRACT_VERSION = 3
+TRAJECTORY_CONTRACT_VERSION = 4
 
 
 def observe_survivors_for_purpose(
@@ -29,10 +30,10 @@ def observe_survivors_for_purpose(
     """Observe the richest supported lived path for each survivor.
 
     The Purpose horizon is only the upper bound for the analytical horizon.
-    For each Composition independently, the function selects the longest
-    observable member of the canonical 3Y/5Y/7Y/10Y ladder that does not
-    exceed the Purpose horizon. A shorter-lived CURRENT fund therefore uses
-    the nearest lower supported trajectory rather than being rejected.
+    The nominal analytical lens is the longest canonical 3Y/5Y/7Y/10Y horizon
+    that does not exceed the Purpose horizon. For each Composition
+    independently, the observation then falls back to the longest lower
+    canonical horizon actually supported by that Composition's NAV history.
 
     A Composition with less than 3Y lived history has no trajectory
     observation, but remains a MISSION survivor; absence of trajectory
@@ -43,6 +44,10 @@ def observe_survivors_for_purpose(
     if purpose_horizon_years <= 0:
         raise ValueError("purpose_horizon_years must be positive")
 
+    nominal_horizon = nearest_supported_horizon(purpose_horizon_years)
+    if nominal_horizon is None:
+        return {}
+
     observations: dict[str, TrajectoryObservation] = {}
     for composition, fingerprint in survivors:
         identity = composition_identity(composition)
@@ -51,7 +56,7 @@ def observe_survivors_for_purpose(
 
         selected_horizon = select_observable_horizon(
             fingerprint.nav,
-            purpose_horizon_years,
+            nominal_horizon,
         )
         if selected_horizon is None:
             continue
