@@ -133,5 +133,5 @@ def test_trajectory_checkpoint_requires_current_contract_version(tmp_path: Path,
     )
 
     assert not pipeline._trajectory_checkpoint_valid(
-        pipeline.Purpose(name="Edu_B", horizon_years=4)
+        pipeline.Purpose(name="Edu_B", current_capital=0.0, horizon_years=4)
     )
