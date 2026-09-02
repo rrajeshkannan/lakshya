@@ -58,15 +58,30 @@ def test_trajectory_uses_longest_supported_horizon_not_beyond_purpose():
         assert observation.horizon_years == trajectory_horizon
 
 
+def test_trajectory_falls_back_to_nearest_available_lower_horizon_per_survivor():
+    survivors = [make_fingerprint([100 + i for i in range(9)])]
+    result = observe_survivors_for_purpose(survivors, 9)
+    observation = next(iter(result.values()))
+    assert observation.horizon_years == 7
+
+
+def test_short_history_survivor_is_not_rejected_by_trajectory():
+    survivors = [make_fingerprint([100, 110, 120, 130])]
+    result = observe_survivors_for_purpose(survivors, 12)
+    observation = next(iter(result.values()))
+    assert observation.horizon_years == 3
+
+
+def test_no_three_year_history_has_no_trajectory_observation():
+    survivors = [make_fingerprint([100, 110, 120])]
+    result = observe_survivors_for_purpose(survivors, 12)
+    assert result == {}
+
+
 def test_observation_uses_canonical_composition_identity():
     composition, fingerprint = make_fingerprint([100, 110, 120, 130, 140, 150])
     result = observe_survivors_for_purpose([(composition, fingerprint)], 4)
     assert composition_identity(composition) in result
-
-
-def test_unsupported_short_purpose_horizon_is_rejected():
-    with pytest.raises(ValueError, match="minimum supported analytical horizon"):
-        observe_survivors_for_purpose([], 2)
 
 
 def test_invalid_purpose_horizon_is_rejected():
