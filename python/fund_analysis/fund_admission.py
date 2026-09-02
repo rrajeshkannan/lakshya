@@ -53,7 +53,6 @@ def evaluate_potential_fund(
 ) -> str:
     category = str(row["category"]).strip()
     category_sub = str(row["category_sub"]).strip()
-    plan = str(row["plan"]).strip()
     option = str(row["option"]).strip()
     scheme_type = str(row["scheme_type"]).strip()
 
@@ -77,9 +76,6 @@ def evaluate_potential_fund(
         return "REJECT"
 
     if option.lower() != "growth":
-        return "REJECT"
-
-    if plan.lower() != "direct":
         return "REJECT"
 
     if pd.isna(first_date):
@@ -232,8 +228,9 @@ def main() -> None:
     admissible_df = pd.DataFrame(admitted_rows)
 
     # CURRENT/POTENTIAL is deliberately not propagated.
-    # Once a Fund reaches this artifact, it simply belongs
-    # to the behavioural universe.
+    # Plan type is likewise not an analytical admission dimension.
+    # Once a Fund reaches this artifact, it simply belongs to the
+    # behavioural universe.
     if not admissible_df.empty:
         admissible_df = admissible_df.drop(
             columns=["entry_type"],
