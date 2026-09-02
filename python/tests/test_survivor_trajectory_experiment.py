@@ -11,7 +11,7 @@ from lakshya_core.models import Fund
 def nav(values):
     return pd.DataFrame(
         {
-            "date": pd.date_range("2015-01-01", periods=len(values), freq="YS"),
+            "date": pd.date_range("2010-01-01", periods=len(values), freq="YS"),
             "nav": values,
         }
     )
@@ -23,17 +23,50 @@ def make_fingerprint(values):
     return composition, CompositionFingerprint(composition, nav(values))
 
 
-def test_purpose_horizon_is_the_only_purpose_input_and_uses_floor_years():
-    survivors = [make_fingerprint([100, 110, 120, 130, 140, 150])]
-    result = observe_survivors_for_purpose(survivors, 4.5)
+def test_trajectory_uses_canonical_horizon_not_purpose_horizon():
+    survivors = [make_fingerprint([100 + i for i in range(13)])]
+    result = observe_survivors_for_purpose(survivors, 9)
     observation = next(iter(result.values()))
-    assert observation.horizon_years == 4
+    assert observation.horizon_years == 7
+
+
+def test_trajectory_horizon_matches_mission_convention_for_retirement():
+    survivors = [make_fingerprint([100 + i for i in range(15)])]
+    result = observe_survivors_for_purpose(survivors, 12)
+    observation = next(iter(result.values()))
+    assert observation.horizon_years == 10
+
+
+def test_trajectory_uses_longest_supported_horizon_not_beyond_purpose():
+    survivors = [make_fingerprint([100 + i for i in range(13)])]
+
+    expected = {
+        4: 3,
+        5: 5,
+        6: 5,
+        7: 7,
+        8: 7,
+        9: 7,
+        10: 10,
+        11: 10,
+        12: 10,
+    }
+
+    for purpose_horizon, trajectory_horizon in expected.items():
+        result = observe_survivors_for_purpose(survivors, purpose_horizon)
+        observation = next(iter(result.values()))
+        assert observation.horizon_years == trajectory_horizon
 
 
 def test_observation_uses_canonical_composition_identity():
     composition, fingerprint = make_fingerprint([100, 110, 120, 130, 140, 150])
     result = observe_survivors_for_purpose([(composition, fingerprint)], 4)
     assert composition_identity(composition) in result
+
+
+def test_unsupported_short_purpose_horizon_is_rejected():
+    with pytest.raises(ValueError, match="minimum supported analytical horizon"):
+        observe_survivors_for_purpose([], 2)
 
 
 def test_invalid_purpose_horizon_is_rejected():
