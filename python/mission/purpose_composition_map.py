@@ -1,13 +1,12 @@
 """Descriptive Purpose Composition Map for MISSION survivors.
 
-This module deliberately stops at native Lakshya identities:
+The analysis deliberately stops at native Lakshya identities:
 
     exact Composition -> Fund set / Team -> Fund exposure
 
-It does not score, rank, or invent a continuous similarity metric. A Team's
-identity is its member set, so fund-set identity and Team identity are
-currently equivalent by construction; both are exposed where useful for
-interpretation rather than pretending they are different concepts.
+It does not score, rank, or invent a continuous similarity metric. Team
+identity is membership-only, so fund-set identity and Team identity are
+equivalent by construction in the current model.
 """
 
 from __future__ import annotations
@@ -62,8 +61,8 @@ def _atomic_csv(path: Path, fieldnames: list[str], rows: list[dict]) -> None:
 
 def build_purpose_composition_map(
     survivor_identities: dict[str, list[str]],
-) -> tuple[list[dict], list[dict], list[dict]]:
-    """Build descriptive map, per-Purpose summary, and pairwise overlap rows."""
+) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
+    """Build composition, structural, fund-exposure, and overlap rows."""
     if not survivor_identities:
         raise ValueError("At least one Purpose is required")
 
@@ -71,12 +70,15 @@ def build_purpose_composition_map(
     for purpose, identities in survivor_identities.items():
         if not identities:
             raise ValueError(f"Purpose has no MISSION survivors: {purpose}")
+        if len(identities) != len(set(identities)):
+            raise ValueError(f"Duplicate Composition identities for Purpose: {purpose}")
         parsed[purpose] = {
             identity: parse_composition_identity(identity) for identity in identities
         }
 
     map_rows: list[dict] = []
     summary_rows: list[dict] = []
+    exposure_rows: list[dict] = []
     fund_stats: dict[tuple[str, str], list[float]] = defaultdict(list)
 
     for purpose in sorted(parsed):
@@ -111,28 +113,6 @@ def build_purpose_composition_map(
             "fund_set_equals_team_identity": True,
         })
 
-    # Add fund exposure rows after the composition-level map is assembled.
-    for (purpose, isin), weights in sorted(fund_stats.items()):
-        map_rows.append({
-            "purpose": purpose,
-            "composition": "",
-            "team": "",
-            "fund_set": "",
-            "cardinality": "",
-            "weights": "",
-        })
-        # The exposure rows are intentionally not mixed into the main map's
-        # public shape; they are removed below and returned through summary
-        # extension in a dedicated block is avoided to keep the artifact
-        # schema simple.
-
-    # Replace the temporary exposure markers with one row per fund by using
-    # a stable, separate section encoded in the same returned list is not
-    # desirable. The caller therefore derives fund exposure from map rows.
-    # Remove the temporary markers.
-    map_rows = [row for row in map_rows if row["composition"]]
-
-    exposure_rows: list[dict] = []
     for (purpose, isin), weights in sorted(fund_stats.items()):
         survivor_count = len(parsed[purpose])
         exposure_rows.append({
@@ -146,9 +126,6 @@ def build_purpose_composition_map(
             "maximum_weight_pct": 100.0 * max(weights),
         })
 
-    # The third artifact is pairwise Purpose overlap. Exact composition
-    # overlap is weight-sensitive; fund-set and Team overlap are membership-
-    # sensitive and therefore equal in the current Team model.
     overlap_rows: list[dict] = []
     for left, right in combinations(sorted(parsed), 2):
         left_exact = set(parsed[left])
@@ -172,17 +149,20 @@ def build_purpose_composition_map(
             "fund_set_overlap_pct_of_b": 100.0 * set_intersection / len(right_sets),
         })
 
-    return map_rows, summary_rows + exposure_rows, overlap_rows
+    return map_rows, summary_rows, exposure_rows, overlap_rows
 
 
 def write_purpose_composition_map(
     survivor_identities: dict[str, list[str]],
     output_dir: Path = OUTPUT_DIR,
-) -> tuple[Path, Path, Path]:
-    """Persist the three descriptive Purpose Composition Map artifacts."""
-    map_rows, summary_rows, overlap_rows = build_purpose_composition_map(survivor_identities)
+) -> tuple[Path, Path, Path, Path]:
+    """Persist deterministic descriptive Purpose Composition Map artifacts."""
+    map_rows, summary_rows, exposure_rows, overlap_rows = build_purpose_composition_map(
+        survivor_identities
+    )
     map_path = output_dir / "purpose_composition_map.csv"
     summary_path = output_dir / "purpose_composition_summary.csv"
+    exposure_path = output_dir / "purpose_fund_exposure.csv"
     overlap_path = output_dir / "purpose_overlap.csv"
 
     _atomic_csv(
@@ -190,10 +170,6 @@ def write_purpose_composition_map(
         ["purpose", "composition", "team", "fund_set", "cardinality", "weights"],
         map_rows,
     )
-    # Summary and fund exposure use distinct schemas; write them separately
-    # under deterministic names so consumers do not need to infer row type.
-    structural_rows = [row for row in summary_rows if "survivor_count" in row and "isin" not in row]
-    exposure_rows = [row for row in summary_rows if "isin" in row]
     _atomic_csv(
         summary_path,
         [
@@ -201,9 +177,8 @@ def write_purpose_composition_map(
             "unique_teams", "unique_funds", "singleton_count", "pair_count", "trio_count",
             "fund_set_equals_team_identity",
         ],
-        structural_rows,
+        summary_rows,
     )
-    exposure_path = output_dir / "purpose_fund_exposure.csv"
     _atomic_csv(
         exposure_path,
         [
@@ -222,26 +197,37 @@ def write_purpose_composition_map(
         ],
         overlap_rows,
     )
-    return map_path, summary_path, overlap_path
+    return map_path, summary_path, exposure_path, overlap_path
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build the descriptive MISSION Purpose Composition Map")
-    parser.add_argument("--purposes", nargs="+", help="Purpose names to include; default: all available survivor files")
+    parser = argparse.ArgumentParser(
+        description="Build the descriptive MISSION Purpose Composition Map"
+    )
+    parser.add_argument(
+        "--purposes", nargs="+", help="Purpose names to include; default: all available survivor files"
+    )
     args = parser.parse_args()
 
     files = sorted(OUTPUT_DIR.glob("mission_survivors_*.csv"))
     if args.purposes:
-        requested = set(args.purposes)
-        files = [OUTPUT_DIR / f"mission_survivors_{purpose}.csv" for purpose in sorted(requested)]
+        files = [
+            OUTPUT_DIR / f"mission_survivors_{purpose}.csv"
+            for purpose in sorted(set(args.purposes))
+        ]
     if not files:
         raise SystemExit("No MISSION survivor files found")
+    missing = [path for path in files if not path.is_file()]
+    if missing:
+        raise SystemExit("Missing MISSION survivor file(s): " + ", ".join(str(p) for p in missing))
 
-    survivors = {path.stem.removeprefix("mission_survivors_"): _read_survivors(path) for path in files}
+    survivors = {
+        path.stem.removeprefix("mission_survivors_"): _read_survivors(path)
+        for path in files
+    }
     paths = write_purpose_composition_map(survivors)
     for path in paths:
         print(path.relative_to(PROJECT_ROOT))
-    print("output/purpose_fund_exposure.csv")
 
 
 if __name__ == "__main__":
