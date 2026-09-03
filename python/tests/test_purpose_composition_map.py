@@ -88,5 +88,11 @@ def test_artifacts_are_written_with_separate_deterministic_schemas(tmp_path):
         overlap = list(csv.DictReader(handle))
 
     assert len(summary) == 2
-    assert len(exposure) == 2
+    assert len(exposure) == 4
+    assert {(row["purpose"], row["isin"]) for row in exposure} == {
+        ("Edu_B", "A"),
+        ("Edu_B", "B"),
+        ("Marriage", "A"),
+        ("Marriage", "B"),
+    }
     assert len(overlap) == 1
