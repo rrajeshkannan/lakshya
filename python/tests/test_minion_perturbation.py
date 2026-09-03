@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
@@ -42,9 +40,16 @@ def _nav(values):
     return pd.DataFrame({"date": dates, "nav": values})
 
 
+def _long_path(points):
+    values = [100.0] * 366
+    for index, value in points.items():
+        values[index] = value
+    return _nav(values)
+
+
 def test_aligned_paths_use_same_start_and_common_dates():
-    trio = _nav([100, 105, 95, 110, 120])
-    twin = _nav([200, 210, 190, 220, 240])
+    trio = _long_path({100: 105.0, 200: 95.0, 365: 120.0})
+    twin = _long_path({100: 210.0, 200: 190.0, 365: 240.0})
     path = _aligned_paths(trio, twin, 1)
     assert path["date"].iloc[0] == trio["date"].iloc[0]
     assert path["norm_trio"].iloc[0] == pytest.approx(1.0)
@@ -55,8 +60,8 @@ def test_aligned_paths_use_same_start_and_common_dates():
 
 def test_path_metrics_preserve_path_difference_not_only_endpoint():
     path = _aligned_paths(
-        _nav([100, 120, 90, 130]),
-        _nav([100, 105, 100, 130]),
+        _long_path({100: 120.0, 200: 90.0, 365: 130.0}),
+        _long_path({100: 105.0, 200: 100.0, 365: 130.0}),
         1,
     )
     trio = _path_metrics(path, "trio")
