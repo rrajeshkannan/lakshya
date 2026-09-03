@@ -1,8 +1,10 @@
 import pandas as pd
 import pytest
 
+from mission import minion_perturbation as mp
 from mission.minion_perturbation import (
     _aligned_paths,
+    _load_required_navs,
     _path_metrics,
     boundary_twins,
     make_identity,
@@ -75,3 +77,20 @@ def test_path_metrics_preserve_path_difference_not_only_endpoint():
 def test_boundary_twins_reject_non_trios():
     with pytest.raises(ValueError):
         boundary_twins("A,B|A=0.9000,B=0.1000", "B")
+
+
+def test_required_navs_are_loaded_once_per_unique_identity(monkeypatch, tmp_path):
+    calls = []
+
+    def fake_load(identity, root):
+        calls.append(identity)
+        return _nav([100.0, 101.0])
+
+    monkeypatch.setattr(mp, "_load_nav", fake_load)
+    twin = "A,B|A=0.9000,B=0.1000"
+    trio = "A,B,C|A=0.8000,B=0.1000,C=0.1000"
+    task = ("Retirement", trio, "C", twin, "A", {trio}, 1)
+    cache = _load_required_navs([task, task], tmp_path)
+
+    assert sorted(cache) == sorted([trio, twin])
+    assert calls == sorted([trio, twin])
