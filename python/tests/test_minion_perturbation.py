@@ -1,9 +1,12 @@
+import json
+
 import pandas as pd
 import pytest
 
 from mission import minion_perturbation as mp
 from mission.minion_perturbation import (
     _aligned_paths,
+    _build_nav_from_fund_histories,
     _load_required_navs,
     _path_metrics,
     boundary_twins,
@@ -79,18 +82,29 @@ def test_boundary_twins_reject_non_trios():
         boundary_twins("A,B|A=0.9000,B=0.1000", "B")
 
 
-def test_required_navs_are_loaded_once_per_unique_identity(monkeypatch, tmp_path):
-    calls = []
+def test_reconstruct_boundary_nav_uses_asof_weighting():
+    identity = "A,B|A=0.7500,B=0.2500"
+    histories = {
+        "A": _nav([100.0, 110.0, 120.0]),
+        "B": _nav([200.0, 180.0, 160.0]),
+    }
+    result = _build_nav_from_fund_histories(identity, histories)
+    assert result["nav"].tolist() == pytest.approx([125.0, 127.5, 130.0])
 
-    def fake_load(identity, root):
-        calls.append(identity)
-        return _nav([100.0, 101.0])
 
-    monkeypatch.setattr(mp, "_load_nav", fake_load)
-    twin = "A,B|A=0.9000,B=0.1000"
+def test_required_navs_load_persisted_identities_once(tmp_path):
     trio = "A,B,C|A=0.8000,B=0.1000,C=0.1000"
+    twin = "A,B|A=0.9000,B=0.1000"
+    for identity in (trio, twin):
+        payload = {
+            "composition": identity,
+            "kind": "composition_fingerprint",
+            "nav": [{"date": "2020-01-01", "nav": 100.0}],
+        }
+        (tmp_path / f"{identity}.json").write_text(json.dumps(payload), encoding="utf-8")
+
     task = ("Retirement", trio, "C", twin, "A", {trio}, 1)
-    cache = _load_required_navs([task, task], tmp_path)
+    cache, sources = _load_required_navs([task, task], tmp_path, tmp_path)
 
     assert sorted(cache) == sorted([trio, twin])
-    assert calls == sorted([trio, twin])
+    assert sources == {trio: "persisted_fingerprint", twin: "persisted_fingerprint"}
