@@ -173,31 +173,45 @@ def _floor_years(start: pd.Timestamp, due: pd.Timestamp) -> int:
 
 def _load_purposes(as_of: pd.Timestamp) -> list[Purpose]:
     df = pd.read_csv(PURPOSES_PATH, keep_default_na=False)
-    required = {"name", "due", "value", "desired", "monthly_plan"}
+    required = {"name", "due", "value", "desired", "monthly_plan", "analytical_horizon_years"}
     missing = required - set(df.columns)
     if missing:
         raise ValueError(f"Purpose input is missing required columns: {sorted(missing)}")
     purposes: list[Purpose] = []
     for row in df.to_dict("records"):
+        name = str(row["name"])
         due_raw = str(row["due"]).strip()
+        analytical_raw = str(row["analytical_horizon_years"]).strip()
+        analytical_horizon = int(analytical_raw) if analytical_raw else None
         if due_raw.upper() == "NA" or not due_raw:
-            purposes.append(Purpose(name=str(row["name"]), current_capital=float(row["value"])))
+            if analytical_horizon is None:
+                raise ValueError(f"Purpose without a finite due date requires analytical_horizon_years: {name}")
+            purposes.append(
+                Purpose(
+                    name=name,
+                    current_capital=float(row["value"]),
+                    analytical_horizon_years=analytical_horizon,
+                )
+            )
             continue
         due = pd.Timestamp(due_raw)
         horizon = _floor_years(as_of, due)
         if horizon <= 0:
-            raise ValueError(f"Purpose due date is not beyond as-of date: {row['name']}")
+            raise ValueError(f"Purpose due date is not beyond as-of date: {name}")
         purposes.append(
             Purpose(
-                name=str(row["name"]),
+                name=name,
                 current_capital=float(row["value"]),
                 desired_target=float(row["desired"]),
                 horizon_years=horizon,
                 monthly_contribution=float(row["monthly_plan"]),
             )
         )
-    _log("Loaded purposes: " + ", ".join(f"{p.name}={p.horizon_years}Y" for p in purposes))
-    _detail("PURPOSES_READY " + " ".join(f"name={p.name} horizon={p.horizon_years}Y" for p in purposes))
+    _log("Loaded purposes: " + ", ".join(f"{p.name}={p.trajectory_horizon_years}Y" for p in purposes))
+    _detail(
+        "PURPOSES_READY "
+        + " ".join(f"name={p.name} horizon={p.trajectory_horizon_years}Y achievability={p.has_achievability}" for p in purposes)
+    )
     return purposes
 
 
@@ -329,16 +343,7 @@ def _global_inputs() -> dict[str, str]:
 
 def _load_global_identities() -> list[str]:
     path = OUTPUT_DIR / "global_survivors.csv"
-    try:
-        df = load_csv_checkpoint(
-            path,
-            stage="global_frontier",
-            as_of=_as_of_string(),
-            inputs=_global_inputs(),
-        )
-    except (FileNotFoundError, ValueError, OSError) as exc:
-        _detail(f"GLOBAL_CHECKPOINT_INVALID path={path} reason={exc!r}")
-        raise
+    df = load_csv_checkpoint(path, stage="global_frontier", as_of=_as_of_string(), inputs=_global_inputs())
     if "composition" not in df.columns:
         raise ValueError(f"Invalid global frontier checkpoint: {path}")
     identities = df["composition"].tolist()
@@ -360,24 +365,30 @@ def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
 
 
 def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
-    if purpose.horizon_years is None:
+    if purpose.trajectory_horizon_years is None:
         return purpose.name, 0, 0, 0
-    achievability_survivors: list[tuple[Composition, CompositionFingerprint]] = []
+
+    qualified: list[tuple[Composition, CompositionFingerprint]] = []
     assessments: list[dict] = []
-    _detail(f"MISSION_PURPOSE_START purpose={purpose.name} identities={len(identities)}")
+    _detail(f"MISSION_PURPOSE_START purpose={purpose.name} identities={len(identities)} achievability={purpose.has_achievability}")
     for identity in identities:
         composition = _composition_from_identity(identity, funds_by_isin)
         fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
         assessment = assess_achievability(purpose, fingerprint)
+        comparison_horizon = (
+            assessment.comparison_horizon_years
+            if purpose.has_achievability
+            else nearest_supported_horizon(purpose.analytical_horizon_years)
+        )
         assessments.append({
             "composition": identity,
             "status": assessment.status.value,
             "required_annual_return": assessment.required_annual_return,
-            "comparison_horizon_years": assessment.comparison_horizon_years,
+            "comparison_horizon_years": comparison_horizon,
             "observed_upper_return": assessment.observed_upper_return,
         })
-        if assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
-            achievability_survivors.append((composition, fingerprint))
+        if not purpose.has_achievability or assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
+            qualified.append((composition, fingerprint))
 
     global_path = OUTPUT_DIR / "global_survivors.csv"
     global_inputs = {
@@ -386,7 +397,8 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
     }
     achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
     _write_rows(achievability_path, assessments, stage="mission_achievability", inputs=global_inputs, as_of=as_of)
-    protected = protection_frontier(achievability_survivors)
+
+    protected = protection_frontier(qualified)
     mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
     _write_rows(
         mission_path,
@@ -395,8 +407,11 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
         inputs={"achievability_sha256": _sha256(achievability_path)},
         as_of=as_of,
     )
-    _detail(f"MISSION_PURPOSE_COMPLETE purpose={purpose.name} assessed={len(identities)} achievability={len(achievability_survivors)} protection={len(protected)}")
-    return purpose.name, len(identities), len(achievability_survivors), len(protected)
+    _detail(
+        f"MISSION_PURPOSE_COMPLETE purpose={purpose.name} assessed={len(identities)} "
+        f"achievability={len(qualified) if purpose.has_achievability else 'not_applicable'} protection={len(protected)}"
+    )
+    return purpose.name, len(identities), len(qualified), len(protected)
 
 
 def _mission_checkpoint_valid(purpose: Purpose) -> bool:
@@ -405,7 +420,7 @@ def _mission_checkpoint_valid(purpose: Purpose) -> bool:
     if not mission_path.is_file() or not achievability_path.is_file():
         return False
     try:
-        achievability_valid = is_valid_csv_checkpoint(
+        if not is_valid_csv_checkpoint(
             achievability_path,
             stage="mission_achievability",
             as_of=_as_of_string(),
@@ -413,8 +428,7 @@ def _mission_checkpoint_valid(purpose: Purpose) -> bool:
                 "global_survivors_sha256": _sha256(OUTPUT_DIR / "global_survivors.csv"),
                 "global_checkpoint_stage": "global_frontier",
             },
-        )
-        if not achievability_valid:
+        ):
             return False
         return is_valid_csv_checkpoint(
             mission_path,
@@ -430,7 +444,7 @@ def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_exist
     identities = _load_global_identities()
     runnable = [
         purpose for purpose in purposes
-        if purpose.horizon_years is not None
+        if purpose.trajectory_horizon_years is not None
         and not (skip_existing and _mission_checkpoint_valid(purpose))
     ]
     if not runnable:
@@ -451,9 +465,10 @@ def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_exist
         for future in as_completed(futures):
             purpose_name = futures[future]
             try:
-                name, assessed, achievable, protected = future.result()
-                _log(f"  {name}: assessed={assessed} achievability={achievable} protection={protected}")
-                _detail(f"MISSION_WORKER_COMPLETE purpose={name} assessed={assessed} achievability={achievable} protection={protected}")
+                name, assessed, qualified, protected = future.result()
+                label = "achievability" if next(p for p in runnable if p.name == name).has_achievability else "analytical_horizon"
+                _log(f"  {name}: assessed={assessed} {label}={qualified} protection={protected}")
+                _detail(f"MISSION_WORKER_COMPLETE purpose={name} assessed={assessed} qualified={qualified} protection={protected}")
             except Exception as exc:
                 _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
                 _manifest_update("mission", "failed", failed_purpose=purpose_name, error=repr(exc))
@@ -470,8 +485,11 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
         pairs.append((composition, fingerprint))
 
-    nominal_horizon = nearest_supported_horizon(purpose.horizon_years) if purpose.horizon_years is not None else None
-    observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
+    purpose_horizon = purpose.trajectory_horizon_years
+    if purpose_horizon is None:
+        raise ValueError(f"Purpose has no trajectory horizon: {purpose.name}")
+    nominal_horizon = nearest_supported_horizon(purpose_horizon)
+    observations = observe_survivors_for_purpose(pairs, purpose_horizon)
     rows: list[dict] = []
     coverage_rows: list[dict] = []
     for composition, _ in pairs:
@@ -480,15 +498,15 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         if observation is None:
             coverage_rows.append({
                 "composition": identity,
-                "purpose_horizon_years": purpose.horizon_years,
-                "nominal_trajectory_horizon_years": nominal_horizon if nominal_horizon is not None else "",
+                "purpose_horizon_years": purpose_horizon,
+                "nominal_trajectory_horizon_years": nominal_horizon,
                 "trajectory_horizon_years": "",
                 "status": "insufficient_history",
             })
             continue
         coverage_rows.append({
             "composition": identity,
-            "purpose_horizon_years": purpose.horizon_years,
+            "purpose_horizon_years": purpose_horizon,
             "nominal_trajectory_horizon_years": nominal_horizon,
             "trajectory_horizon_years": observation.horizon_years,
             "status": "observed",
@@ -496,7 +514,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
         for point in observation.points:
             rows.append({
                 "composition": identity,
-                "purpose_horizon_years": purpose.horizon_years,
+                "purpose_horizon_years": purpose_horizon,
                 "nominal_trajectory_horizon_years": nominal_horizon,
                 "horizon_years": observation.horizon_years,
                 "date": point.date.strftime("%Y-%m-%d"),
@@ -511,20 +529,8 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
     }
     trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
     coverage_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}_coverage.csv"
-    _write_rows(
-        trajectory_path,
-        rows,
-        stage="trajectory",
-        inputs=trajectory_inputs,
-        as_of=as_of,
-    )
-    _write_rows(
-        coverage_path,
-        coverage_rows,
-        stage="trajectory_coverage",
-        inputs=trajectory_inputs,
-        as_of=as_of,
-    )
+    _write_rows(trajectory_path, rows, stage="trajectory", inputs=trajectory_inputs, as_of=as_of)
+    _write_rows(coverage_path, coverage_rows, stage="trajectory_coverage", inputs=trajectory_inputs, as_of=as_of)
     observed = sum(1 for row in coverage_rows if row["status"] == "observed")
     unavailable = len(coverage_rows) - observed
     _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} observed={observed} insufficient_history={unavailable} rows={len(rows)}")
@@ -543,18 +549,8 @@ def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
             "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
         }
         return (
-            is_valid_csv_checkpoint(
-                trajectory_path,
-                stage="trajectory",
-                as_of=_as_of_string(),
-                inputs=inputs,
-            )
-            and is_valid_csv_checkpoint(
-                coverage_path,
-                stage="trajectory_coverage",
-                as_of=_as_of_string(),
-                inputs=inputs,
-            )
+            is_valid_csv_checkpoint(trajectory_path, stage="trajectory", as_of=_as_of_string(), inputs=inputs)
+            and is_valid_csv_checkpoint(coverage_path, stage="trajectory_coverage", as_of=_as_of_string(), inputs=inputs)
         )
     except (FileNotFoundError, OSError):
         return False
@@ -563,19 +559,19 @@ def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
 def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
     jobs = []
     for purpose in purposes:
-        if purpose.horizon_years is None:
-            _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
-            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_finite_horizon")
+        if purpose.trajectory_horizon_years is None:
+            _log(f"  {purpose.name}: no analytical/finite horizon; skipping trajectory")
+            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_trajectory_horizon")
             continue
         if _trajectory_checkpoint_valid(purpose):
             _log(f"  {purpose.name}: valid trajectory checkpoint; reusing")
             _detail(f"TRAJECTORY_REUSED purpose={purpose.name}")
             continue
-        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
         if not _mission_checkpoint_valid(purpose):
             _log(f"  {purpose.name}: no valid persisted MISSION checkpoint; skipping")
             _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=invalid_mission_checkpoint")
             continue
+        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
         df = load_csv_checkpoint(
             mission_path,
             stage="mission",
@@ -614,7 +610,12 @@ def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) 
     _manifest_update("trajectory", "complete", purposes=len(jobs))
 
 
-def run(as_of: str, resume_from: str | None = None, workers: int | None = None) -> None:
+def run(
+    as_of: str,
+    resume_from: str | None = None,
+    workers: int | None = None,
+    purpose_names: list[str] | None = None,
+) -> None:
     global _RUN_MANIFEST
     valuation_date = pd.Timestamp(as_of)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -625,6 +626,7 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
         "as_of": str(valuation_date.date()),
         "mode": resume_from or "full",
         "workers": workers or "auto",
+        "purpose_selection": purpose_names or "all",
         "python": platform.python_version(),
         "pipeline": "resilient_pipeline",
         "stages": {},
@@ -636,6 +638,15 @@ def run(as_of: str, resume_from: str | None = None, workers: int | None = None) 
     funds = load_admissible_funds()
     histories = _load_fund_histories(funds)
     purposes = _load_purposes(valuation_date)
+    if purpose_names is not None:
+        requested = set(purpose_names)
+        known = {purpose.name for purpose in purposes}
+        unknown = requested - known
+        if unknown:
+            raise ValueError(f"Unknown Purpose(s): {sorted(unknown)}; available={sorted(known)}")
+        purposes = [purpose for purpose in purposes if purpose.name in requested]
+        _log("Selected purposes: " + ", ".join(purpose.name for purpose in purposes))
+        _detail("PURPOSE_SELECTION " + " ".join(purpose.name for purpose in purposes))
     funds_by_isin = {fund.isin: fund for fund in funds}
     _detail(f"INPUTS_READY funds={len(funds)} purposes={len(purposes)}")
 
@@ -734,8 +745,9 @@ def main() -> None:
     parser.add_argument("--as-of", required=True, help="Purpose valuation date, e.g. 2026-08-31")
     parser.add_argument("--resume-from", choices=("mission", "global"), help="Resume from persisted MISSION or global checkpoints without recomputing fingerprints")
     parser.add_argument("--workers", type=int, default=None, help="Optional ProcessPoolExecutor worker count; default delegates to Python")
+    parser.add_argument("--purposes", nargs="+", help="Run only the named Purposes; default runs all")
     args = parser.parse_args()
-    run(args.as_of, args.resume_from, args.workers)
+    run(args.as_of, args.resume_from, args.workers, args.purposes)
 
 
 if __name__ == "__main__":
