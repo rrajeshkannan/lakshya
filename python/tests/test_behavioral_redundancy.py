@@ -46,7 +46,7 @@ def test_pairwise_rows_compare_each_unique_pair_without_ranking():
         "B|B=1.0000": path([1.0, 1.05, 1.1]),
         "C|C=1.0000": path([1.0, 0.9, 1.0]),
     }
-    rows = build_pairwise_rows("Edu_B", list(paths), paths)
+    rows = build_pairwise_rows("Edu_B", list(paths), paths, workers=1)
     assert len(rows) == 3
     assert {(row["composition_a"], row["composition_b"]) for row in rows} == {
         ("A|A=0.5000", "B|B=1.0000"),
@@ -54,6 +54,24 @@ def test_pairwise_rows_compare_each_unique_pair_without_ranking():
         ("B|B=1.0000", "C|C=1.0000"),
     }
     assert all("score" not in row for row in rows)
+
+
+def test_parallel_pairwise_rows_match_serial_order_and_values():
+    paths = {
+        "A|A=0.5000": path([1.0, 1.1, 1.2, 1.15]),
+        "B|B=1.0000": path([1.0, 1.05, 1.1, 1.2]),
+        "C|C=1.0000": path([1.0, 0.9, 1.0, 1.05]),
+        "D|D=1.0000": path([1.0, 1.02, 1.08, 1.12]),
+    }
+    serial = build_pairwise_rows("Edu_B", list(paths), paths, workers=1)
+    parallel = build_pairwise_rows("Edu_B", list(paths), paths, workers=2)
+    assert parallel == serial
+
+
+def test_workers_must_be_positive():
+    paths = {"A|A=1.0000": path([1.0, 1.1]), "B|B=1.0000": path([1.0, 1.2])}
+    with pytest.raises(ValueError, match="workers must be at least 1"):
+        build_pairwise_rows("Edu_B", list(paths), paths, workers=0)
 
 
 def test_nearest_rows_are_metric_specific_not_a_composite_score():
