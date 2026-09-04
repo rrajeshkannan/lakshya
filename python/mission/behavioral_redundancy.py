@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 from pathlib import Path
 
@@ -110,28 +111,55 @@ def parse_members(identity: str) -> tuple[str, ...]:
     return tuple(value for value in identity.split("|", 1)[0].split(",") if value)
 
 
+def _pair_row(task: tuple[str, str, str, pd.DataFrame, pd.DataFrame]) -> dict:
+    """Compute one independent pair comparison."""
+    purpose, left, right, left_path, right_path = task
+    metrics = _metrics(left_path, right_path)
+    left_members = parse_members(left)
+    right_members = parse_members(right)
+    return {
+        "purpose": purpose,
+        "composition_a": left,
+        "composition_b": right,
+        "cardinality_a": len(left_members),
+        "cardinality_b": len(right_members),
+        "same_fund_set": left_members == right_members,
+        **metrics,
+    }
+
+
+def _default_workers() -> int:
+    """Choose a bounded default suitable for pandas-heavy pair comparisons."""
+    return min(32, max(1, (os.cpu_count() or 1)))
+
+
 def build_pairwise_rows(
     purpose: str,
     survivor_identities: list[str],
     paths: dict[str, pd.DataFrame],
+    workers: int | None = None,
 ) -> list[dict]:
-    rows: list[dict] = []
-    for left, right in combinations(sorted(paths), 2):
-        metrics = _metrics(paths[left], paths[right])
-        left_members = parse_members(left)
-        right_members = parse_members(right)
-        rows.append(
-            {
-                "purpose": purpose,
-                "composition_a": left,
-                "composition_b": right,
-                "cardinality_a": len(left_members),
-                "cardinality_b": len(right_members),
-                "same_fund_set": left_members == right_members,
-                **metrics,
-            }
-        )
-    return rows
+    """Compare each unique survivor pair, optionally in parallel.
+
+    Executor.map preserves input order, so the resulting artifact remains
+    deterministic regardless of worker count.
+    """
+    if workers is None:
+        workers = _default_workers()
+    if workers < 1:
+        raise ValueError("workers must be at least 1")
+
+    identities = sorted(paths)
+    tasks = [
+        (purpose, left, right, paths[left], paths[right])
+        for left, right in combinations(identities, 2)
+    ]
+    if not tasks:
+        return []
+    if workers == 1:
+        return [_pair_row(task) for task in tasks]
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        return list(executor.map(_pair_row, tasks))
 
 
 def build_nearest_rows(pairwise: list[dict]) -> list[dict]:
@@ -186,6 +214,7 @@ def run(
     purposes: list[str] | None = None,
     output_dir: Path = OUTPUT_DIR,
     fingerprint_root: Path = FINGERPRINT_DIR,
+    workers: int | None = None,
 ) -> tuple[Path, Path, Path]:
     files = sorted(OUTPUT_DIR.glob("mission_survivors_*.csv"))
     if purposes:
@@ -225,7 +254,7 @@ def run(
             prepared = _prepare_path(nav, nominal)
             if prepared is not None:
                 paths[identity] = prepared
-        pairs = build_pairwise_rows(purpose, identities, paths)
+        pairs = build_pairwise_rows(purpose, identities, paths, workers=workers)
         all_pairs.extend(pairs)
         values = pd.DataFrame(pairs)
         summary.append(
@@ -257,8 +286,9 @@ def run(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Discover behavioural duplication among MISSION survivors")
     parser.add_argument("--purposes", nargs="+")
+    parser.add_argument("--workers", type=int, default=None, help="Number of parallel pair-comparison workers (default: CPU count, capped at 32)")
     args = parser.parse_args()
-    for path in run(args.purposes):
+    for path in run(args.purposes, workers=args.workers):
         print(path.relative_to(PROJECT_ROOT))
 
 
