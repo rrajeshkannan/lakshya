@@ -1,165 +1,332 @@
-# Lakshya Pipeline Sequence
+# Lakshya Production Pipeline Sequence
 
-## Purpose
+**Status:** Production sequence for FINAL / Compromise Programming v1
 
-This document records the current stage-to-stage execution sequence so that future investigations can follow the architecture from persisted inputs to MISSION survivors without rediscovering existing plumbing.
+This document is the execution map for the production pipeline. It complements the detailed stage specification in `docs/Lakshya_Production_Architecture_v1.md`.
 
-This is an architectural navigation document, not a specification of every metric.
+---
 
-## High-level sequence
+## 1. End-to-end sequence
 
-```text
-Persisted FUND inputs
-    |
-    v
-FUND admission / admissible universe
-    |
-    v
-Persisted FUND NAV evidence (JSON, one artifact per ISIN)
-    |
-    v
-Canonical NAV-history normalization
-    |
-    v
-TEAM candidate generation (singleton / pair / trio)
-    |
-    v
-Collective TEAM NAV trajectory
-    |
-    v
-TEAM behavioural fingerprint
-    |
-    v
-TEAM comparator surface / frontier
-    |
-    v
-Admitted TEAMs (passed in memory to next stage)
-    |
-    v
-COMPOSITION generation (existing simplex/grid)
-    |
-    v
-Weighted Composite-NAV trajectory
-    |
-    v
-COMPOSITION behavioural fingerprint
-    |
-    v
-MISSION: global composite frontier
-    |
-    v
-MISSION: purpose / achievability gate
-    |
-    v
-MISSION: protection frontier
-    |
-    v
-Surviving Compositions
-    |
-    v
-Purpose-specific trajectory observation
-    |
-    v
-Local experimental output/
+```mermaid
+flowchart TD
+    A[FUND source of truth] --> B[FUND admission]
+    B --> C[Persisted NAV evidence]
+    C --> D[TEAM candidate generation]
+    D --> E[TEAM collective NAV]
+    E --> F[TEAM behavioural fingerprint]
+    F --> G[TEAM 40-D Pareto frontier]
+    G --> H[COMPOSITION 5% grid]
+    H --> I[Persisted Composition fingerprint]
+    I --> J[Global COMPOSITION 40-D Pareto frontier]
+    J --> K{MISSION Purpose}
+    K --> L[Achievability when finite target exists]
+    L --> M[Purpose Protection frontier]
+    J --> M2[Open-ended Purpose bypasses Achievability]
+    M --> N[MISSION survivors]
+    M2 --> N
+    N --> O[Purpose Trajectory observation]
+    O --> P[FINAL Purpose comparison surface]
+    P --> Q[Distance from Utopia]
+    Q --> R[L2 primary ordering]
+    Q --> S[L-infinity diagnostic]
+    R --> T[L2/L-infinity joint frontier]
+    R --> U[Lp robustness]
+    R --> V[Leave-one-spoke sensitivity]
+    R --> W[Population bootstrap]
+    T --> X[FINAL production winner + evidence bundle]
+    U --> X
+    V --> X
+    W --> X
 ```
 
-## Current persisted inputs
+---
+
+## 2. Persistence boundary
+
+The production persistence pattern is:
 
 ```text
-data/fund/funds_in_scope.csv
-    -> family's explicit FUND universe
-
-data/fund/funds_in_scope_metadata.csv
-    -> auto-fetched FUND metadata
-
-data/fund/funds_admissible.csv
-    -> derived authoritative admitted FUND universe
-
-data/nav/<ISIN>.json
-    -> persistent historical NAV evidence, one artifact per ISIN
-data/purpose/purposes.csv
-    -> family Purpose inputs
+FUND NAV evidence
+      ↓
+TEAM / COMPOSITION computation
+      ↓
+Composition fingerprint store
+      ↓
+Global frontier checkpoint
+      ↓
+MISSION checkpoints
+      ↓
+Trajectory checkpoints
+      ↓
+FINAL evidence bundle
 ```
 
-The current Purpose source-of-truth schema is intentionally small:
+The expensive Composition evidence is computed once and persisted immediately. FINAL never reconstructs Composition NAV from raw Funds merely because FINAL is a new consumer.
+
+---
+
+## 3. FUND sequence
+
+```mermaid
+sequenceDiagram
+    participant Source as FUND source
+    participant Admission as FUND admission
+    participant NAV as NAV evidence
+    participant TEAM as TEAM
+
+    Source->>Admission: load funds_in_scope.csv
+    Admission->>Admission: apply admission policy
+    Admission-->>TEAM: admitted Fund objects
+    NAV->>TEAM: persisted NAV histories
+```
+
+### Production invariant
+
+The admission distinction between CURRENT and POTENTIAL is consumed only at admission. It is not carried as a hidden optimization preference into TEAM, COMPOSITION, MISSION or FINAL.
+
+---
+
+## 4. TEAM sequence
+
+```mermaid
+sequenceDiagram
+    participant TEAM as TEAM pipeline
+    participant Fund as Fund evidence
+    participant Frontier as TEAM frontier
+    participant Composition as COMPOSITION
+
+    TEAM->>Fund: consume admitted Fund NAV evidence
+    TEAM->>TEAM: generate singleton / pair / trio candidates
+    TEAM->>TEAM: build collective NAV
+    TEAM->>TEAM: compute TEAM fingerprint
+    TEAM->>Frontier: apply declared 40-D Pareto gate
+    Frontier-->>Composition: non-dominated Teams
+```
+
+TEAM must not call backward into MISSION to make itself smaller.
+
+---
+
+## 5. COMPOSITION sequence
+
+```mermaid
+sequenceDiagram
+    participant TEAM as TEAM frontier
+    participant Grid as Composition generator
+    participant Evidence as Fingerprint store
+    participant Global as Global frontier
+    participant MISSION as MISSION
+
+    TEAM->>Grid: generate complete weight grid
+    Grid->>Evidence: compute missing Composition fingerprint
+    Evidence-->>Evidence: atomic persist + fsync
+    Evidence-->>Global: load persisted fingerprint
+    Global->>Global: apply 40-D weak Pareto frontier
+    Global-->>MISSION: global survivor identities
+```
+
+### Production invariant
+
+If a valid Composition fingerprint exists, a downstream algorithm change must reuse it. Recalculation requires a genuine upstream evidence or fingerprint-schema change.
+
+---
+
+## 6. MISSION sequence
+
+```mermaid
+sequenceDiagram
+    participant Global as Global frontier
+    participant Purpose as Purpose
+    participant Mission as MISSION
+    participant Trajectory as TRAJECTORY
+    participant Final as FINAL
+
+    Global->>Mission: persisted global survivor identities
+    Purpose->>Mission: Purpose horizon + target inputs
+    alt finite target Purpose
+        Mission->>Mission: Achievability gate
+    else open-ended Purpose
+        Mission->>Mission: skip Achievability; retain Purpose evidence path
+    end
+    Mission->>Mission: Protection-only frontier
+    Mission-->>Trajectory: Purpose survivors
+    Purpose->>Trajectory: requested Purpose horizon
+    Trajectory->>Trajectory: choose supported observation horizon
+    Trajectory-->>Final: persisted trajectory evidence
+```
+
+### Horizon invariant
+
+The supported analytical ladder is `3Y / 5Y / 7Y / 10Y`.
+
+The selected analytical horizon is the longest supported horizon not beyond the Purpose horizon.
+
+---
+
+# 7. FINAL sequence
+
+FINAL is downstream of MISSION. It does not change the MISSION survivor set.
+
+```mermaid
+sequenceDiagram
+    participant Mission as MISSION survivors
+    participant Fingerprint as Composition fingerprints
+    participant Surface as FINAL surface
+    participant Norm as Compromise norms
+    participant Robust as Robustness suite
+    participant Output as FINAL outputs
+
+    Mission->>Surface: Purpose survivor identities
+    Fingerprint->>Surface: selected-horizon Elevation + native Protection
+    Surface->>Surface: validate complete evidence
+    Surface->>Surface: remove zero-variance spokes only
+    Surface->>Surface: population-relative percentile coordinates
+    Surface->>Norm: radial signatures
+    Norm->>Norm: Utopia = best observed coordinate on each spoke
+    Norm->>Norm: distance = 1 - coordinate
+    Norm->>Norm: primary L2 ordering
+    Norm->>Norm: L-infinity worst-spoke diagnostic
+    Norm->>Norm: joint L2/L-infinity frontier
+    Norm->>Robust: Lp sweep
+    Norm->>Robust: leave-one-spoke sensitivity
+    Norm->>Robust: population bootstrap
+    Robust-->>Output: robustness evidence
+    Norm-->>Output: winner + ordering + spoke regrets
+```
+
+---
+
+## 8. FINAL mathematical sequence
+
+For a Purpose with selected Elevation horizon `H`:
 
 ```text
-name,due,value,desired,monthly_plan
+7 Elevation(H) + 12 Protection
+             ↓
+remove zero-variance spokes
+             ↓
+population-relative percentile coordinates x_ij ∈ [0,1]
+             ↓
+Utopia U_j = 1
+             ↓
+regret d_ij = 1 - x_ij
+             ↓
+L2(i) = sqrt(sum_j d_ij²)
+             ↓
+primary ordering
 ```
 
-`due` is the persisted event date; horizon is derived from it where a Purpose-specific calculation requires a horizon. Purposes with `due=NA` are ongoing / not applicable to finite-horizon MISSION validation.
+Diagnostics:
 
-## Current code ownership
+```text
+L∞(i) = max_j d_ij
+        ↓
+worst-spoke inspection
+        ↓
+joint (L2, L∞) non-dominated frontier
+```
 
-| Stage / object | Current implementation seam |
-|---|---|
-| Fund admission | `python/fund_analysis/fund_admission.py` |
-| Admissible Fund loader | `python/fund_analysis/admissible_funds.py` |
-| NAV source adapter | `python/fund_analysis/nav_source.py` |
-| Persistent NAV evidence | `python/fund_analysis/nav_evidence.py` |
-| Canonical NAV normalization | `python/lakshya_core/nav_history.py` |
-| TEAM candidate generation | `python/team_analysis/candidate_generator.py` |
-| Collective TEAM NAV | `python/team_analysis/collective_timeline.py` |
-| TEAM orchestration | `python/team_analysis/run_team_pipeline.py` |
-| TEAM fingerprint | `python/team_analysis/team_fingerprint.py` |
-| TEAM frontier | `python/team_analysis/frontier_pipeline.py` |
-| Composition model/generation | `python/team_analysis/composition.py`, `generate_compositions.py` |
-| Composition pipeline | `python/team_analysis/composition_pipeline.py` |
-| Composition fingerprint | `python/team_analysis/composition_fingerprint.py` |
-| Composition frontier | `python/team_analysis/composition_frontier.py` |
-| MISSION trajectory experiment | `python/mission/survivor_trajectory_experiment.py` |
+Robustness:
 
-## Important architectural invariants
+```text
+L1 … L10 sweep
+        +
+leave-one-spoke L2 reruns
+        +
+5,000 population resamples
+```
 
-### Raw collective trajectory first
+No stage in this sequence invents a Purpose score.
 
-The collective/Composite NAV is constructed before behavioural metrics are interpreted. Metrics are not combined across constituents as a substitute for constructing the underlying collective trajectory.
+---
 
-For TEAMs, `build_collective_nav()` derives a collective NAV from member FUND histories using each member's latest observation as of each collective observation date. The behavioural engine then operates on that collective trajectory.
+# 9. Current production 7Y shape
 
-For Compositions, the weighted Composite-NAV is likewise the underlying object from which the Composition fingerprint is independently calculated.
+For the current five 245-Composition Purpose populations:
 
-### Stage boundaries are primarily in-memory
+```text
+19 candidate spokes
+    ↓
+1 constant spoke removed
+    ↓
+18 informative spokes
+```
 
-The public TEAM runner returns the non-dominated Team frontier as Python objects; this is not currently a canonical persisted CSV hand-off. The Composition pipeline consumes those admitted Teams directly.
+The removed spoke is:
 
-Likewise, the existing stage primitives are composed in memory. Persistence is therefore a property of selected source/evidence artifacts, not an automatic requirement for every stage boundary.
+```text
+elevation_7y_positive_period_pct
+```
 
-### Experimental persistence is separate
+It is removed because it has zero variance across the current comparison population, not because it is inconvenient to the winner.
 
-For the current trajectory investigation, selected intermediate and observation results may be written under `output/` for inspection and shared experimentation. These outputs are experimental evidence, not new canonical Lakshya domain artifacts and must not leak experimental semantics into the mainline stage implementations.
+For Retirement or a future population, the surface is constructed independently. No winner or spoke set is copied from another Purpose.
 
-During this exploration period, `output/` may be temporarily tracked in GitHub so that the evidence can be inspected collaboratively. The experimental outputs are expected to be removed completely when the investigation concludes.
+---
 
-## Current MISSION gate sequence for this investigation
+# 10. Failure and resume semantics
 
-The working three-gate sequence being investigated is:
+A production run follows:
 
-1. **Global composite frontier** — weak dominance pruning of truly dominated Compositions.
-2. **Purpose / achievability frontier** — Purpose-horizon-driven qualification against supported elevation evidence, removing true outliers relative to the Purpose's target-growth requirement.
-3. **Protection-only frontier** — weak dominance pruning of truly dominated Compositions on the protection surface.
+```text
+load → validate → reuse valid checkpoint
+                 ↓
+              compute
+                 ↓
+             persist atomically
+                 ↓
+              validate
+                 ↓
+              consume
+```
 
-The trajectory experiment is deliberately downstream of these earned gates. It searches for Purpose-relevant discriminators among otherwise surviving Compositions rather than redefining the earlier gates.
+A missing or invalid checkpoint is recomputed only when the stage owns the ability to reconstruct it.
 
-## Purpose input boundary
+A downstream FINAL failure must not invalidate the Composition fingerprint store.
 
-The persisted Purpose data supplies the existing achievability calculation's external objective inputs (`value`, `desired`, `monthly_plan`) and the event date (`due`). The trajectory experiment itself should consume only the Purpose horizon once the survivor population has been faithfully produced by the upstream MISSION path.
+A later FINAL version can therefore be rerun against the same MISSION evidence without rebuilding FUND, TEAM or COMPOSITION unless its contract explicitly changes an upstream dependency.
 
-This separation prevents the experimental trajectory observation from accidentally changing the semantics of the existing Purpose gate.
+---
 
-## Why this document exists
+# 11. Audit trail
 
-The repository already contains the individual primitives and stage runners. The common failure mode during later exploration is therefore not absence of code but loss of the map connecting the pieces. This document is intended to provide that map.
+The compact hand-off is:
 
-## Documentation follow-up
+```text
+final_<Purpose>_summary.csv
+```
 
-At an appropriate architecture checkpoint, review each public module/function for sufficient docstrings and add stage-level documentation where the execution contract is currently implicit. The review should cover:
+The full audit trail is:
 
-1. inputs and persisted artifacts consumed;
-2. output object/artifact produced;
-3. whether the function constructs raw trajectory evidence or derives metrics;
-4. ownership of each frontier/gate;
-5. whether the operation is production architecture or an experiment;
-6. the boundary between FUND, TEAM, COMPOSITION and MISSION.
+```text
+axes
+signatures
+ distances
+results
+Lp sweep
+leave-one-spoke
+bootstrap
+joint L2/L∞ frontier
+summary
+```
 
-A later diagram can split this high-level sequence into FUND, TEAM/COMPOSITION and MISSION stage diagrams if the single sequence becomes too dense.
+The intent is **30,000 feet ↔ 3 feet**: the decision remains compact, while every material calculation remains inspectable.
+
+---
+
+# 12. Production release boundary
+
+FINAL v1 is considered production-complete when:
+
+- its mathematical contract is documented;
+- implementation is deterministic apart from explicitly seeded bootstrap sampling;
+- zero-variance handling is explicit;
+- missing evidence fails loudly;
+- tests cover the mathematical invariants;
+- outputs are atomic;
+- the stage is versioned;
+- the pipeline records the FINAL stage and its contract version;
+- no exploratory region/clustering machinery is required for the production decision.
+
+Any future change to the decision rule is a new production version, not an undocumented experiment folded into the current release.
