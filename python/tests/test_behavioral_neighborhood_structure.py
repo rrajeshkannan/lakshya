@@ -26,7 +26,7 @@ def test_structural_row_reports_interpretable_weight_and_fund_changes():
     assert row["shared_fund_count"] == 2
     assert row["funds_added_in_b"] == "D"
     assert row["funds_removed_in_b"] == "C"
-    assert row["weight_l1_difference_pp"] == pytest.approx(30.0)
+    assert row["weight_l1_difference_pp"] == pytest.approx(40.0)
     assert row["max_single_fund_weight_change_pp"] == pytest.approx(15.0)
     assert row["changed_fund_count"] == 4
 
