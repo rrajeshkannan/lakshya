@@ -6,9 +6,9 @@ representative. It simply joins behavioural nearest-neighbour links to the
 native Composition identities and reports the structural delta between each
 linked pair.
 
-The primary input is the mean-path-gap behavioural neighbourhood artifact.
-Structural evidence is expressed in interpretable units: shared/added/removed
-funds, allocation differences, cardinality, and Team identity.
+The input contract follows the canonical output of behavioral_neighborhood.py:
+nearest relationships contain the full behavioural metrics, with
+``mean_abs_level_gap_pct_points`` as the primary neighbourhood metric.
 """
 
 from __future__ import annotations
@@ -48,7 +48,14 @@ def _parse_composition(identity: str) -> dict[str, float]:
         raise ValueError(f"Invalid Composition identity: {identity}") from exc
 
 
-def _structural_row(purpose: str, left: str, right: str, metric: str, metric_value: float, metadata: dict) -> dict:
+def _structural_row(
+    purpose: str,
+    left: str,
+    right: str,
+    metric: str,
+    metric_value: float,
+    metadata: dict,
+) -> dict:
     a = _parse_composition(left)
     b = _parse_composition(right)
     funds_a = set(a)
@@ -99,7 +106,13 @@ def run(
 ) -> tuple[Path, Path]:
     nearest = _read_required(
         nearest_path,
-        {"purpose", "composition", "relationship_metric", "nearest_composition", "metric_value"},
+        {
+            "purpose",
+            "composition",
+            "nearest_composition",
+            "mean_abs_level_gap_pct_points",
+            "same_team",
+        },
         "behavioural neighbourhood artifact",
     )
     composition_map = _read_required(
@@ -108,28 +121,29 @@ def run(
         "Purpose Composition Map",
     )
 
-    # The map is a validation/index layer; identity itself remains canonical.
     team_index = {
         (row.purpose, row.composition): str(row.team)
         for row in composition_map.itertuples(index=False)
     }
 
-    # Focus on the mean-path-gap neighbourhood: the metric already used to
-    # establish the first empirical neighbourhood view.
-    nearest = nearest[nearest["relationship_metric"] == "mean_abs_level_gap_pct_points"].copy()
+    # Focus on the mean-path-gap neighbourhood: this is the primary metric
+    # used by the descriptive neighbourhood experiment.
+    nearest = nearest.copy()
     rows = []
     for row in nearest.itertuples(index=False):
         key_a = (row.purpose, row.composition)
         key_b = (row.purpose, row.nearest_composition)
         if key_a not in team_index or key_b not in team_index:
-            raise ValueError(f"Composition missing from Purpose Composition Map: {key_a} or {key_b}")
-        metadata = {"same_team": team_index[key_a] == team_index[key_b]}
+            raise ValueError(
+                f"Composition missing from Purpose Composition Map: {key_a} or {key_b}"
+            )
+        metadata = {"same_team": bool(row.same_team)}
         record = _structural_row(
             row.purpose,
             row.composition,
             row.nearest_composition,
-            row.relationship_metric,
-            row.metric_value,
+            "mean_abs_level_gap_pct_points",
+            row.mean_abs_level_gap_pct_points,
             metadata,
         )
         record["team_a"] = team_index[key_a]
@@ -167,7 +181,9 @@ def run(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Describe structural differences between behavioural neighbours")
+    parser = argparse.ArgumentParser(
+        description="Describe structural differences between behavioural neighbours"
+    )
     parser.add_argument("--nearest", type=Path, default=NEAREST_PATH)
     parser.add_argument("--composition-map", type=Path, default=MAP_PATH)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
