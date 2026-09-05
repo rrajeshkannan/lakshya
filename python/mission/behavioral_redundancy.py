@@ -49,11 +49,11 @@ def _load_nav(identity: str, root: Path = FINGERPRINT_DIR) -> pd.DataFrame:
         raise ValueError(f"Invalid persisted Composition fingerprint: {path}")
     nav = pd.DataFrame(payload.get("nav", []))
     if set(nav.columns) != {"date", "nav"} or nav.empty:
-        raise ValueError(f"Invalid persisted NAV path: {path}")
+        raise ValueError(f"Invalid persisted NAV path: {identity}")
     nav["date"] = pd.to_datetime(nav["date"])
     nav["nav"] = pd.to_numeric(nav["nav"], errors="raise")
     if nav["nav"].isna().any() or (nav["nav"] <= 0).any():
-        raise ValueError(f"Invalid persisted NAV values: {path}")
+        raise ValueError(f"Invalid persisted NAV values: {identity}")
     return nav.sort_values("date").drop_duplicates("date", keep="last").reset_index(drop=True)
 
 
@@ -172,6 +172,10 @@ def build_nearest_rows(pairwise: list[dict]) -> list[dict]:
         "cagr_difference_pp",
         "max_drawdown_difference_pp",
     ]
+    purposes = {}
+    for row in pairwise:
+        purposes[row["composition_a"]] = row["purpose"]
+        purposes[row["composition_b"]] = row["purpose"]
     for metric in metrics:
         source: dict[str, list[tuple[float, str, str]]] = {}
         for row in pairwise:
@@ -183,21 +187,18 @@ def build_nearest_rows(pairwise: list[dict]) -> list[dict]:
         for composition, values in source.items():
             if metric == "daily_return_correlation":
                 values.sort(key=lambda item: (-item[0], item[2]))
-            elif metric in {"cagr_difference_pp", "max_drawdown_difference_pp"}:
-                values.sort(key=lambda item: (abs(item[0]), item[2]))
             else:
                 values.sort(key=lambda item: (abs(item[0]), item[2]))
-            if values:
-                value, _, neighbour = values[0]
-                rows.append(
-                    {
-                        "purpose": next(row["purpose"] for row in pairwise if row["composition_a"] == composition or row["composition_b"] == composition),
-                        "composition": composition,
-                        "relationship_metric": metric,
-                        "nearest_composition": neighbour,
-                        "metric_value": value,
-                    }
-                )
+            value, _, neighbour = values[0]
+            rows.append(
+                {
+                    "purpose": purposes[composition],
+                    "composition": composition,
+                    "relationship_metric": metric,
+                    "nearest_composition": neighbour,
+                    "metric_value": value,
+                }
+            )
     return rows
 
 
@@ -225,29 +226,26 @@ def run(
     if missing:
         raise ValueError("Missing MISSION survivor file(s): " + ", ".join(str(path) for path in missing))
 
+    purpose_horizons = {
+        "Edu_B": 4,
+        "Home_Loan": 9,
+        "Marriage": 9,
+        "Retirement": 12,
+        "Stitch": 7,
+        "Kutti": 7,
+    }
+
     all_pairs: list[dict] = []
     summary: list[dict] = []
     for path in files:
         purpose = path.stem.removeprefix("mission_survivors_")
         identities = _read_survivors(path)
-        # Purpose determines only the upper analytical horizon; each Composition
-        # retains its own selected observable horizon.
-        purpose_horizons = {
-            "Edu_B": 4,
-            "Home_Loan": 9,
-            "Marriage": 9,
-            "Retirement": 12,
-            "Stitch": 0,
-            "Kutti": 0,
-        }
         purpose_horizon = purpose_horizons.get(purpose)
         if purpose_horizon is None:
             raise ValueError(f"Unknown Purpose horizon: {purpose}")
-        if purpose_horizon <= 0:
-            continue
         nominal = nearest_supported_horizon(purpose_horizon)
         if nominal is None:
-            continue
+            raise ValueError(f"No supported analytical horizon for Purpose {purpose}: {purpose_horizon}Y")
         paths: dict[str, pd.DataFrame] = {}
         for identity in identities:
             nav = _load_nav(identity, fingerprint_root)
