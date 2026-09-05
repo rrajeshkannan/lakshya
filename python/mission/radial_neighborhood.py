@@ -92,16 +92,28 @@ def _load_payload(identity: str, root: Path) -> dict:
     return payload
 
 
-def _raw_values(payload: dict) -> dict[str, float]:
-    values: dict[str, float] = {}
+def _native_value(value: object) -> float | None:
+    """Return a finite observed native value, preserving absent evidence as None."""
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if np.isfinite(numeric) else None
+
+
+def _raw_values(payload: dict) -> dict[str, float | None]:
+    """Read all native axes without inventing values for absent evidence."""
+    values: dict[str, float | None] = {}
     elevation = payload.get("elevation", {})
     for years in ROLLING_HORIZONS:
         evidence = elevation.get(f"rolling_{years}y")
         for metric in ROLLING_METRICS:
             axis = f"elevation_{years}y_{metric}"
-            if evidence is None or metric not in evidence:
-                raise ValueError(f"Missing native Elevation value {axis}")
-            values[axis] = float(evidence[metric])
+            values[axis] = _native_value(
+                evidence.get(metric) if isinstance(evidence, dict) else None
+            )
 
     protection = payload.get("protection", {})
     threshold_values = protection.get("pct_days_at_or_above_threshold", {})
@@ -111,12 +123,10 @@ def _raw_values(payload: dict) -> dict[str, float]:
             value = protection[metric]
         elif metric.startswith("pct_days_at_or_above_"):
             threshold = metric.removeprefix("pct_days_at_or_above_")
-            if threshold not in threshold_values:
-                raise ValueError(f"Missing native Protection value {axis}")
-            value = threshold_values[threshold]
+            value = threshold_values.get(threshold)
         else:
-            raise ValueError(f"Missing native Protection value {axis}")
-        values[axis] = float(value)
+            value = None
+        values[axis] = _native_value(value)
     return values
 
 
@@ -134,26 +144,22 @@ def build_radial_signatures(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build relative radial signatures and native-axis metadata."""
     dimensions = _dimensions()
-    expected_axes = [item[0] for item in dimensions]
     raw_rows = []
     for identity in sorted(identities):
         raw = _raw_values(_load_payload(identity, fingerprint_root))
         raw_rows.append({"composition": identity, **raw})
 
     raw_frame = pd.DataFrame(raw_rows)
-    signatures = raw_frame[["composition"]].copy()
-    for axis, _, direction, _, _ in dimensions:
-        values = raw_frame[axis]
-        relative = _population_percentile(values)
-        if direction == "down":
-            relative = 1.0 - relative
-        signatures[axis] = relative.astype(float)
-
-    if set(signatures.columns) != {"composition", *expected_axes}:
-        raise AssertionError("Radial signature axes do not match the native 40-D surface")
-
-    metadata = pd.DataFrame(
-        [
+    population_size = len(raw_frame)
+    coverage_rows = []
+    included_axes = []
+    for index, (axis, family, direction, horizon, metric) in enumerate(dimensions, start=1):
+        observed_count = int(raw_frame[axis].notna().sum())
+        missing_count = population_size - observed_count
+        included = observed_count == population_size
+        if included:
+            included_axes.append((axis, direction))
+        coverage_rows.append(
             {
                 "axis_index": index,
                 "axis": axis,
@@ -162,10 +168,27 @@ def build_radial_signatures(
                 "horizon_years": horizon,
                 "metric": metric,
                 "radial_semantics": "higher_relative_evidence",
+                "population_size": population_size,
+                "observed_count": observed_count,
+                "missing_count": missing_count,
+                "coverage_ratio": observed_count / population_size,
+                "included_in_radial_geometry": included,
+                "exclusion_reason": None if included else "incomplete_native_evidence",
             }
-            for index, (axis, family, direction, horizon, metric) in enumerate(dimensions, start=1)
-        ]
-    )
+        )
+
+    signatures = raw_frame[["composition"]].copy()
+    for axis, direction in included_axes:
+        values = raw_frame[axis]
+        relative = _population_percentile(values)
+        if direction == "down":
+            relative = 1.0 - relative
+        signatures[axis] = relative.astype(float)
+
+    if signatures.columns.tolist() != ["composition", *[axis for axis, _ in included_axes]]:
+        raise AssertionError("Radial signatures contain an unexpected axis")
+
+    metadata = pd.DataFrame(coverage_rows)
     return signatures, metadata
 
 
@@ -182,15 +205,34 @@ def run(
     purposes: list[str] | None = None,
     output_dir: Path = OUTPUT_DIR,
     fingerprint_root: Path = FINGERPRINT_DIR,
-) -> tuple[Path, Path]:
+) -> tuple[Path, Path, Path]:
     identities = _read_survivor_identities(output_dir, purposes)
     signatures, metadata = build_radial_signatures(identities, fingerprint_root)
 
     signature_path = output_dir / "radial_neighborhood_signatures.csv"
     metadata_path = output_dir / "radial_neighborhood_axes.csv"
+    coverage_path = output_dir / "radial_neighborhood_coverage.csv"
     _atomic_csv(signature_path, signatures)
     _atomic_csv(metadata_path, metadata)
-    return signature_path, metadata_path
+    _atomic_csv(
+        coverage_path,
+        metadata[
+            [
+                "axis_index",
+                "axis",
+                "family",
+                "horizon_years",
+                "metric",
+                "population_size",
+                "observed_count",
+                "missing_count",
+                "coverage_ratio",
+                "included_in_radial_geometry",
+                "exclusion_reason",
+            ]
+        ],
+    )
+    return signature_path, metadata_path, coverage_path
 
 
 def main() -> None:

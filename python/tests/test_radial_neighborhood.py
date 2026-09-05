@@ -95,3 +95,27 @@ def test_axes_metadata_preserves_gate_order_and_direction(tmp_path: Path):
     assert axes.iloc[28]["axis"] == "protection_median_severity_pct"
     assert axes.iloc[28]["direction"] == "down"
     assert axes.iloc[39]["axis"] == "protection_pct_days_at_or_above_30"
+
+
+def test_incomplete_native_evidence_excludes_only_that_axis_from_geometry(tmp_path: Path):
+    identities = {"A|isin=1.0", "B|isin=1.0"}
+    payload_a = _payload("A|isin=1.0", 10.0)
+    payload_b = _payload("B|isin=1.0", 20.0)
+    payload_b["elevation"]["rolling_10y"]["minimum"] = None
+    for identity, payload in (("A|isin=1.0", payload_a), ("B|isin=1.0", payload_b)):
+        (tmp_path / f"{identity}.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    signatures, axes = build_radial_signatures(identities, tmp_path)
+    excluded = axes.loc[axes["axis"] == "elevation_10y_minimum"].iloc[0]
+    included = axes.loc[axes["axis"] == "elevation_10y_median"].iloc[0]
+
+    assert len(signatures) == 2
+    assert "elevation_10y_minimum" not in signatures.columns
+    assert len(signatures.columns) == 40  # composition plus 39 complete axes
+    assert not excluded["included_in_radial_geometry"]
+    assert excluded["observed_count"] == 1
+    assert excluded["missing_count"] == 1
+    assert excluded["coverage_ratio"] == 0.5
+    assert excluded["exclusion_reason"] == "incomplete_native_evidence"
+    assert included["included_in_radial_geometry"]
+    assert pd.isna(included["exclusion_reason"])
