@@ -287,7 +287,28 @@ Do not assume all six files must exist: inspect the Purposes currently configure
 
 These summary files are the first analytical hand-off. They contain the FINAL headline results, including the primary winner, L2/L-infinity information, joint frontier size and robustness diagnostics. Only after reviewing the summaries should the deeper FINAL artifacts normally be inspected.
 
-The remaining FINAL artifacts preserve the audit trail:
+### Annual review history
+
+The `output/` directory is the runtime working area. Its generated files are not themselves the long-term annual record and may be cleared or regenerated.
+
+The compact FINAL summaries are the key annual analytical observations and should be preserved as versioned review records so that Lakshya can be compared across review periods. The intended archival structure is:
+
+```text
+reviews/
+└── YYYY-MM-DD/
+    ├── Retirement_summary.csv
+    ├── Edu_B_summary.csv
+    ├── Home_Loan_summary.csv
+    ├── Marriage_summary.csv
+    ├── Stitch_summary.csv
+    └── Kutti_summary.csv
+```
+
+Only Purposes configured for that review are archived. Each dated review record is intended to be immutable once committed, preserving the historical FINAL contract and analytical conclusion for that review period. Git history then provides two complementary histories: how the Lakshya implementation evolved, and how Lakshya's conclusions evolved across annual reviews.
+
+**The archival copy is a deliberate production-history layer; it is not yet automatically created by the current runner.** Until that archival layer is implemented, the `output/final_<Purpose>_summary.csv` files should be copied into the dated review record manually before clearing or regenerating `output/`.
+
+The remaining FINAL artifacts preserve the detailed audit trail for the current run:
 
 ```text
 axes
