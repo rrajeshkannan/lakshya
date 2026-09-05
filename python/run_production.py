@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from final.archival import archive_final_summaries
 from final.compromise_programming import (
     DEFAULT_BOOTSTRAP_RESAMPLES,
     DEFAULT_BOOTSTRAP_SEED,
@@ -21,6 +22,7 @@ from mission.resilient_pipeline import _load_purposes, run as run_mission
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
+REVIEW_ARCHIVE_DIR = PROJECT_ROOT / "data" / "reviews"
 
 
 def _sha256(path: Path) -> str:
@@ -156,6 +158,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    configured = _load_purposes(pd.Timestamp(args.as_of))
+    if args.purposes is None:
+        selected_purposes = [purpose.name for purpose in configured]
+    else:
+        selected = set(args.purposes)
+        selected_purposes = [purpose.name for purpose in configured if purpose.name in selected]
+
     run_mission(
         args.as_of,
         resume_from=args.resume_from,
@@ -169,6 +178,15 @@ def main() -> None:
         bootstrap_seed=args.bootstrap_seed,
         reuse_valid=not args.no_final_reuse,
     )
+    archived = archive_final_summaries(
+        args.as_of,
+        selected_purposes,
+        output_dir=OUTPUT_DIR,
+        archive_root=REVIEW_ARCHIVE_DIR,
+        final_contract_version=FINAL_CONTRACT_VERSION,
+    )
+    for path in archived:
+        print(path.relative_to(PROJECT_ROOT))
 
 
 if __name__ == "__main__":
