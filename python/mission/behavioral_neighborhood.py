@@ -39,7 +39,9 @@ def _nearest_for_purpose(frame: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for purpose, group in frame.groupby("purpose", sort=True):
         neighbours = {}
-        for composition in sorted(set(group["composition_a"]) | set(group["composition_b"])):
+        purpose_rows = []
+        compositions = sorted(set(group["composition_a"]) | set(group["composition_b"]))
+        for composition in compositions:
             candidates = group[
                 (group["composition_a"] == composition) |
                 (group["composition_b"] == composition)
@@ -54,7 +56,7 @@ def _nearest_for_purpose(frame: pd.DataFrame) -> pd.DataFrame:
             )
             row = candidates.iloc[0]
             neighbours[composition] = row["neighbour"]
-            rows.append({
+            purpose_rows.append({
                 "purpose": purpose,
                 "composition": composition,
                 "nearest_composition": row["neighbour"],
@@ -66,9 +68,10 @@ def _nearest_for_purpose(frame: pd.DataFrame) -> pd.DataFrame:
                 "same_team": bool(row["same_fund_set"]),
                 "mutual_nearest": False,
             })
-        for row in rows:
-            if row["purpose"] == purpose and neighbours.get(row["nearest_composition"]) == row["composition"]:
+        for row in purpose_rows:
+            if neighbours.get(row["nearest_composition"]) == row["composition"]:
                 row["mutual_nearest"] = True
+        rows.extend(purpose_rows)
     return pd.DataFrame(rows)
 
 
@@ -146,7 +149,7 @@ def _atomic_csv(path: Path, frame: pd.DataFrame) -> None:
 def run(
     pairwise_path: Path = PAIRWISE_PATH,
     output_dir: Path = OUTPUT_DIR,
-) -> tuple[Path, Path, Path]:
+) -> tuple[Path, Path, Path, Path]:
     pairwise = _read_pairwise(pairwise_path)
     nearest = _nearest_for_purpose(pairwise)
     links = _mutual_links(nearest)
@@ -160,7 +163,7 @@ def run(
             "purpose": purpose,
             "survivor_count": len(group),
             "mutual_nearest_pair_count": len(links_for_purpose),
-            "mutual_nearest_pair_pct": 100.0 * len(links_for_purpose) / len(group),
+            "mutual_nearest_pair_pct_of_survivors": 100.0 * 2.0 * len(links_for_purpose) / len(group),
             "cross_team_mutual_pair_count": int((~links_for_purpose["same_team"]).sum()) if not links_for_purpose.empty else 0,
             "component_count": int(comps["component_id"].nunique()) if not comps.empty else 0,
             "multi_member_component_count": int((comps.groupby("component_id")["composition"].size() > 1).sum()) if not comps.empty else 0,
