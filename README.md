@@ -183,6 +183,29 @@ FINAL
 
 More precisely, the runner invokes the resilient upstream MISSION pipeline and then executes FINAL for each requested Purpose. FINAL consumes the persisted MISSION survivor checkpoints; it does not rebuild upstream evidence merely because FINAL is being run.
 
+### Clean first run / deliberate full rebuild
+
+If you want a genuinely clean first run, or deliberately want to rebuild the generated `output/` artifacts from scratch, clear the `output/` folder first:
+
+```bash
+rm -rf output/*
+```
+
+Then run the canonical production command:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD
+```
+
+For example:
+
+```bash
+rm -rf output/*
+python python/run_production.py --as-of 2026-09-06
+```
+
+Clearing `output/` is **not** required for a normal annual rerun. The pipeline is checkpoint-aware and is designed to reuse valid persisted work.
+
 ### What happens on a first run?
 
 The pipeline loads the explicit Fund scope, builds/reuses the upstream persisted evidence and checkpoints, generates the Team and Composition universes, applies the global and Purpose-specific MISSION gates, observes Purpose trajectories, and finally performs FINAL compromise ordering and robustness analysis.
@@ -243,11 +266,26 @@ python python/run_production.py --as-of YYYY-MM-DD --no-final-reuse
 
 ### After the run
 
-The compact production hand-off for each Purpose is:
+The first inspection should be the compact FINAL summary for each Purpose currently configured:
 
 ```text
 output/final_<Purpose>_summary.csv
 ```
+
+For example, if all six current Purposes are configured:
+
+```text
+output/final_Retirement_summary.csv
+output/final_Edu_B_summary.csv
+output/final_Home_Loan_summary.csv
+output/final_Marriage_summary.csv
+output/final_Stitch_summary.csv
+output/final_Kutti_summary.csv
+```
+
+Do not assume all six files must exist: inspect the Purposes currently configured for the run.
+
+These summary files are the first analytical hand-off. They contain the FINAL headline results, including the primary winner, L2/L-infinity information, joint frontier size and robustness diagnostics. Only after reviewing the summaries should the deeper FINAL artifacts normally be inspected.
 
 The remaining FINAL artifacts preserve the audit trail:
 
