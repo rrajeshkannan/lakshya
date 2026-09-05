@@ -104,13 +104,13 @@ def run(
     )
     composition_map = _read_required(
         composition_map_path,
-        {"purpose", "composition", "Team"},
+        {"purpose", "composition", "team"},
         "Purpose Composition Map",
     )
 
     # The map is a validation/index layer; identity itself remains canonical.
     team_index = {
-        (row.purpose, row.composition): str(row.Team)
+        (row.purpose, row.composition): str(row.team)
         for row in composition_map.itertuples(index=False)
     }
 
