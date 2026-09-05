@@ -291,22 +291,33 @@ These summary files are the first analytical hand-off. They contain the FINAL he
 
 The `output/` directory is the runtime working area. Its generated files are not themselves the long-term annual record and may be cleared or regenerated.
 
-The compact FINAL summaries are the key annual analytical observations and should be preserved as versioned review records so that Lakshya can be compared across review periods. The intended archival structure is:
+After every successful production run, the runner automatically archives the compact FINAL summaries for the Purposes included in that run under:
 
 ```text
-reviews/
-└── YYYY-MM-DD/
-    ├── Retirement_summary.csv
-    ├── Edu_B_summary.csv
-    ├── Home_Loan_summary.csv
-    ├── Marriage_summary.csv
-    ├── Stitch_summary.csv
-    └── Kutti_summary.csv
+ data/reviews/
+ └── YYYY-MM-DD/
+     ├── Retirement_summary.csv
+     ├── Edu_B_summary.csv
+     ├── Home_Loan_summary.csv
+     ├── Marriage_summary.csv
+     ├── Stitch_summary.csv
+     ├── Kutti_summary.csv
+     └── review_manifest.json
 ```
 
-Only Purposes configured for that review are archived. Each dated review record is intended to be immutable once committed, preserving the historical FINAL contract and analytical conclusion for that review period. Git history then provides two complementary histories: how the Lakshya implementation evolved, and how Lakshya's conclusions evolved across annual reviews.
+Only Purposes configured for that review are archived. The archived summary is the compact annual analytical observation; the manifest records the archive schema, review date, FINAL contract, summary hashes and relevant FINAL/MISSION lineage metadata.
 
-**The archival copy is a deliberate production-history layer; it is not yet automatically created by the current runner.** Until that archival layer is implemented, the `output/final_<Purpose>_summary.csv` files should be copied into the dated review record manually before clearing or regenerating `output/`.
+Archival is immutable by design: rerunning the same review is idempotent when the existing record is identical, while conflicting historical content is rejected rather than overwritten. This preserves the distinction between the runtime `output/` area and the versioned historical record.
+
+Git history therefore provides two complementary histories:
+
+```text
+how Lakshya itself evolved
++
+how Lakshya's conclusions evolved across review periods
+```
+
+The historical record should be committed to Git as part of the annual review. The archive is deliberately limited to the compact summaries rather than the full generated `output/` working set.
 
 The remaining FINAL artifacts preserve the detailed audit trail for the current run:
 
