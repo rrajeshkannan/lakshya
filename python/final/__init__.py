@@ -1,5 +1,6 @@
 """Production FINAL-stage analysis."""
 
+from .archival import ARCHIVE_SCHEMA_VERSION, archive_final_summaries
 from .compromise_programming import (
     FINAL_CONTRACT_VERSION,
     DEFAULT_BOOTSTRAP_RESAMPLES,
@@ -16,6 +17,8 @@ from .compromise_programming import (
 )
 
 __all__ = [
+    "ARCHIVE_SCHEMA_VERSION",
+    "archive_final_summaries",
     "FINAL_CONTRACT_VERSION",
     "DEFAULT_BOOTSTRAP_RESAMPLES",
     "DEFAULT_BOOTSTRAP_SEED",
