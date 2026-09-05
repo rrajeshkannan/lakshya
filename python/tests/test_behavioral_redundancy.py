@@ -98,7 +98,7 @@ def test_nearest_rows_are_metric_specific_not_a_composite_score():
         },
     ]
     rows = build_nearest_rows(pairwise)
-    assert len(rows) == 10
+    assert len(rows) == 15
     assert {row["relationship_metric"] for row in rows} == {
         "mean_abs_level_gap_pct_points",
         "max_abs_level_gap_pct_points",
