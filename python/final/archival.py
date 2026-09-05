@@ -113,7 +113,7 @@ def archive_final_summaries(
 
     # Validate every source and its FINAL checkpoint before writing any archive
     # files. This prevents a partially created historical record on bad input.
-    prepared: list[tuple[str, Path, Path, dict, str]] = []
+    prepared: list[tuple[str, Path, dict, str]] = []
     for purpose, source in summaries.items():
         checkpoint = output_dir / f"final_{purpose}_checkpoint.json"
         if not checkpoint.is_file():
@@ -130,33 +130,50 @@ def archive_final_summaries(
                 f"expected {final_contract_version!r}, "
                 f"got {checkpoint_payload.get('contract_version')!r}"
             )
-        prepared.append((purpose, source, checkpoint, checkpoint_payload, _sha256(source)))
+        prepared.append((purpose, source, checkpoint_payload, _sha256(source)))
 
     review_dir = archive_root / as_of
-    archived: list[Path] = []
-    manifest_purposes = []
-    for purpose, source, _, checkpoint_payload, summary_hash in prepared:
-        destination = review_dir / f"{purpose}_summary.csv"
-        summary_hash = _copy_if_same_or_absent(source, destination)
-        manifest_purposes.append(
-            {
-                "purpose": purpose,
-                "summary_file": destination.name,
-                "summary_sha256": summary_hash,
-                "final_contract_version": final_contract_version,
-                "mission_sha256": checkpoint_payload.get("mission_sha256"),
-                "purpose_horizon_years": checkpoint_payload.get("purpose_horizon_years"),
-                "bootstrap_resamples": checkpoint_payload.get("bootstrap_resamples"),
-                "bootstrap_seed": checkpoint_payload.get("bootstrap_seed"),
-            }
-        )
-        archived.append(destination)
-
+    manifest_purposes = [
+        {
+            "purpose": purpose,
+            "summary_file": f"{purpose}_summary.csv",
+            "summary_sha256": summary_hash,
+            "final_contract_version": final_contract_version,
+            "mission_sha256": checkpoint_payload.get("mission_sha256"),
+            "purpose_horizon_years": checkpoint_payload.get("purpose_horizon_years"),
+            "bootstrap_resamples": checkpoint_payload.get("bootstrap_resamples"),
+            "bootstrap_seed": checkpoint_payload.get("bootstrap_seed"),
+        }
+        for purpose, _, checkpoint_payload, summary_hash in prepared
+    ]
     manifest = {
         "archive_schema_version": ARCHIVE_SCHEMA_VERSION,
         "as_of": as_of,
         "final_contract_version": final_contract_version,
         "purposes": manifest_purposes,
     }
-    _write_json_if_same_or_absent(review_dir / "review_manifest.json", manifest)
+
+    # Preflight all existing destinations before changing the archive. This
+    # keeps a conflicting historical record from producing a partial update.
+    for purpose, source, _, summary_hash in prepared:
+        destination = review_dir / f"{purpose}_summary.csv"
+        if destination.is_file() and _sha256(destination) != summary_hash:
+            raise FileExistsError(
+                f"Historical review record already exists with different content: {destination}"
+            )
+    manifest_path = review_dir / "review_manifest.json"
+    if manifest_path.is_file():
+        existing_manifest = manifest_path.read_text(encoding="utf-8")
+        expected_manifest = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+        if existing_manifest != expected_manifest:
+            raise FileExistsError(
+                f"Historical review manifest already exists with different content: {manifest_path}"
+            )
+
+    archived: list[Path] = []
+    for purpose, source, _, _ in prepared:
+        destination = review_dir / f"{purpose}_summary.csv"
+        _copy_if_same_or_absent(source, destination)
+        archived.append(destination)
+    _write_json_if_same_or_absent(manifest_path, manifest)
     return archived
