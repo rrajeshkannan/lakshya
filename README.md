@@ -36,8 +36,6 @@ The explicit source of scope is `data/fund/funds_in_scope.csv`. The 8-year lived
 
 FUND does not know Purpose, allocation or FINAL optimization.
 
-Detailed specification: `docs/Lakshya_Fund_Behavioural_Fingerprint.md`
-
 ---
 
 # TEAM
@@ -54,8 +52,6 @@ The declared TEAM gate surface is 40 dimensions:
 Supported Elevation horizons are 3Y / 5Y / 7Y / 10Y. Protection is native and horizon-free.
 
 TEAM uses weak exact Pareto non-dominance and does not import MISSION semantics merely to reduce its universe.
-
-Detailed specification: `docs/Lakshya_Team_Behavioural_Fingerprint.md`
 
 ---
 
@@ -151,11 +147,125 @@ FINAL also records:
 
 No subjective Purpose score, Purpose-specific spoke weighting, Composition regions, clustering or future-return forecast is part of FINAL v1.
 
-Detailed production specification: `docs/Lakshya_Production_Architecture_v1.md`
+---
 
-Production sequence: `docs/Lakshya_Pipeline_Sequence.md`
+# Running Lakshya
 
-Current architecture checkpoint: `docs/Lakshya_Current_Architecture_Checkpoint.md`
+## First run / annual review — end to end
+
+The canonical production entry point is:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD
+```
+
+For example:
+
+```bash
+python python/run_production.py --as-of 2026-09-06
+```
+
+Run this command from the repository root.
+
+It runs the complete production chain:
+
+```text
+FUND
+  ↓
+TEAM
+  ↓
+COMPOSITION
+  ↓
+MISSION
+  ↓
+FINAL
+```
+
+More precisely, the runner invokes the resilient upstream MISSION pipeline and then executes FINAL for each requested Purpose. FINAL consumes the persisted MISSION survivor checkpoints; it does not rebuild upstream evidence merely because FINAL is being run.
+
+### What happens on a first run?
+
+The pipeline loads the explicit Fund scope, builds/reuses the upstream persisted evidence and checkpoints, generates the Team and Composition universes, applies the global and Purpose-specific MISSION gates, observes Purpose trajectories, and finally performs FINAL compromise ordering and robustness analysis.
+
+Expensive evidence follows:
+
+```text
+compute → persist → validate → consume
+```
+
+The run therefore creates or reuses the necessary persisted artifacts under `data/` and `output/`.
+
+### What happens on an annual review / rerun?
+
+Use the same command with the new review date:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD
+```
+
+The production pipeline is checkpoint-aware. Valid upstream evidence is reused where the current contracts permit it; missing or invalid stages are reconstructed by the stage that owns them. A downstream FINAL change does not by itself invalidate valid Composition fingerprints.
+
+FINAL also records a checkpoint tied to the MISSION survivor file, FINAL contract version, bootstrap resample count and bootstrap seed. A valid FINAL checkpoint can therefore be reused rather than recomputed.
+
+### Resume options
+
+If an upstream run was interrupted, the production runner supports:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --resume-from global
+```
+
+or:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --resume-from mission
+```
+
+Use these only when you intentionally want the upstream resilient pipeline to resume from its corresponding persisted checkpoint. The runner then continues into FINAL automatically.
+
+### Run selected Purposes only
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --purposes Retirement Edu_B
+```
+
+The same selected Purposes are passed through MISSION and FINAL.
+
+### FINAL-only execution
+
+If MISSION has already been successfully completed and you only want to rerun FINAL, the lower-level FINAL runner is available as a Python API through `run_final_stage()` in `python/run_production.py`. The normal production command is preferred because it verifies/runs the upstream MISSION stage before FINAL.
+
+To force FINAL recomputation despite a valid FINAL checkpoint:
+
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --no-final-reuse
+```
+
+### After the run
+
+The compact production hand-off for each Purpose is:
+
+```text
+output/final_<Purpose>_summary.csv
+```
+
+The remaining FINAL artifacts preserve the audit trail:
+
+```text
+axes
+signatures
+distances
+results
+Lp sweep
+leave-one-spoke sensitivity
+bootstrap
+joint L2/L∞ frontier
+summary
+```
+
+For the full architectural explanation, see `docs/Lakshya_Architecture.md`.
+
+For the execution sequence, persistence boundaries and resume semantics, see `docs/Lakshya_Pipeline_Sequence.md`.
 
 ---
 
