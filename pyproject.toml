@@ -7,6 +7,15 @@ name = "lakshya"
 version = "0.1.0"
 description = "Lakshya portfolio analysis"
 requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "python"}

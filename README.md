@@ -1,226 +1,173 @@
 # Lakshya
 
-Lakshya is a family-oriented investment architecture for understanding,
-constructing and evolving a portfolio over a lifetime and beyond.
+Lakshya is a family-oriented investment analysis architecture for understanding, constructing and evolving a portfolio over a lifetime and beyond.
 
-## Fundamental Architecture
+## Production Architecture
 
 ```text
-FUND → TEAM → MISSION → FUTURE ENVIRONMENT
+FUND → TEAM → COMPOSITION → MISSION → FINAL
 ```
 
-Each stage consumes the understanding earned below it and asks a
-higher-order question.
+The stages deliberately earn information from below rather than importing higher-order semantics prematurely.
 
-> **Aggregation gives us the structural flow.
-> The questions give us the meaning of the flow.**
+> **Information should be introduced at the layer that genuinely earns the need for it.**
 
-Lakshya follows an important discipline across the stages:
+For expensive analytical evidence:
 
-> **A calculation does not automatically become a downstream input, and a
-downstream input does not automatically become persisted state.**
+> **Compute once. Persist immediately. Reuse forever.**
 
-Information crosses an abstraction boundary only when the higher stage
-has earned the need for it.
+The production system values analytical richness, correctness, reproducibility, interpretability and resilience ahead of raw speed.
 
-------------------------------------------------------------------------
+---
 
-## FUND
+# FUND
 
 ### What kind of teammate is this fund?
 
-FUND establishes the observed behavioural character of an individual
-fund.
+FUND establishes observed individual-fund behaviour across:
 
-Its behavioural fingerprint has three primary dimensions:
+- Elevation;
+- Protection;
+- Resilience.
 
-- **Elevation** — participation in prosperity
-- **Protection** — severity of adversity
-- **Resilience** — the journey after adversity begins
+FUND is descriptive, not prescriptive.
 
-The Fund stage is descriptive, not prescriptive. It establishes evidence;
-it does not decide whether Lakshya should own the fund.
+The explicit source of scope is `data/fund/funds_in_scope.csv`. The 8-year lived-history admission rule applies only to POTENTIAL/new-entry funds; CURRENT funds may be younger. Regular versus Direct is not a Lakshya analytical distinction.
 
-### Fund-stage evidence flow
+FUND does not know Purpose, allocation or FINAL optimization.
 
-```text
-Fund Admission
-      ↓
-Admissible Funds
-      ↓
-NAV Evidence
-      ↓
-Fund Behavioural Fingerprint
-      ↓
-Fund Evidence / Compass views
-```
+Detailed specification: `docs/Lakshya_Fund_Behavioural_Fingerprint.md`
 
-Fund Admission establishes the behavioural universe. `CURRENT` /
-`POTENTIAL` is an admission concern; once a Fund is admitted, that
-distinction does not leak into later abstraction layers.
+---
 
-Detailed specification:
-
-`docs/Lakshya_Fund_Behavioural_Fingerprint.md`
-
-------------------------------------------------------------------------
-
-## TEAM
+# TEAM
 
 ### What kind of collective do these teammates form?
 
-TEAM asks:
+TEAM forms singleton, pair and trio structures, with maximum Team size 3.
 
-> **Who stands together?**
+The declared TEAM gate surface is 40 dimensions:
 
-TEAM forms collective behavioural structures from admitted Fund-level
-behavioural evidence. It remains descriptive rather than prescriptive.
-TEAM does not decide what the family should own, how a goal should be
-funded, or how capital should be allocated.
+- 28 Elevation = 4 horizons × 7 rolling measures;
+- 12 Protection dimensions.
 
-The established Team universe currently consists of:
+Supported Elevation horizons are 3Y / 5Y / 7Y / 10Y. Protection is native and horizon-free.
 
-- singleton
-- pair
-- trio
+TEAM uses weak exact Pareto non-dominance and does not import MISSION semantics merely to reduce its universe.
 
-with a maximum of **3 members per Team**.
+Detailed specification: `docs/Lakshya_Team_Behavioural_Fingerprint.md`
 
-### TEAM evidence flow
+---
 
-```text
-Admitted Funds
-      ↓
-Team candidates
-      ↓
-Collective NAV / evidence
-      ↓
-Team Behavioural Fingerprint
-      ↓
-TEAM comparator surface
-      ↓
-Non-dominated TEAM frontier
-```
+# COMPOSITION
 
-TEAM owns the collective behavioural calculation required to compare
-candidate Teams. The current declared gate surface contains **40
-comparative dimensions**:
+### Where does capital sit within a collective?
 
-- **28 Elevation dimensions**: 4 horizons × 7 rolling-return measures
-- **12 Protection dimensions**: severity distribution and threshold-
-  frequency measures
+A Composition is **Team + complete weights**.
 
-Resilience is not currently part of the TEAM gate surface. This is a
-boundary decision, not an assertion that Resilience is unimportant at
-FUND stage. TEAM consumes only the Fund evidence it actually needs.
+The positive grid is:
 
-The TEAM comparator preserves unavailable evidence explicitly rather than
-manufacturing zeroes or silently changing the declared surface.
+- singleton: 100%;
+- pair: 19 allocations on a 5% grid;
+- trio: 171 allocations on a 5% grid.
 
-The frontier is an exact non-dominated frontier using the declared
-upward/downward direction of each dimension. TEAM can stream candidates
-through the frontier without retaining the full combinatorial universe.
+Composition fingerprints are durable evidence containing identity, weights, NAV, Elevation and Protection evidence. They are schema-versioned, atomically persisted and losslessly rehydratable.
 
-### TEAM abstraction boundary
+The global Composition frontier is the weak Pareto frontier over the 40-dimensional Elevation + Protection surface.
 
-TEAM may determine which Teams are non-dominated under the **declared
-TEAM behavioural gate**. It must not import MISSION semantics merely to
-reduce its own output.
+---
 
-TEAM must not import:
-
-- goal suitability;
-- family goals or purpose;
-- composition percentages;
-- allocation;
-- portfolio-purpose decisions; or
-- higher-order MISSION entities
-
-merely to reduce its own output.
-
-The final durable TEAM → MISSION output and persistence surface is **not
-yet frozen**. It will be established only after MISSION's requirements
-are understood.
-
-Detailed TEAM specification:
-
-`docs/Lakshya_Team_Behavioural_Fingerprint.md`
-
-------------------------------------------------------------------------
-
-## MISSION
+# MISSION
 
 ### What must this collective accomplish for the family?
 
-MISSION connects collective behavioural evidence with the family's
-purpose, goals and constraints.
+MISSION introduces Purpose semantics.
 
-MISSION is where purpose-driven interpretation enters, including:
+A Purpose may have a finite target/horizon or may be open-ended with an analytical horizon. Open-ended Purposes still receive Elevation, Protection and Trajectory analysis; only Achievability is absent when there is no finite target requirement.
 
-- goal-specific suitability;
-- composition percentages;
-- allocation per goal; and
-- other purpose/criterion-driven decisions.
+The canonical analytical horizon ladder is:
 
-MISSION should consume Team outputs rather than reaching backward into
-raw Fund/NAV machinery.
+```text
+3Y / 5Y / 7Y / 10Y
+```
 
-The exact TEAM → MISSION contract is established through architectural
-reasoning rather than assumed from lower-stage implementation details.
+For a Purpose, use the longest supported analytical horizon not beyond the Purpose horizon. Thus 4Y→3Y, 9Y→7Y, 12Y→10Y and 13Y→10Y.
 
-------------------------------------------------------------------------
+MISSION sequence:
 
-## FUTURE ENVIRONMENT
+```text
+Global Composition frontier
+        ↓
+Achievability, when applicable
+        ↓
+Protection-only frontier
+        ↓
+MISSION survivors
+        ↓
+Purpose Trajectory observation
+```
 
-### How should the system remain suitable as the family and world evolve?
+Trajectory is descriptive and preserves actual observation horizon/status. It never silently equates shorter lived history with the Purpose horizon.
 
-FUTURE ENVIRONMENT considers continued suitability and evolution through
-changing circumstances.
+---
 
-External reality is introduced at the layer where the architecture
-genuinely earns the need for it rather than being prematurely injected
-into FUND or TEAM.
+# FINAL
 
-------------------------------------------------------------------------
+### Among qualified Compositions, which is the strongest practical compromise?
 
-## Evidence Philosophy
+FINAL is the production ordering stage. It does not reopen MISSION eligibility.
+
+For each Purpose:
+
+```text
+7 Elevation dimensions at selected horizon
++
+12 native Protection dimensions
+```
+
+Every retained individual spoke is equally weighted. Zero-variance spokes are removed deterministically from the current comparison population; varying spokes remain unchanged.
+
+Each spoke is converted to a population-relative desirability coordinate in `[0,1]`, with higher always better. The Utopia Point is the best observed value on every retained spoke.
+
+Distance from Utopia is:
+
+```text
+d_ij = 1 - x_ij
+```
+
+The production winner is the Composition with minimum unweighted Euclidean distance:
+
+```text
+L2 = sqrt(sum(d_ij²))
+```
+
+L-infinity remains a worst-spoke diagnostic and participates in a joint L2/L-infinity non-dominated frontier. No arbitrary L-infinity kill threshold is used.
+
+FINAL also records:
+
+- Lp winner sweep from 1.00 to 10.00 in 0.25 increments;
+- leave-one-spoke sensitivity;
+- 5,000 deterministic population bootstrap resamples by default.
+
+No subjective Purpose score, Purpose-specific spoke weighting, Composition regions, clustering or future-return forecast is part of FINAL v1.
+
+Detailed production specification: `docs/Lakshya_Production_Architecture_v1.md`
+
+Production sequence: `docs/Lakshya_Pipeline_Sequence.md`
+
+Current architecture checkpoint: `docs/Lakshya_Current_Architecture_Checkpoint.md`
+
+---
+
+# Evidence philosophy
 
 Lakshya preserves depth.
 
 **30,000 feet ↔ 3 feet**
 
-The broad picture and the underlying evidence remain connected.
+Observed is not inferred. Unknown is not zero. Compression may organize evidence, but must not erase meaning.
 
-Observed is not inferred.
-Unknown is not zero.
-
-> **Compression can be useful. Compression cannot be allowed to erase
-> meaning.**
-
-A lower abstraction layer may reduce or organise information for the next
-layer, but it must not import the next layer's semantics merely to
-achieve that reduction.
-
-### Calculation versus persistence
-
-Lakshya distinguishes four different questions:
-
-1. **What can a stage calculate?**
-2. **What does the next stage actually consume?**
-3. **What evidence must remain available for interpretation or audit?**
-4. **What state deserves durable persistence?**
-
-These questions are not interchangeable.
-
-The distinction between FUND evidence and TEAM consumption is an example
-of this discipline. Evidence can remain meaningful at its originating
-stage without automatically becoming downstream state.
-
-------------------------------------------------------------------------
-
-## Architecture and Implementation
-
-Lakshya follows:
+The implementation discipline is:
 
 ```text
 PHILOSOPHY
@@ -236,21 +183,16 @@ EVIDENCE
 INTERPRETATION
 ```
 
-The implementation exists to express the architecture, not replace it.
+---
 
-Versioned evidence is part of the architecture. Historical analytical
-states are preserved rather than overwritten, with Git serving as the
-historical ledger where durable analytical state has been deliberately
-chosen.
+# Production release discipline
 
-------------------------------------------------------------------------
+FINAL is explicitly versioned:
 
-## Stage Specifications
+```text
+FINAL_CONTRACT_VERSION = 1
+```
 
-The detailed architectural specifications currently include:
+A future change to the decision rule becomes a deliberate next production release with updated tests and documentation. Exploration can continue without silently changing production behaviour.
 
-- `docs/Lakshya_Fund_Behavioural_Fingerprint.md`
-- `docs/Lakshya_Team_Behavioural_Fingerprint.md`
-
-Additional stage specifications will be introduced when the corresponding
-architecture has been sufficiently established.
+> **We were not searching for a portfolio. We were building a road on which a portfolio could eventually be discovered.**
