@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 import hashlib
 import json
 import os
@@ -82,16 +83,11 @@ def archive_final_summaries(
     identical. A conflicting record fails rather than overwriting history.
     """
     try:
-        review_date = str(Path(as_of))
-        if review_date != as_of or len(as_of) != 10:
-            raise ValueError
-        year, month, day = (int(part) for part in as_of.split("-"))
-        if not (1 <= month <= 12 and 1 <= day <= 31):
-            raise ValueError
-        if len(str(year)) != 4:
-            raise ValueError
+        parsed_date = date.fromisoformat(as_of)
     except (TypeError, ValueError):
         raise ValueError(f"Invalid review date: {as_of!r}") from None
+    if parsed_date.isoformat() != as_of:
+        raise ValueError(f"Invalid review date: {as_of!r}")
 
     summary_paths = sorted(output_dir.glob("final_*_summary.csv"))
     summaries: dict[str, Path] = {}
@@ -115,25 +111,33 @@ def archive_final_summaries(
     if not summaries:
         raise FileNotFoundError(f"No FINAL summary files found in {output_dir}")
 
-    review_dir = archive_root / as_of
-    archived: list[Path] = []
-    manifest_purposes = []
+    # Validate every source and its FINAL checkpoint before writing any archive
+    # files. This prevents a partially created historical record on bad input.
+    prepared: list[tuple[str, Path, Path, dict, str]] = []
     for purpose, source in summaries.items():
-        destination = review_dir / f"{purpose}_summary.csv"
-        summary_hash = _copy_if_same_or_absent(source, destination)
         checkpoint = output_dir / f"final_{purpose}_checkpoint.json"
-        checkpoint_payload = {}
-        if checkpoint.is_file():
-            try:
-                checkpoint_payload = json.loads(checkpoint.read_text(encoding="utf-8"))
-            except (OSError, ValueError, TypeError) as exc:
-                raise ValueError(f"Invalid FINAL checkpoint for {purpose}: {checkpoint}") from exc
+        if not checkpoint.is_file():
+            raise FileNotFoundError(
+                f"FINAL checkpoint missing for {purpose}: {checkpoint}"
+            )
+        try:
+            checkpoint_payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError) as exc:
+            raise ValueError(f"Invalid FINAL checkpoint for {purpose}: {checkpoint}") from exc
         if checkpoint_payload.get("contract_version") != final_contract_version:
             raise ValueError(
                 f"FINAL checkpoint contract mismatch for {purpose}: "
                 f"expected {final_contract_version!r}, "
                 f"got {checkpoint_payload.get('contract_version')!r}"
             )
+        prepared.append((purpose, source, checkpoint, checkpoint_payload, _sha256(source)))
+
+    review_dir = archive_root / as_of
+    archived: list[Path] = []
+    manifest_purposes = []
+    for purpose, source, _, checkpoint_payload, summary_hash in prepared:
+        destination = review_dir / f"{purpose}_summary.csv"
+        summary_hash = _copy_if_same_or_absent(source, destination)
         manifest_purposes.append(
             {
                 "purpose": purpose,
