@@ -1,0 +1,2 @@
+purpose,purpose_horizon_years,nominal_elevation_horizon_years,population_size,informative_spoke_count,primary_winner,primary_l2_distance,primary_linf_distance,primary_worst_spoke,joint_frontier_size,bootstrap_resamples,bootstrap_seed,bootstrap_primary_winner_win_pct,contract_version
+Home_Loan,9,7,245,18,"INF879O01027,INF879O01100,INF966L01887|INF879O01027=0.6500,INF879O01100=0.3000,INF966L01887=0.0500",1.7751390511450915,0.7479508196721312,protection_pct_days_at_or_above_30,2,5000,20260906,0.898,1

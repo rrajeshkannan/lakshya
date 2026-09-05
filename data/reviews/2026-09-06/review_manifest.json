@@ -1,0 +1,67 @@
+{
+  "archive_schema_version": 1,
+  "as_of": "2026-09-06",
+  "final_contract_version": "1",
+  "purposes": [
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "154904f57b026bf09de6e6f477aa30e6fbdf0bbd30ba2b23860b485cc8623a7d",
+      "purpose": "Edu_B",
+      "purpose_horizon_years": 4,
+      "summary_file": "Edu_B_summary.csv",
+      "summary_sha256": "0f4b23f05da6dd4e9a58a256f86904e44dfffbbe59f1dae604f86f23246d904a"
+    },
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "154904f57b026bf09de6e6f477aa30e6fbdf0bbd30ba2b23860b485cc8623a7d",
+      "purpose": "Home_Loan",
+      "purpose_horizon_years": 9,
+      "summary_file": "Home_Loan_summary.csv",
+      "summary_sha256": "baf9bfca92e739174ba2bca2d63487dcd09f9cb1b24101a09b43dce066a8f1bf"
+    },
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "154904f57b026bf09de6e6f477aa30e6fbdf0bbd30ba2b23860b485cc8623a7d",
+      "purpose": "Kutti",
+      "purpose_horizon_years": 7,
+      "summary_file": "Kutti_summary.csv",
+      "summary_sha256": "ca1ba5d13c777852057bb5b7f18a55ffd6229a5e76a123fce079d7f855715c47"
+    },
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "154904f57b026bf09de6e6f477aa30e6fbdf0bbd30ba2b23860b485cc8623a7d",
+      "purpose": "Marriage",
+      "purpose_horizon_years": 9,
+      "summary_file": "Marriage_summary.csv",
+      "summary_sha256": "6daf8e5d21e75de92842d8ea76192ea009f61c26ca6bbfda5696142122d815f4"
+    },
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "6a24b443ca05a582f9b505cb0acae24c57030da66343198080d6ac4b49c75d88",
+      "purpose": "Retirement",
+      "purpose_horizon_years": 12,
+      "summary_file": "Retirement_summary.csv",
+      "summary_sha256": "98c2fdddf78b048c8e59c7b86dca4cbeaa35cb3e3bb44890d881abc302df85c6"
+    },
+    {
+      "bootstrap_resamples": 5000,
+      "bootstrap_seed": 20260906,
+      "final_contract_version": "1",
+      "mission_sha256": "154904f57b026bf09de6e6f477aa30e6fbdf0bbd30ba2b23860b485cc8623a7d",
+      "purpose": "Stitch",
+      "purpose_horizon_years": 7,
+      "summary_file": "Stitch_summary.csv",
+      "summary_sha256": "ab9cb8d78cda608037b90fec4be526ed925992bf8823af778d52a02a7066b464"
+    }
+  ]
+}

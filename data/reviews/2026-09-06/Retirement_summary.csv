@@ -1,0 +1,2 @@
+purpose,purpose_horizon_years,nominal_elevation_horizon_years,population_size,informative_spoke_count,primary_winner,primary_l2_distance,primary_linf_distance,primary_worst_spoke,joint_frontier_size,bootstrap_resamples,bootstrap_seed,bootstrap_primary_winner_win_pct,contract_version
+Retirement,12,10,36,18,"INF879O01027,INF966L01887,INF966L01911|INF879O01027=0.8500,INF966L01887=0.0500,INF966L01911=0.1000",1.6321389496670953,0.8,protection_median_severity_pct,4,5000,20260906,0.64,1
