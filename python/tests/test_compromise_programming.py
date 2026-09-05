@@ -32,7 +32,7 @@ def _payload(identity: str, base: float, *, constant_positive_period: bool = Fal
     elevation = {
         f"rolling_{years}y": {
             metric: (
-                base
+                50.0
                 if metric == "positive_period_pct" and constant_positive_period
                 else base + years + index
             )
