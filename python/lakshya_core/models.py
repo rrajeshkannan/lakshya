@@ -16,14 +16,10 @@ them:
     rolling_returns.py
         -> RollingReturnEvidence
 
-    drawdown_episodes.py
-        -> DrawdownEpisode
-
-The Fund Fingerprint then composes the three Fund Compass dimensions:
+The Fund Fingerprint then composes the two active Fund Compass dimensions:
 
     Elevation
     Protection
-    Resilience
 
 This separation is intentional.  We don't want multiple competing
 definitions of the same evidence object scattered across the codebase.
@@ -36,7 +32,6 @@ from datetime import date
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from .drawdown_episodes import DrawdownEpisode
     from .rolling_returns import RollingReturnEvidence
 
 
@@ -102,7 +97,7 @@ class EvidenceWindow:
     different when based on a short, long, recent, or full-period history.
 
     This is a supporting domain concept. It does not itself determine
-    whether a fund is suitable, resilient, or preferable.
+    whether a fund is suitable or preferable.
     """
     start_date: date
     end_date: date
@@ -133,10 +128,8 @@ class ProtectionEvidence:
     high-water mark.
 
     This object deliberately contains severity information only.
-
-    Recovery duration, underwater duration and episode journeys belong
-    to ResilienceEvidence.  Benchmark-relative behaviour is also kept
-    outside this intrinsic Fund Compass dimension.
+    Benchmark-relative behaviour is kept outside this intrinsic Fund
+    Compass dimension.
     """
 
     observations: int
@@ -151,40 +144,14 @@ class ProtectionEvidence:
 
 
 @dataclass(frozen=True)
-class ResilienceEvidence:
-    """
-    Observed recovery journeys following drawdown episodes.
-
-    The individual episodes are retained deliberately.  Summary
-    statistics provide the 30,000-foot view, while the episode list
-    preserves the 3-foot evidence needed to investigate the journey.
-
-    Recovered and ongoing episodes are kept distinct because an ongoing
-    episode has no observed recovery duration.
-    """
-
-    episode_count: int
-    recovered_count: int
-    ongoing_count: int
-    median_depth_pct: float | None
-    worst_depth_pct: float | None
-    median_decline_days_recovered: float | None
-    median_recovery_days: float | None
-    median_underwater_days_recovered: float | None
-    median_underwater_days_ongoing: float | None
-    episodes: list[DrawdownEpisode]
-
-
-@dataclass(frozen=True)
 class FundFingerprint:
     """
     The Fund-stage behavioural description of a fund.
 
-    This is the Fund Compass:
+    The active Fund Compass is:
 
         Elevation
         Protection
-        Resilience
 
     It intentionally contains no score, rank, suitability judgement or
     recommendation.
@@ -200,4 +167,3 @@ class FundFingerprint:
     fund: Fund
     elevation: ElevationEvidence
     protection: ProtectionEvidence
-    resilience: ResilienceEvidence
