@@ -9,7 +9,7 @@ from pathlib import Path
 
 from lakshya_core.hashing import sha256_file
 
-ARCHIVE_SCHEMA_VERSION = 1
+ARCHIVE_SCHEMA_VERSION = 2
 
 
 def _atomic_copy(source: Path, destination: Path) -> None:
@@ -27,15 +27,8 @@ def _atomic_copy(source: Path, destination: Path) -> None:
         raise
 
 
-def _write_json_if_same_or_absent(path: Path, payload: dict) -> None:
+def _atomic_write_json(path: Path, payload: dict) -> None:
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
-    if path.is_file():
-        existing = path.read_text(encoding="utf-8")
-        if existing != encoded:
-            raise FileExistsError(
-                f"Historical review manifest already exists with different content: {path}"
-            )
-        return
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     try:
@@ -49,17 +42,25 @@ def _write_json_if_same_or_absent(path: Path, payload: dict) -> None:
         raise
 
 
-def _copy_if_same_or_absent(source: Path, destination: Path) -> str:
+def _copy_working_record(source: Path, destination: Path) -> str:
+    """Replace the same-date working record atomically and return its hash."""
     source_hash = sha256_file(source)
-    if destination.is_file():
-        destination_hash = sha256_file(destination)
-        if destination_hash != source_hash:
-            raise FileExistsError(
-                f"Historical review record already exists with different content: {destination}"
-            )
-        return destination_hash
+    if destination.is_file() and sha256_file(destination) == source_hash:
+        return source_hash
     _atomic_copy(source, destination)
     return source_hash
+
+
+def _existing_manifest(path: Path) -> dict | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError) as exc:
+        raise ValueError(f"Invalid historical review manifest: {path}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"Invalid historical review manifest: {path}")
+    return payload
 
 
 def archive_final_summaries(
@@ -70,10 +71,14 @@ def archive_final_summaries(
     archive_root: Path,
     final_contract_version: str,
 ) -> list[Path]:
-    """Archive configured FINAL summaries into an immutable dated review record.
+    """Update the same-date annual review snapshot in place.
 
-    Existing records are idempotent when their content is byte-for-byte
-    identical. A conflicting record fails rather than overwriting history.
+    The dated directory is a working annual snapshot until the resulting
+    review state is committed to Git. Repeated runs therefore replace the
+    same summary files rather than creating versioned copies. ``working_revision``
+    increments when the snapshot content changes and remains stable for an
+    identical rerun. Existing purposes not selected by a partial run remain
+    in the working manifest.
     """
     try:
         parsed_date = date.fromisoformat(as_of)
@@ -104,8 +109,9 @@ def archive_final_summaries(
     if not summaries:
         raise FileNotFoundError(f"No FINAL summary files found in {output_dir}")
 
-    # Validate every source and its FINAL checkpoint before writing any archive
-    # files. This prevents a partially created historical record on bad input.
+    # Validate every selected source and its FINAL checkpoint before changing
+    # the working snapshot. This prevents a bad partial run from creating a
+    # half-valid review state.
     prepared: list[tuple[str, Path, dict, str]] = []
     for purpose, source in summaries.items():
         checkpoint = output_dir / f"final_{purpose}_checkpoint.json"
@@ -126,8 +132,20 @@ def archive_final_summaries(
         prepared.append((purpose, source, checkpoint_payload, sha256_file(source)))
 
     review_dir = archive_root / as_of
-    manifest_purposes = [
-        {
+    manifest_path = review_dir / "review_manifest.json"
+    existing = _existing_manifest(manifest_path)
+    existing_purposes = {
+        item["purpose"]: item
+        for item in (existing or {}).get("purposes", [])
+        if isinstance(item, dict) and item.get("purpose")
+    }
+
+    # Build the new selected records while retaining other purposes already in
+    # the same annual working snapshot. A partial Purpose run must not erase
+    # unrelated Purpose records.
+    merged_purposes = dict(existing_purposes)
+    for purpose, _, checkpoint_payload, summary_hash in prepared:
+        merged_purposes[purpose] = {
             "purpose": purpose,
             "summary_file": f"{purpose}_summary.csv",
             "summary_sha256": summary_hash,
@@ -137,36 +155,31 @@ def archive_final_summaries(
             "bootstrap_resamples": checkpoint_payload.get("bootstrap_resamples"),
             "bootstrap_seed": checkpoint_payload.get("bootstrap_seed"),
         }
-        for purpose, _, checkpoint_payload, summary_hash in prepared
-    ]
-    manifest = {
+
+    manifest_purposes = [merged_purposes[name] for name in sorted(merged_purposes)]
+    base_manifest = {
         "archive_schema_version": ARCHIVE_SCHEMA_VERSION,
         "as_of": as_of,
         "final_contract_version": final_contract_version,
         "purposes": manifest_purposes,
     }
 
-    # Preflight all existing destinations before changing the archive. This
-    # keeps a conflicting historical record from producing a partial update.
-    for purpose, source, _, summary_hash in prepared:
-        destination = review_dir / f"{purpose}_summary.csv"
-        if destination.is_file() and sha256_file(destination) != summary_hash:
-            raise FileExistsError(
-                f"Historical review record already exists with different content: {destination}"
-            )
-    manifest_path = review_dir / "review_manifest.json"
-    if manifest_path.is_file():
-        existing_manifest = manifest_path.read_text(encoding="utf-8")
-        expected_manifest = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
-        if existing_manifest != expected_manifest:
-            raise FileExistsError(
-                f"Historical review manifest already exists with different content: {manifest_path}"
-            )
+    # Determine whether this invocation actually changes the working snapshot.
+    # An identical rerun remains idempotent and does not consume another
+    # working revision.
+    existing_base = None
+    if existing is not None:
+        existing_base = dict(existing)
+        existing_base.pop("working_revision", None)
+    changed = existing_base != base_manifest
+    revision = int((existing or {}).get("working_revision", 0)) + (1 if changed else 0)
+    manifest = dict(base_manifest)
+    manifest["working_revision"] = revision
 
     archived: list[Path] = []
     for purpose, source, _, _ in prepared:
         destination = review_dir / f"{purpose}_summary.csv"
-        _copy_if_same_or_absent(source, destination)
+        _copy_working_record(source, destination)
         archived.append(destination)
-    _write_json_if_same_or_absent(manifest_path, manifest)
+    _atomic_write_json(manifest_path, manifest)
     return archived
