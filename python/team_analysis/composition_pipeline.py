@@ -9,7 +9,7 @@ from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 import pandas as pd
 
 from .analyze_composition import analyze_composition
-from .composition import Composition, composition_identity
+from .composition import Composition
 from .composition_fingerprint import CompositionFingerprint
 from .generate_compositions import generate_compositions
 from .team import Team
