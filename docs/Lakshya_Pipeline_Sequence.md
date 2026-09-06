@@ -4,11 +4,129 @@
 
 **Release:** FINAL / Compromise Programming v1
 
-This document describes **how the production pipeline executes**. The companion architecture document describes **what each stage means, owns, consumes, and guarantees**. The two documents are intentionally complementary rather than repetitive.
+This document describes **how the Lakshya review executes from manual inputs through the analytical pipeline, family-level observation, Purpose Staging, and historical persistence**. The companion architecture document describes **what each stage means, owns, consumes, and guarantees**. The two documents are intentionally complementary rather than repetitive.
 
 ---
 
-## 1. End-to-end production sequence
+## 1. End-to-end Lakshya review sequence
+
+The complete annual review has two distinct parts: the analytical production chain and the human-controlled post-FINAL review layers.
+
+```mermaid
+flowchart TD
+    A[Manual Fund scope\ndata/fund/funds_in_scope.csv] --> B[Manual Purpose inputs\ndata/purpose/purposes.csv]
+    B --> C[FUND admission]
+    C --> D[Persisted NAV evidence]
+    D --> E[TEAM candidate generation]
+    E --> F[TEAM collective evidence]
+    F --> G[TEAM fingerprint]
+    G --> H[TEAM 40-D Pareto frontier]
+    H --> I[COMPOSITION 5% weight grid]
+    I --> J[Persisted Composition fingerprint]
+    J --> K[Global COMPOSITION 40-D Pareto frontier]
+    K --> L{MISSION Purpose]
+    L --> M[Achievability when finite target exists]
+    L --> N[Open-ended Purpose: no Achievability]
+    M --> O[Purpose Protection frontier]
+    N --> O
+    O --> P[MISSION survivors]
+    P --> Q[Purpose Trajectory observation]
+    Q --> R[FINAL Purpose comparison surface]
+    R --> S[Population-relative radial coordinates]
+    S --> T[Distance from Utopia]
+    T --> U[L2 primary ordering]
+    T --> V[L-infinity diagnostic]
+    U --> W[L2/L-infinity joint frontier]
+    U --> X[Lp robustness]
+    U --> Y[Leave-one-spoke sensitivity]
+    U --> Z[5,000-resample population bootstrap]
+    W --> AA[FINAL evidence bundle]
+    X --> AA
+    Y --> AA
+    Z --> AA
+    AA --> AB[Archive FINAL summaries]
+    AB --> AC[Family Architecture Validation]
+    AC --> AD[Human review checkpoint]
+    AD --> AE[Purpose Staging INIT]
+    AE --> AF[Human staging turn]
+    AF --> AG[Achievability + reconciliation]
+    AG --> AH{Satisfied?}
+    AH -->|No| AF
+    AH -->|Yes| AI{Both pools zero?}
+    AI -->|No| AF
+    AI -->|Yes| AJ[Purpose Staging COMMIT]
+    AJ --> AK[Authoritative purposes.csv updated]
+    AK --> AL[Annual historical snapshot]
+    AL --> AM[Git commit / loopback record]
+    AM --> AN[CURRENT → TARGET transition planning]
+```
+
+The analytical production direction is:
+
+```text
+FUND → TEAM → COMPOSITION → MISSION → FINAL
+```
+
+The complete review direction is:
+
+```text
+manual inputs
+    ↓
+FUND → TEAM → COMPOSITION → MISSION → FINAL
+    ↓
+FAMILY ARCHITECTURE VALIDATION
+    ↓
+PURPOSE STAGING
+    ↓
+HISTORICAL SNAPSHOT
+    ↓
+CURRENT → TARGET TRANSITION
+```
+
+The final transition is deliberately outside the analytical production decision. Lakshya does not automatically execute redemption or reinvestment.
+
+---
+
+## 2. Human-controlled review boundary
+
+The annual review begins and ends with explicit human control. The system calculates consequences; it does not invent family priorities or transaction instructions.
+
+```mermaid
+sequenceDiagram
+    participant Reviewer as Family reviewer
+    participant Scope as Fund scope
+    participant Purpose as Purpose inputs
+    participant Production as Lakshya production
+    participant Family as Family validation
+    participant Staging as Purpose staging
+    participant Git as Historical repository
+    participant Transition as CURRENT → TARGET planning
+
+    Reviewer->>Scope: review / update CURRENT & POTENTIAL
+    Reviewer->>Purpose: review / update Purpose inputs
+    Reviewer->>Production: start annual production review
+    Production-->>Reviewer: FINAL evidence + winner per Purpose
+    Reviewer->>Family: run family architecture validation
+    Family-->>Reviewer: concentration / dependency observation
+    Reviewer->>Staging: initialize review workspace
+    loop reviewer turns
+        Reviewer->>Staging: release / acquire / change Purpose levers
+        Staging-->>Reviewer: staged state + ledger + Achievability
+    end
+    Reviewer->>Staging: commit when satisfied and pools = 0
+    Staging-->>Purpose: promote staged Purpose state
+    Reviewer->>Git: inspect and commit intended data/ annual snapshot
+    Git-->>Reviewer: durable historical record
+    Reviewer->>Transition: begin separate CURRENT → TARGET planning
+```
+
+The key boundary is:
+
+> **The reviewer controls the terrain; Lakshya calculates the consequences.**
+
+---
+
+# 3. End-to-end production sequence
 
 ```mermaid
 flowchart TD
@@ -43,17 +161,11 @@ flowchart TD
     Y --> Z
 ```
 
-The execution direction is therefore:
-
-```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL
-```
-
 No stage is permitted to use a later stage merely to make its own universe smaller.
 
 ---
 
-# 2. Stage ownership at a glance
+# 4. Stage ownership at a glance
 
 | Stage | Produces | Consumed downstream |
 |---|---|---|
@@ -61,7 +173,10 @@ No stage is permitted to use a later stage merely to make its own universe small
 | TEAM | Team candidates, collective evidence, Team fingerprint, TEAM frontier | COMPOSITION |
 | COMPOSITION | complete weighted Compositions, persisted fingerprints, global frontier | MISSION |
 | MISSION | Purpose-qualified survivors, trajectory evidence | FINAL |
-| FINAL | ordering, robustness diagnostics, winner, audit bundle | human decision layer |
+| FINAL | ordering, robustness diagnostics, winner, audit bundle | Family Architecture Validation / human review |
+| FAMILY ARCHITECTURE VALIDATION | family attribution, concentration and dependency observations | human review / Purpose Staging context |
+| PURPOSE STAGING | staged Purpose state, reconciliation, Achievability | authoritative Purpose input after explicit commit |
+| HISTORICAL SNAPSHOT | durable annual `data/` state | future annual review / loopback |
 
 The production invariant is:
 
@@ -71,7 +186,7 @@ compute → persist → validate → consume
 
 ---
 
-# 3. FUND execution
+# 5. FUND execution
 
 ```mermaid
 sequenceDiagram
@@ -98,7 +213,7 @@ FUND evidence remains descriptive. FUND does not perform Purpose suitability or 
 
 ---
 
-# 4. TEAM execution
+# 6. TEAM execution
 
 ```mermaid
 sequenceDiagram
@@ -131,7 +246,7 @@ Fund-level Resilience is not currently part of the TEAM comparator gate because 
 
 ---
 
-# 5. COMPOSITION execution
+# 7. COMPOSITION execution
 
 ```mermaid
 sequenceDiagram
@@ -167,7 +282,7 @@ Recomputation requires a genuine upstream evidence or fingerprint-schema change.
 
 ---
 
-# 6. MISSION execution
+# 8. MISSION execution
 
 ```mermaid
 sequenceDiagram
@@ -234,7 +349,7 @@ Trajectory is descriptive in the current architecture and does not itself remove
 
 ---
 
-# 7. FINAL execution
+# 9. FINAL execution
 
 FINAL receives **only MISSION survivors**. It does not reopen MISSION eligibility.
 
@@ -267,7 +382,7 @@ sequenceDiagram
 
 ---
 
-# 8. FINAL comparison surface
+# 10. FINAL comparison surface
 
 For Purpose-selected Elevation horizon `H`, FINAL begins with:
 
@@ -299,7 +414,7 @@ The same construction is performed independently for each Purpose. No Purpose in
 
 ---
 
-# 9. FINAL mathematical execution
+# 11. FINAL mathematical execution
 
 For each retained spoke `j` and Composition `i`:
 
@@ -349,7 +464,161 @@ No subjective Purpose score is introduced.
 
 ---
 
-# 10. Persistence and resume semantics
+# 12. Family Architecture Validation execution
+
+Family Architecture Validation runs **after FINAL has been archived**. It observes the family-level consequence of independently derived Purpose decisions without changing those decisions.
+
+```mermaid
+sequenceDiagram
+    participant Purpose as data/purpose/purposes.csv
+    participant Archive as Archived FINAL summaries
+    participant Manifest as Review manifest
+    participant Metadata as Fund metadata
+    participant Attribution as Family validation
+    participant Review as Human reviewer
+
+    Purpose->>Attribution: Purpose current capital
+    Archive->>Attribution: FINAL winner + Composition weights
+    Manifest->>Attribution: verify archive integrity / lineage
+    Metadata->>Attribution: fund + AMC identity
+    Attribution->>Attribution: Purpose capital × fund weight
+    Attribution->>Attribution: aggregate fund concentration
+    Attribution->>Attribution: aggregate AMC / ecosystem concentration
+    Attribution->>Attribution: reconcile Purpose-level totals
+    Attribution-->>Review: family attribution / concentration / dependency
+```
+
+The layer consumes already-earned production information only. It does not recompute FINAL, inspect candidate populations, impose concentration thresholds, or alter winners.
+
+Its central attribution contract is:
+
+```text
+Purpose current capital
+        ×
+FINAL Composition fund weight
+        =
+Attributed capital
+```
+
+The generated forensic log is not part of the canonical annual snapshot and is ignored by Git.
+
+---
+
+# 13. Purpose Staging execution
+
+Purpose Staging begins only after the family-level observation has been reviewed. It is a human-in-the-loop reconciliation workspace, not an optimizer.
+
+```mermaid
+sequenceDiagram
+    participant Source as Authoritative purposes.csv
+    participant Reviewer as Human reviewer
+    participant Workspace as Purpose staging workspace
+    participant Achievability as Achievability engine
+    participant Ledger as Reconciliation ledger
+    participant Commit as Commit boundary
+
+    Reviewer->>Workspace: INIT review workspace
+    Workspace->>Source: read authoritative Purpose state
+    Source-->>Workspace: copy Purpose state
+    Workspace-->>Reviewer: staged state + empty pools
+
+    loop one or more review turns
+        Reviewer->>Workspace: submit Purpose lever changes
+        Workspace->>Workspace: release reduced capital / SIP
+        Reviewer->>Workspace: specify pool acquisition percentages
+        Workspace->>Workspace: allocate from same turn-start pool base
+        Workspace->>Ledger: record releases + acquisitions
+        Workspace->>Achievability: recalculate staged consequences
+        Achievability-->>Reviewer: latest Achievability
+        Workspace-->>Reviewer: staged state + pools + ledger
+    end
+
+    Reviewer->>Commit: request COMMIT
+    Commit->>Commit: require reviewer satisfaction
+    Commit->>Commit: require capital pool = 0
+    Commit->>Commit: require SIP pool = 0
+    Commit->>Commit: backup purposes_before_commit.csv
+    Commit->>Source: promote staged Purpose state
+    Commit-->>Reviewer: COMMITTED
+```
+
+The conservation rule is:
+
+```text
+Purpose value reduction  → capital pool
+Purpose SIP reduction    → SIP pool
+pool acquisition         → another Purpose
+```
+
+A reviewer cannot silently create capital or SIP by directly increasing `value` or `monthly_plan`.
+
+Acquisition percentages apply to the **same pool available at the start of the acquisition phase** for that turn; they are not applied sequentially to a shrinking pool.
+
+The structured staging artifacts are retained under:
+
+```text
+data/reviews/YYYY-MM-DD/purpose_staging/
+```
+
+The generated `staging.log` remains beside them for forensic diagnosis but is ignored by Git.
+
+---
+
+# 14. Historical snapshot and loopback execution
+
+After Purpose Staging is explicitly committed, the annual review reaches its persistence boundary. The durable `data/` state becomes part of Lakshya's historical memory.
+
+```mermaid
+sequenceDiagram
+    participant Reviewer as Human reviewer
+    participant Data as Lakshya data/
+    participant Ignore as Git ignore rules
+    participant Git as Git repository
+    participant Future as Future annual review
+
+    Reviewer->>Data: inspect annual review changes
+    Data-->>Reviewer: authoritative inputs + review artifacts
+    Reviewer->>Ignore: exclude generated runtime logs
+    Ignore-->>Reviewer: staging.log / family_attribution.log excluded
+    Reviewer->>Git: git status
+    Reviewer->>Git: git diff --cached after selective staging
+    Reviewer->>Git: commit intended annual snapshot
+    Git-->>Reviewer: durable review history
+    Future->>Git: recover prior annual data / evidence
+    Git-->>Future: historical loopback state
+```
+
+The intended persistence distinction is:
+
+| Material | Persistence role |
+|---|---|
+| `data/fund/` authoritative inputs | durable, version-controlled |
+| `data/purpose/` authoritative inputs | durable, version-controlled |
+| `data/reviews/<as-of>/` structured annual artifacts | durable, version-controlled |
+| `data/reviews/<as-of>/purpose_staging/` structured staging state | durable, version-controlled |
+| `staging.log` | generated forensic log, Git-ignored |
+| `family_attribution.log` | generated forensic log, Git-ignored |
+| `output/` | disposable/regenerable runtime area |
+
+This creates the long-term loop:
+
+```text
+annual review
+     ↓
+reviewed data/
+     ↓
+Git snapshot
+     ↓
+next annual review
+     ↓
+loopback to prior state
+```
+
+The annual snapshot is a historical record, not a transaction ledger or automatic trading instruction.
+
+---
+
+# 15. Persistence and resume semantics
 
 A production stage follows this pattern:
 
@@ -377,7 +646,7 @@ Thus a future FINAL contract can be rerun against the same MISSION evidence with
 
 ---
 
-# 11. Production audit trail
+# 16. Production audit trail
 
 For each Purpose, FINAL produces:
 
@@ -401,9 +670,11 @@ final_<Purpose>_summary.csv
 
 The remaining artifacts preserve the path from **30,000 feet to 3 feet** so that the winner is auditable rather than merely asserted.
 
+Family Architecture Validation then produces the family-level attribution and dependency record, while Purpose Staging preserves the human reconciliation path.
+
 ---
 
-# 12. What this document intentionally does not decide
+# 17. What this document intentionally does not decide
 
 This is an execution document. It does not define or introduce new analytical concepts beyond the production contract.
 
@@ -419,11 +690,20 @@ It therefore does not add:
 - future-return forecasts; or
 - causal explanations for why a Composition wins.
 
-Those belong to future experiments or future explicitly versioned production contracts only if evidence earns them.
+It also does not automate:
+
+- family priority selection;
+- concentration tolerance decisions;
+- Purpose priority decisions;
+- redemption decisions;
+- tax or exit-load optimization; or
+- reinvestment transactions.
+
+Those belong to future explicitly versioned production contracts or human-controlled transition planning only if evidence earns them.
 
 ---
 
-# 13. Production release boundary
+# 18. Production release boundary
 
 FINAL v1 is production-complete when:
 
@@ -436,5 +716,13 @@ FINAL v1 is production-complete when:
 - the FINAL contract is versioned;
 - tests cover the mathematical invariants; and
 - exploratory machinery is not required for the production decision.
+
+The broader annual review is complete for archival purposes when:
+
+- manual Fund and Purpose inputs have been reviewed;
+- production and Family Architecture Validation have been reviewed;
+- Purpose Staging has been explicitly committed;
+- intended `data/` changes have been inspected; and
+- the annual snapshot has been committed to Git, excluding Git-ignored generated logs.
 
 Any future change to the decision rule is a deliberate production version change, not an undocumented edit to the current pipeline.
