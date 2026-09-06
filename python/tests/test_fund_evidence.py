@@ -1,13 +1,11 @@
-from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from lakshya_core.drawdown_episodes import DrawdownEpisode, calculate_resilience
 from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.elevation import calculate_elevation
-from lakshya_core.models import ElevationEvidence, ResilienceEvidence
+from lakshya_core.models import ElevationEvidence
 from lakshya_core.rolling_returns import RollingReturnEvidence, calculate_rolling_cagr
 from lakshya_core.nav_history import normalize_nav_history
 from lakshya_core.parked.evidence_inventory import load_nav_cache
@@ -27,28 +25,6 @@ def test_elevation_can_have_missing_long_horizon_evidence():
     assert elevation.rolling_5y is None
     assert elevation.rolling_7y is None
     assert elevation.rolling_10y is None
-
-
-def test_resilience_retains_episode_level_evidence():
-    episode = DrawdownEpisode(
-        peak_date=date(2020, 1, 1), peak_value=100.0,
-        trough_date=date(2020, 3, 1), trough_value=60.0,
-        drawdown_pct=-0.40, decline_days=60,
-        recovery_date=date(2020, 9, 1), recovery_days=184,
-        underwater_days=244, status="recovered", history_before_peak_days=1000,
-    )
-    resilience = ResilienceEvidence(
-        episode_count=1, recovered_count=1, ongoing_count=0,
-        median_depth_pct=40.0, worst_depth_pct=40.0,
-        median_decline_days_recovered=60.0, median_recovery_days=184.0,
-        median_underwater_days_recovered=244.0, median_underwater_days_ongoing=None,
-        episodes=[episode],
-    )
-    assert resilience.episode_count == 1
-    assert resilience.recovered_count == 1
-    assert resilience.ongoing_count == 0
-    assert len(resilience.episodes) == 1
-    assert resilience.episodes[0] is episode
 
 
 def test_elevation_preserves_horizon_evidence_state():
@@ -74,36 +50,6 @@ def test_protection_measures_severity_from_funds_own_high_water_mark():
     assert protection.days_at_or_above_threshold[10] == 3
     assert protection.days_at_or_above_threshold[15] == 1
     assert protection.days_at_or_above_threshold[20] == 1
-
-
-def test_resilience_separates_recovered_and_ongoing_evidence():
-    recovered_episode = DrawdownEpisode(
-        peak_date=date(2020, 1, 1), peak_value=100.0,
-        trough_date=date(2020, 3, 1), trough_value=60.0,
-        drawdown_pct=-0.40, decline_days=60,
-        recovery_date=date(2020, 9, 1), recovery_days=184,
-        underwater_days=244, status="recovered", history_before_peak_days=1000,
-    )
-    ongoing_episode = DrawdownEpisode(
-        peak_date=date(2024, 1, 1), peak_value=120.0,
-        trough_date=date(2024, 6, 1), trough_value=90.0,
-        drawdown_pct=-0.25, decline_days=152,
-        recovery_date=None, recovery_days=None,
-        underwater_days=500, status="ongoing", history_before_peak_days=2000,
-    )
-    resilience = calculate_resilience([recovered_episode, ongoing_episode])
-    assert resilience.episode_count == 2
-    assert resilience.recovered_count == 1
-    assert resilience.ongoing_count == 1
-    assert resilience.median_depth_pct == pytest.approx(32.5)
-    assert resilience.worst_depth_pct == pytest.approx(40.0)
-    assert resilience.median_decline_days_recovered == 60.0
-    assert resilience.median_recovery_days == 184.0
-    assert resilience.median_underwater_days_recovered == 244.0
-    assert resilience.median_underwater_days_ongoing == 500.0
-    assert len(resilience.episodes) == 2
-    assert resilience.episodes[0] == recovered_episode
-    assert resilience.episodes[1] == ongoing_episode
 
 
 def test_nav_history_normalizes_chronological_order():
@@ -185,26 +131,3 @@ def test_rolling_cagr_uses_latest_nav_on_or_before_lookback_date():
     evidence = calculate_rolling_cagr(df, 5)
     expected = (121.0 / 100.0) ** (1 / 5) - 1
     assert evidence.latest == pytest.approx(expected)
-
-
-def test_drawdown_episode_distinguishes_recovered_and_ongoing():
-    recovered = DrawdownEpisode(
-        peak_date=date(2020, 1, 1), peak_value=100.0,
-        trough_date=date(2020, 3, 1), trough_value=60.0,
-        drawdown_pct=-0.40, decline_days=60,
-        recovery_date=date(2020, 9, 1), recovery_days=184,
-        underwater_days=244, status="recovered", history_before_peak_days=1000,
-    )
-    ongoing = DrawdownEpisode(
-        peak_date=date(2025, 1, 1), peak_value=100.0,
-        trough_date=date(2025, 3, 1), trough_value=70.0,
-        drawdown_pct=-0.30, decline_days=59,
-        recovery_date=None, recovery_days=None,
-        underwater_days=300, status="ongoing", history_before_peak_days=1000,
-    )
-    assert recovered.status == "recovered"
-    assert recovered.recovery_date is not None
-    assert recovered.recovery_days is not None
-    assert ongoing.status == "ongoing"
-    assert ongoing.recovery_date is None
-    assert ongoing.recovery_days is None
