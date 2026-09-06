@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from lakshya_core.hashing import sha256_file
 import pandas as pd
 import pytest
 
@@ -113,7 +114,7 @@ def test_trajectory_checkpoint_requires_current_contract_version(tmp_path: Path,
     trajectory_path = output / "trajectory_observations" / "Edu_B.csv"
     coverage_path = output / "trajectory_observations" / "Edu_B_coverage.csv"
     old_inputs = {
-        "mission_sha256": pipeline._sha256(mission_path),
+        "mission_sha256": sha256_file(mission_path),
         "trajectory_contract_version": str(pipeline.TRAJECTORY_CONTRACT_VERSION - 1),
     }
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from lakshya_core.hashing import sha256_file
 import pandas as pd
 
 import mission.resilient_pipeline as pipeline
@@ -39,7 +40,7 @@ def _write_mission(output: Path):
         stage="mission_achievability",
         as_of=AS_OF,
         inputs={
-            "global_survivors_sha256": pipeline._sha256(output / "global_survivors.csv"),
+            "global_survivors_sha256": sha256_file(output / "global_survivors.csv"),
             "global_checkpoint_stage": "global_frontier",
         },
     )
@@ -48,7 +49,7 @@ def _write_mission(output: Path):
         [{"composition": "A|A=1.0"}],
         stage="mission",
         as_of=AS_OF,
-        inputs={"achievability_sha256": pipeline._sha256(output / "achievability_Edu_B.csv")},
+        inputs={"achievability_sha256": sha256_file(output / "achievability_Edu_B.csv")},
     )
 
 
@@ -57,7 +58,7 @@ def _write_trajectory_checkpoints(output: Path):
     trajectory = output / "trajectory_observations" / "Edu_B.csv"
     coverage = output / "trajectory_observations" / "Edu_B_coverage.csv"
     inputs = {
-        "mission_sha256": pipeline._sha256(mission),
+        "mission_sha256": sha256_file(mission),
         "trajectory_contract_version": str(pipeline.TRAJECTORY_CONTRACT_VERSION),
     }
     write_csv_checkpoint(
