@@ -1,0 +1,24 @@
+{
+  "artifacts": [
+    "family_capital_attribution.csv",
+    "family_fund_concentration.csv",
+    "family_amc_concentration.csv",
+    "family_purpose_dependency.csv"
+  ],
+  "as_of": "2026-09-06",
+  "attribution_schema_version": 1,
+  "generated_at": "2026-09-06T15:25:48+05:30",
+  "input_hashes": {
+    "Edu_B_summary_sha256": "0f4b23f05da6dd4e9a58a256f86904e44dfffbbe59f1dae604f86f23246d904a",
+    "Home_Loan_summary_sha256": "baf9bfca92e739174ba2bca2d63487dcd09f9cb1b24101a09b43dce066a8f1bf",
+    "Kutti_summary_sha256": "ca1ba5d13c777852057bb5b7f18a55ffd6229a5e76a123fce079d7f855715c47",
+    "Marriage_summary_sha256": "6daf8e5d21e75de92842d8ea76192ea009f61c26ca6bbfda5696142122d815f4",
+    "Retirement_summary_sha256": "98c2fdddf78b048c8e59c7b86dca4cbeaa35cb3e3bb44890d881abc302df85c6",
+    "Stitch_summary_sha256": "ab9cb8d78cda608037b90fec4be526ed925992bf8823af778d52a02a7066b464",
+    "fund_metadata_sha256": "706e1ace9141dc1c38c0391892feed0964b5b3ff19e738875c3e0620a0aa3f71",
+    "purposes_csv_sha256": "711b28f99023a383b760dc07c5170fdd56888fb2c9b76c16441cb83bd544a36e",
+    "review_manifest_sha256": "1402bc30f9b6892eff95c392de1c79514829c3a3832bf8009d6a8552f1746ca1"
+  },
+  "nature": "descriptive_post_final_attribution",
+  "optimization_or_guardrail": false
+}
