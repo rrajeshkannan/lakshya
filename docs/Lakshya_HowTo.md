@@ -4,7 +4,7 @@ This is the practical operating guide for running Lakshya. Follow it in order. Y
 
 ---
 
-## 1. Before you start
+## 1. Before you start — review the manual inputs
 
 Run commands from the **repository root**.
 
@@ -17,6 +17,33 @@ python -m pip install -r python/requirements.txt
 
 Do not edit generated files under `output/` or `data/reviews/` by hand.
 
+### 1A. Review Funds in Scope
+
+The first manual input to the Lakshya flow is the Fund scope:
+
+```text
+data/fund/funds_in_scope.csv
+```
+
+Review this file deliberately before every annual review.
+
+It contains the Funds Lakshya is allowed to consider, using two admission categories:
+
+- **CURRENT** — a fund already held / currently part of the family portfolio;
+- **POTENTIAL** — a fund the family is willing to consider as a possible new entry.
+
+These are **scope/admission categories**, not quality or preference rankings.
+
+When the family decides to change the Fund universe:
+
+- add or remove Funds deliberately;
+- assign the appropriate `CURRENT` or `POTENTIAL` status;
+- check the CSV carefully before running production.
+
+Do not use `funds_in_scope.csv` to encode downstream Purpose priorities or to manually force a Fund to win.
+
+### 1B. Review Purpose inputs
+
 The authoritative Purpose input is:
 
 ```text
@@ -24,6 +51,8 @@ data/purpose/purposes.csv
 ```
 
 If Purpose values, targets, SIPs or dates have changed since the last review, make those changes in the authoritative input **before starting a new production review**.
+
+Once the manual inputs are checked, continue to the production run.
 
 ---
 
@@ -146,6 +175,8 @@ family_purpose_dependency.csv
 family_attribution_manifest.json
 ```
 
+The generated `family_attribution.log` is a runtime/review-session log, not a canonical review artifact. It is ignored by Git and does not need to be committed.
+
 ---
 
 # 5. MANUAL CHECKPOINT — review the family picture
@@ -198,6 +229,10 @@ staging.log
 ```
 
 The authoritative `data/purpose/purposes.csv` is **not changed** by `init`.
+
+`staging.log` is a generated execution/forensic log. It is kept beside the staging workspace so a review session can be diagnosed if needed, but it is **ignored by Git and is not part of the canonical annual review record**.
+
+The structured staging artifacts (`purposes_staged.csv`, `reconciliation_ledger.csv`, `achievability_latest.csv`, and `staging_state.json`) are the review state that should be retained according to the repository's annual-review practice.
 
 ---
 
@@ -397,7 +432,7 @@ Keep the annual review archive under:
 data/reviews/YYYY-MM-DD/
 ```
 
-Commit the intended annual review artifacts to Git according to the repository's normal review practice.
+Commit the intended annual review artifacts to Git according to the repository's normal review practice. Generated runtime logs such as `staging.log` and `family_attribution.log` are ignored and are not committed.
 
 ---
 
@@ -544,7 +579,11 @@ commit
 # 15. One-page annual checklist
 
 ```text
-[ ] Update/check data/purpose/purposes.csv
+[ ] Review/update data/fund/funds_in_scope.csv
+    CURRENT = existing family holdings
+    POTENTIAL = possible new candidates
+
+[ ] Review/update data/purpose/purposes.csv
 
 [ ] Run production
     python python/run_production.py --as-of YYYY-MM-DD
