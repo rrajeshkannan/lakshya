@@ -12,9 +12,10 @@ replacement for FUND -> TEAM -> COMPOSITION -> MISSION -> FINAL.
 """
 from __future__ import annotations
 
+from lakshya_core.hashing import sha256_file
+
 import argparse
 import csv
-import hashlib
 import json
 import logging
 import os
@@ -42,14 +43,6 @@ RESULT_FIELDS = [
     "purpose", "value", "monthly_plan", "desired", "due", "horizon_years",
     "required_annual_return", "observed_upper_return", "status",
 ]
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -159,7 +152,7 @@ def initialize_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     state = {
         "schema_version": SCHEMA_VERSION,
         "as_of": as_of,
-        "source_purposes_sha256": _sha256(source),
+        "source_purposes_sha256": sha256_file(source),
         "turn": 0,
         "pool_capital": 0.0,
         "pool_monthly_sip": 0.0,
@@ -359,7 +352,7 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
             "status": status,
         })
     _write_csv(directory / "achievability_latest.csv", RESULT_FIELDS, results)
-    state.update({"turn": turn, "pool_capital": pool_capital, "pool_monthly_sip": pool_sip, "last_turn_input_sha256": _sha256(turn_path)})
+    state.update({"turn": turn, "pool_capital": pool_capital, "pool_monthly_sip": pool_sip, "last_turn_input_sha256": sha256_file(turn_path)})
     _atomic_write(directory / "staging_state.json", json.dumps(state, indent=2, sort_keys=True) + "\n")
     logger.info("TURN_COMPLETE turn=%s pool_capital=%.2f pool_monthly_sip=%.2f", turn, pool_capital, pool_sip)
     return directory
@@ -379,7 +372,7 @@ def commit_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     shutil.copy2(authoritative, backup)
     _atomic_write(authoritative, staged.read_text(encoding="utf-8"))
     state["status"] = "COMMITTED"
-    state["committed_source_sha256"] = _sha256(authoritative)
+    state["committed_source_sha256"] = sha256_file(authoritative)
     _atomic_write(directory / "staging_state.json", json.dumps(state, indent=2, sort_keys=True) + "\n")
     with (directory / "staging.log").open("a", encoding="utf-8") as handle:
         handle.write(f"COMMIT as_of={as_of} source={authoritative}\n")

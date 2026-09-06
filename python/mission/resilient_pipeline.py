@@ -12,9 +12,10 @@ provenance all validate.
 
 from __future__ import annotations
 
+from lakshya_core.hashing import sha256_file
+
 import argparse
 import csv
-import hashlib
 import json
 import platform
 import time
@@ -126,18 +127,10 @@ def _as_of_string() -> str:
     return str(_RUN_MANIFEST["as_of"])
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _input_hash(path: Path) -> str:
     if not path.is_file():
         raise FileNotFoundError(f"Required checkpoint input is missing: {path}")
-    return _sha256(path)
+    return sha256_file(path)
 
 
 def _load_fund_histories(funds) -> dict[str, pd.DataFrame]:
@@ -392,7 +385,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
 
     global_path = OUTPUT_DIR / "global_survivors.csv"
     global_inputs = {
-        "global_survivors_sha256": _sha256(global_path),
+        "global_survivors_sha256": sha256_file(global_path),
         "global_checkpoint_stage": "global_frontier",
     }
     achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
@@ -404,7 +397,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
         mission_path,
         [{"composition": composition_identity(composition)} for composition in protected],
         stage="mission",
-        inputs={"achievability_sha256": _sha256(achievability_path)},
+        inputs={"achievability_sha256": sha256_file(achievability_path)},
         as_of=as_of,
     )
     _detail(
@@ -425,7 +418,7 @@ def _mission_checkpoint_valid(purpose: Purpose) -> bool:
             stage="mission_achievability",
             as_of=_as_of_string(),
             inputs={
-                "global_survivors_sha256": _sha256(OUTPUT_DIR / "global_survivors.csv"),
+                "global_survivors_sha256": sha256_file(OUTPUT_DIR / "global_survivors.csv"),
                 "global_checkpoint_stage": "global_frontier",
             },
         ):
@@ -434,7 +427,7 @@ def _mission_checkpoint_valid(purpose: Purpose) -> bool:
             mission_path,
             stage="mission",
             as_of=_as_of_string(),
-            inputs={"achievability_sha256": _sha256(achievability_path)},
+            inputs={"achievability_sha256": sha256_file(achievability_path)},
         )
     except (FileNotFoundError, OSError):
         return False
@@ -524,7 +517,7 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
             })
     mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
     trajectory_inputs = {
-        "mission_sha256": _sha256(mission_path),
+        "mission_sha256": sha256_file(mission_path),
         "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
     }
     trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
@@ -545,7 +538,7 @@ def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
         return False
     try:
         inputs = {
-            "mission_sha256": _sha256(mission_path),
+            "mission_sha256": sha256_file(mission_path),
             "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
         }
         return (
@@ -576,7 +569,7 @@ def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) 
             mission_path,
             stage="mission",
             as_of=_as_of_string(),
-            inputs={"achievability_sha256": _sha256(OUTPUT_DIR / f"achievability_{purpose.name}.csv")},
+            inputs={"achievability_sha256": sha256_file(OUTPUT_DIR / f"achievability_{purpose.name}.csv")},
         )
         identities = df["composition"].tolist()
         jobs.append((purpose, identities))

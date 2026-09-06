@@ -15,9 +15,10 @@ not a violation. No concentration threshold is encoded here.
 
 from __future__ import annotations
 
+from lakshya_core.hashing import sha256_file
+
 import argparse
 import csv
-import hashlib
 import json
 import logging
 import os
@@ -35,14 +36,6 @@ ATTRIBUTION_SCHEMA_VERSION = 1
 FINAL_CONTRACT_VERSION = "1"
 MONEY_EPSILON = 1e-6
 WEIGHT_EPSILON = 1e-9
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -191,7 +184,7 @@ def _verify_review_manifest(review_dir: Path, purposes: list[str]) -> dict:
         if not summary.is_file():
             raise FileNotFoundError(f"Archived FINAL summary missing: {summary}")
         expected_hash = entries[purpose].get("summary_sha256")
-        if expected_hash != _sha256(summary):
+        if expected_hash != sha256_file(summary):
             raise ValueError(f"Archived FINAL summary hash mismatch: {summary}")
     return manifest
 
@@ -368,12 +361,12 @@ def run_family_attribution(
         log.info("FINAL winner purpose=%s composition=%s", purpose, identity)
 
     input_hashes = {
-        "purposes_csv_sha256": _sha256(purposes_path),
-        "fund_metadata_sha256": _sha256(fund_metadata_path),
-        "review_manifest_sha256": _sha256(review_dir / "review_manifest.json"),
+        "purposes_csv_sha256": sha256_file(purposes_path),
+        "fund_metadata_sha256": sha256_file(fund_metadata_path),
+        "review_manifest_sha256": sha256_file(review_dir / "review_manifest.json"),
     }
     for purpose in sorted(purpose_capital):
-        input_hashes[f"{purpose}_summary_sha256"] = _sha256(review_dir / f"{purpose}_summary.csv")
+        input_hashes[f"{purpose}_summary_sha256"] = sha256_file(review_dir / f"{purpose}_summary.csv")
 
     rows = build_family_attribution(purpose_capital, final_winners, fund_metadata)
     log.info("Built attribution detail_rows=%d funds=%d amcs=%d purposes=%d", len(rows["detail"]), len(rows["fund"]), len(rows["amc"]), len(rows["purpose"]))
