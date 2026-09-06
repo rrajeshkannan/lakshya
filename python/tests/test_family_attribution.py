@@ -51,8 +51,8 @@ def test_build_attribution_reconciles_purpose_capital_and_family_capital():
     assert fund[A]["purposes"] == "Edu,Retirement"
 
     amc = {row["amc"]: row for row in rows["amc"]}
-    assert float(amc["AMC 1"]["attributed_capital"]) == pytest.approx(3_400_000.0)
-    assert float(amc["AMC 1"]["family_capital_pct"]) == pytest.approx(85.0)
+    assert float(amc["AMC 1"]["attributed_capital"]) == pytest.approx(3_650_000.0)
+    assert float(amc["AMC 1"]["family_capital_pct"]) == pytest.approx(91.25)
 
     purpose = {row["purpose"]: row for row in rows["purpose"]}
     assert all(row["reconciles"] is True for row in purpose.values())
