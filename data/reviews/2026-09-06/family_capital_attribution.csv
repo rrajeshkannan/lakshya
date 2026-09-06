@@ -1,0 +1,19 @@
+purpose,purpose_capital,purpose_capital_pct,isin,scheme_name,amc,composition_weight_pct,attributed_capital,attributed_family_pct
+Edu_B,2400000.00,15.614834,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,65.000000,1560000.00,10.149642
+Edu_B,2400000.00,15.614834,INF879O01100,Parag Parikh ELSS Tax Saver Fund- Direct Growth,PPFAS Mutual Fund,30.000000,720000.00,4.684450
+Edu_B,2400000.00,15.614834,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,120000.00,0.780742
+Home_Loan,800000.00,5.204945,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,65.000000,520000.00,3.383214
+Home_Loan,800000.00,5.204945,INF879O01100,Parag Parikh ELSS Tax Saver Fund- Direct Growth,PPFAS Mutual Fund,30.000000,240000.00,1.561483
+Home_Loan,800000.00,5.204945,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,40000.00,0.260247
+Kutti,335000.00,2.179571,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,65.000000,217750.00,1.416721
+Kutti,335000.00,2.179571,INF879O01100,Parag Parikh ELSS Tax Saver Fund- Direct Growth,PPFAS Mutual Fund,30.000000,100500.00,0.653871
+Kutti,335000.00,2.179571,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,16750.00,0.108979
+Marriage,800000.00,5.204945,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,65.000000,520000.00,3.383214
+Marriage,800000.00,5.204945,INF879O01100,Parag Parikh ELSS Tax Saver Fund- Direct Growth,PPFAS Mutual Fund,30.000000,240000.00,1.561483
+Marriage,800000.00,5.204945,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,40000.00,0.260247
+Retirement,10700000.00,69.616135,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,85.000000,9095000.00,59.173715
+Retirement,10700000.00,69.616135,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,535000.00,3.480807
+Retirement,10700000.00,69.616135,INF966L01911,quant Flexi Cap Fund - Growth Option-Direct Plan,quant Mutual Fund,10.000000,1070000.00,6.961614
+Stitch,335000.00,2.179571,INF879O01027,Parag Parikh Flexi Cap Fund - Direct Plan - Growth,PPFAS Mutual Fund,65.000000,217750.00,1.416721
+Stitch,335000.00,2.179571,INF879O01100,Parag Parikh ELSS Tax Saver Fund- Direct Growth,PPFAS Mutual Fund,30.000000,100500.00,0.653871
+Stitch,335000.00,2.179571,INF966L01887,quant Mid Cap Fund - Growth Option - Direct Plan,quant Mutual Fund,5.000000,16750.00,0.108979
