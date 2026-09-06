@@ -70,11 +70,20 @@ def _install_fake_executor(monkeypatch, executor):
     monkeypatch.setattr(pipeline, "as_completed", lambda futures: futures)
 
 
+def _disable_evidence_migration(monkeypatch):
+    monkeypatch.setattr(
+        pipeline,
+        "_materialize_missing_mission_evidence",
+        lambda identities, funds_by_isin: 0,
+    )
+
+
 def test_successful_sibling_checkpoint_survives_failed_purpose(
     tmp_path: Path, monkeypatch
 ):
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
+    _disable_evidence_migration(monkeypatch)
 
     purposes = [_purpose("Edu_B"), _purpose("Retirement")]
     completed = output / "mission_survivors_Retirement.csv"
@@ -108,6 +117,7 @@ def test_retry_can_skip_already_valid_purpose_and_run_only_failed_work(
 ):
     output = _configure(tmp_path, monkeypatch)
     _write_global(output)
+    _disable_evidence_migration(monkeypatch)
 
     completed = output / "mission_survivors_Retirement.csv"
     completed.write_text("completed sibling\n", encoding="utf-8")
