@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
 
 
@@ -35,6 +36,11 @@ def calculate_rolling_cagr(
 
     The starting NAV is the latest available NAV on or before
     the requested lookback date.
+
+    [lakshya] The ordered NAV history is searched as arrays rather than
+    through per-observation pandas scalar indexing. This preserves the
+    exact lookback rule while avoiding millions of Python/pandas calls at
+    TEAM scale.
     """
 
     df = df.sort_values("date").copy()
@@ -43,34 +49,44 @@ def calculate_rolling_cagr(
     dates = df["date"].reset_index(drop=True)
     navs = df["nav"].reset_index(drop=True)
 
-    results = []
+    if len(df) == 0:
+        raise ValueError(
+            f"Insufficient history for {years}-year rolling returns"
+        )
 
-    start_idx = 0
+    # [lakshya] DateOffset subtraction retains the existing calendar-year
+    # semantics (including leap-day handling). searchsorted then finds the
+    # rightmost observation on or before each target date, exactly matching
+    # the previous monotonic start-index walk.
+    target_starts = dates - pd.DateOffset(years=years)
+    date_values = dates.to_numpy(dtype="datetime64[ns]")
+    target_values = target_starts.to_numpy(dtype="datetime64[ns]")
+    start_indices = np.searchsorted(
+        date_values,
+        target_values,
+        side="right",
+    ) - 1
 
-    for i in range(len(df)):
-        end_date = dates.iloc[i]
-        target_start = end_date - pd.DateOffset(years=years)
+    valid = start_indices >= 0
+    if not valid.any():
+        raise ValueError(
+            f"Insufficient history for {years}-year rolling returns"
+        )
 
-        while (
-            start_idx + 1 < len(df)
-            and dates.iloc[start_idx + 1] <= target_start
-        ):
-            start_idx += 1
+    end_indices = np.flatnonzero(valid)
+    start_indices = start_indices[valid]
+    start_navs = navs.to_numpy(dtype=float)[start_indices]
+    end_navs = navs.to_numpy(dtype=float)[end_indices]
 
-        if dates.iloc[start_idx] > target_start:
-            continue
+    valid_navs = start_navs > 0
+    if not valid_navs.any():
+        raise ValueError(
+            f"Insufficient history for {years}-year rolling returns"
+        )
 
-        start_nav = float(navs.iloc[start_idx])
-        end_nav = float(navs.iloc[i])
+    results = (end_navs[valid_navs] / start_navs[valid_navs]) ** (1 / years) - 1
 
-        if start_nav <= 0:
-            continue
-
-        cagr = (end_nav / start_nav) ** (1 / years) - 1
-
-        results.append(cagr)
-
-    if not results:
+    if len(results) == 0:
         raise ValueError(
             f"Insufficient history for {years}-year rolling returns"
         )
