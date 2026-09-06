@@ -6,9 +6,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from lakshya_core.observation_horizon import nearest_supported_horizon
+
 from .achievability import required_annual_return
 from .models import Purpose
-from .observation_horizon import nearest_supported_horizon
 
 
 class AchievabilityStatus(str, Enum):
