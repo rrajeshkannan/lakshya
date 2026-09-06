@@ -105,11 +105,20 @@ def test_acquisition_percentages_cannot_exceed_100(tmp_path: Path):
 def test_achievability_is_recomputed_after_each_turn(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
-    rows = _read(staging / "achievability_latest.csv")
-    assert {row["purpose"] for row in rows} == {"A", "B"}
-    assert all(row["status"] == "beyond_observed_terrain" for row in rows)
+    initial = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
+    assert set(initial) == {"A", "B"}
+    assert initial["A"]["status"] == "within_observed_terrain"
+    assert initial["B"]["status"] == "within_observed_terrain"
+
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    latest = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
+    assert set(latest) == {"A", "B"}
+    assert float(latest["A"]["required_annual_return"]) > float(initial["A"]["required_annual_return"])
+    assert float(latest["B"]["required_annual_return"]) == pytest.approx(float(initial["B"]["required_annual_return"]))
+    assert latest["A"]["status"] == "within_observed_terrain"
+    assert latest["B"]["status"] == "within_observed_terrain"
 
 
 def test_commit_blocks_with_nonempty_pool(tmp_path: Path):
