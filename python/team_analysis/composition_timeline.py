@@ -16,8 +16,8 @@ def build_composition_nav(
     """Build the weighted collective NAV trajectory for a Composition.
 
     Each Fund contributes its latest observed NAV on or before each
-    observation date. The resulting weighted trajectory is then suitable for
-    the existing Elevation, Protection, and Resilience engines.
+    observation date. The resulting weighted trajectory is consumed by
+    the active downstream behavioural engines.
     """
 
     histories = {
