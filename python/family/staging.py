@@ -266,23 +266,29 @@ def _release_deltas(before: dict[str, dict[str, str]], after: dict[str, dict[str
 
 
 def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, str]], turn: int, pool_capital: float, pool_sip: float, ledger: list[dict[str, Any]], logger: logging.Logger) -> tuple[float, float]:
-    _acquisition_percentages(rows)
+    capital_pct, sip_pct = _acquisition_percentages(rows)
+    base_capital = pool_capital
+    base_sip = pool_sip
+    acquired_capital = 0.0
+    acquired_sip = 0.0
     for row in rows:
         name = row["purpose"].strip()
         cp = _number(row.get("capital_acquire_pct", ""), "capital_acquire_pct") or 0.0
         if cp:
-            amount = pool_capital * cp / 100.0
-            pool_capital -= amount
+            amount = base_capital * cp / 100.0
+            acquired_capital += amount
             staged[name]["value"] = f"{(_number(staged[name]['value'], 'value') or 0.0) + amount:g}"
-            ledger.append({"turn": turn, "kind": "ACQUIRE_CAPITAL", "purpose": name, "amount": f"{amount:.2f}", "pool_after": f"{pool_capital:.2f}"})
-            logger.info("TURN=%s ACQUIRE_CAPITAL purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, cp, amount, pool_capital)
+            ledger.append({"turn": turn, "kind": "ACQUIRE_CAPITAL", "purpose": name, "amount": f"{amount:.2f}", "pool_after": f"{base_capital - acquired_capital:.2f}"})
+            logger.info("TURN=%s ACQUIRE_CAPITAL purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, cp, amount, base_capital - acquired_capital)
         sp = _number(row.get("sip_acquire_pct", ""), "sip_acquire_pct") or 0.0
         if sp:
-            amount = pool_sip * sp / 100.0
-            pool_sip -= amount
+            amount = base_sip * sp / 100.0
+            acquired_sip += amount
             staged[name]["monthly_plan"] = f"{(_number(staged[name]['monthly_plan'], 'monthly_plan') or 0.0) + amount:g}"
-            ledger.append({"turn": turn, "kind": "ACQUIRE_SIP", "purpose": name, "amount": f"{amount:.2f}", "pool_after": f"{pool_sip:.2f}"})
-            logger.info("TURN=%s ACQUIRE_SIP purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, sp, amount, pool_sip)
+            ledger.append({"turn": turn, "kind": "ACQUIRE_SIP", "purpose": name, "amount": f"{amount:.2f}", "pool_after": f"{base_sip - acquired_sip:.2f}"})
+            logger.info("TURN=%s ACQUIRE_SIP purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, sp, base_sip - acquired_sip)
+    pool_capital = base_capital - base_capital * capital_pct / 100.0
+    pool_sip = base_sip - base_sip * sip_pct / 100.0
     return pool_capital, pool_sip
 
 
