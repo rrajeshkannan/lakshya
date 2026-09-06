@@ -23,6 +23,7 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -35,6 +36,7 @@ from team_analysis.composition_fingerprint_store import (
     fingerprint_path,
     has_fingerprint,
     load_fingerprint,
+    load_fingerprint_evidence,
     persist_fingerprint,
 )
 from team_analysis.composition_frontier import global_composition_frontier
@@ -361,13 +363,16 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
     if purpose.trajectory_horizon_years is None:
         return purpose.name, 0, 0, 0
 
-    qualified: list[tuple[Composition, CompositionFingerprint]] = []
+    qualified: list[tuple[Composition, object]] = []
     assessments: list[dict] = []
     _detail(f"MISSION_PURPOSE_START purpose={purpose.name} identities={len(identities)} achievability={purpose.has_achievability}")
     for identity in identities:
         composition = _composition_from_identity(identity, funds_by_isin)
-        fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
-        assessment = assess_achievability(purpose, fingerprint)
+        elevation, protection = load_fingerprint_evidence(
+            fingerprint_path(FINGERPRINT_DIR, composition), composition
+        )
+        evidence = SimpleNamespace(composition=composition, elevation=elevation, protection=protection)
+        assessment = assess_achievability(purpose, evidence)
         comparison_horizon = (
             assessment.comparison_horizon_years
             if purpose.has_achievability
@@ -381,7 +386,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
             "observed_upper_return": assessment.observed_upper_return,
         })
         if not purpose.has_achievability or assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
-            qualified.append((composition, fingerprint))
+            qualified.append((composition, evidence))
 
     global_path = OUTPUT_DIR / "global_survivors.csv"
     global_inputs = {
@@ -674,7 +679,7 @@ def run(
     _log("[3/7] Loading Purpose inputs")
     _detail(f"STAGE_2_3_COMPLETE nav_funds={len(histories)} purposes={len(purposes)}")
     _manifest_update("inputs", "complete", nav_funds=len(histories), purposes=len(purposes))
-    _log("[4/7] Running TEAM pipeline — this may be computationally heavy")
+    _log("[4/7] Running TEAM pipeline")
     stage_started = time.perf_counter()
     _detail("TEAM_STAGE_START")
     _manifest_update("team", "running")
