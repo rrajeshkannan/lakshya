@@ -33,10 +33,12 @@ from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition_fingerprint_store import (
     FINGERPRINT_SCHEMA_VERSION,
+    evidence_path,
     fingerprint_path,
     has_fingerprint,
     load_fingerprint,
     load_fingerprint_evidence,
+    materialize_fingerprint_evidence,
     persist_fingerprint,
 )
 from team_analysis.composition_frontier import global_composition_frontier
@@ -359,6 +361,24 @@ def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
     return Composition(team=Team(members=members), weights=weights)
 
 
+def _materialize_missing_mission_evidence(identities: list[str], funds_by_isin) -> int:
+    """Create missing compact MISSION evidence before parallel Purpose work."""
+    missing = 0
+    for identity in identities:
+        composition = _composition_from_identity(identity, funds_by_isin)
+        sidecar = evidence_path(FINGERPRINT_DIR, composition)
+        if sidecar.is_file():
+            continue
+        materialize_fingerprint_evidence(
+            fingerprint_path(FINGERPRINT_DIR, composition),
+            composition,
+        )
+        missing += 1
+    if missing:
+        _detail(f"MISSION_EVIDENCE_MATERIALIZED missing={missing}")
+    return missing
+
+
 def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
     if purpose.trajectory_horizon_years is None:
         return purpose.name, 0, 0, 0
@@ -451,6 +471,7 @@ def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_exist
         _manifest_update("mission", "complete", purposes=0, global_survivors=len(identities))
         return
     _log(f"[MISSION] running {len(runnable)} independent Purpose gates from {len(identities)} persisted global survivors")
+    _materialize_missing_mission_evidence(identities, funds_by_isin)
     _detail(f"MISSION_STAGE_START purposes={len(runnable)} identities={len(identities)} workers={max_workers or 'auto'} skip_existing={skip_existing}")
     _manifest_update("mission", "running", purposes=len(runnable), global_survivors=len(identities))
     as_of = _as_of_string()
