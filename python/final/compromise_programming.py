@@ -347,7 +347,7 @@ def _bootstrap_percentile_coordinate(
     right = np.searchsorted(sorted_values, population_values, side="right")
     if np.all(sampled_values == sampled_values[0]):
         return (population_values >= sampled_values[0]).astype(float)
-    return np.clip(((left + right) / 2.0) / max(n - 1, 1), 0.0, 1.0)
+    return np.clip(((left + right - 1.0) / 2.0) / max(n - 1, 1), 0.0, 1.0)
 
 
 def bootstrap_robustness(
