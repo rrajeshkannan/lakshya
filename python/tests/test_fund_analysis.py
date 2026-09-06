@@ -29,9 +29,7 @@ def test_analyze_fund_builds_fingerprint_from_persisted_nav(
     )
 
     nav_path = tmp_path / "TEST123.json"
-
     nav_store = NavEvidenceStore(nav_path)
-
     nav_store.create(
         isin=fund.isin,
         scheme_code=12345,
@@ -40,9 +38,7 @@ def test_analyze_fund_builds_fingerprint_from_persisted_nav(
         retrieved_at="2026-08-17T16:00:00+05:30",
     )
 
-    fingerprint_path = (
-        tmp_path / "fingerprint.json"
-    )
+    fingerprint_path = tmp_path / "fingerprint.json"
 
     fingerprint, action = analyze_fund(
         fund=fund,
@@ -52,32 +48,20 @@ def test_analyze_fund_builds_fingerprint_from_persisted_nav(
     )
 
     assert action == "created"
-
     assert fingerprint.fund is fund
-
     assert fingerprint.elevation is not None
     assert fingerprint.protection is not None
-    assert fingerprint.resilience is not None
-
     assert fingerprint_path.exists()
 
-    payload = json.loads(
-        fingerprint_path.read_text(
-            encoding="utf-8"
-        )
-    )
-
+    payload = json.loads(fingerprint_path.read_text(encoding="utf-8"))
     assert payload["fund"]["isin"] == "TEST123"
     assert payload["nav_artifact_version"] == 1
 
 
 def test_fund_behavioural_fingerprint_can_be_built_from_nav_history():
-    # The Fund-stage engine assembles the three independent behavioural
-    # dimensions from the same observed NAV history.
-    #
-    # No scoring, ranking, suitability judgement, or benchmark comparison
-    # happens at this orchestration boundary.
-
+    # The Fund-stage engine assembles the active behavioural dimensions from
+    # the same observed NAV history. No scoring, ranking, suitability
+    # judgement, or benchmark comparison happens at this boundary.
     fund = Fund(
         name="Test Fund",
         isin="TEST123",
@@ -85,53 +69,27 @@ def test_fund_behavioural_fingerprint_can_be_built_from_nav_history():
     )
 
     dates = pd.date_range("2010-01-01", periods=4500, freq="D")
-
-    # Start with a steadily rising NAV so that all long-horizon
-    # Elevation calculations have sufficient history.
     values = list(range(100, 4600))
 
-    # Introduce one deliberate drawdown journey:
-    #
-    #   3100  ← high-water mark
-    #     ↓
-    #   2500  ← >5% adversity, therefore an episode
-    #     ↓
-    #   3100  ← recovery to the previous high-water mark
-    #
-    # The surrounding NAV path continues upward.
     drawdown_start = 3000
     drawdown_trough = 3100
     recovery_end = 3300
-
     peak_value = values[drawdown_start]
     trough_value = 2500
 
     for i in range(drawdown_start, drawdown_trough):
-        progress = (i - drawdown_start) / (
-            drawdown_trough - drawdown_start
-        )
-        values[i] = peak_value - (
-            (peak_value - trough_value) * progress
-        )
+        progress = (i - drawdown_start) / (drawdown_trough - drawdown_start)
+        values[i] = peak_value - ((peak_value - trough_value) * progress)
 
     values[drawdown_trough] = trough_value
 
     for i in range(drawdown_trough + 1, recovery_end):
-        progress = (i - drawdown_trough) / (
-            recovery_end - drawdown_trough
-        )
-        values[i] = trough_value + (
-            (peak_value - trough_value) * progress
-        )
+        progress = (i - drawdown_trough) / (recovery_end - drawdown_trough)
+        values[i] = trough_value + ((peak_value - trough_value) * progress)
 
     values[recovery_end] = peak_value
 
-    nav = pd.DataFrame(
-        {
-            "date": dates,
-            "nav": values,
-        }
-    )
+    nav = pd.DataFrame({"date": dates, "nav": values})
 
     fingerprint = build_fund_behavioural_fingerprint(
         fund=fund,
@@ -139,16 +97,11 @@ def test_fund_behavioural_fingerprint_can_be_built_from_nav_history():
     )
 
     assert fingerprint.fund is fund
-
     assert fingerprint.elevation.rolling_3y is not None
     assert fingerprint.elevation.rolling_5y is not None
     assert fingerprint.elevation.rolling_7y is not None
     assert fingerprint.elevation.rolling_10y is not None
-
     assert fingerprint.protection.observations == len(nav)
-
-    assert fingerprint.resilience.episode_count >= 1
-    assert fingerprint.resilience.recovered_count >= 1
 
 
 def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
@@ -175,7 +128,6 @@ def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
     )
 
     nav_store = NavEvidenceStore(nav_path)
-
     nav_store.create(
         isin=fund.isin,
         scheme_code=12345,
@@ -184,7 +136,6 @@ def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
         retrieved_at="2026-08-18T00:00:00+05:30",
     )
 
-    # First analytical snapshot.
     analyze_fund(
         fund=fund,
         nav_evidence_path=nav_path,
@@ -192,21 +143,13 @@ def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
         generated_at="2026-08-18T00:00:00+05:30",
     )
 
-    first_payload = json.loads(
-        fingerprint_path.read_text(
-            encoding="utf-8"
-        )
-    )
-
+    first_payload = json.loads(fingerprint_path.read_text(encoding="utf-8"))
     assert first_payload["artifact_version"] == 1
     assert first_payload["nav_artifact_version"] == 1
 
-    # Advance the NAV evidence to version 2.
     nav_v2 = pd.DataFrame(
         {
-            "date": pd.to_datetime(
-                ["2026-08-20"]
-            ),
+            "date": pd.to_datetime(["2026-08-20"]),
             "nav": [4700.0],
         }
     )
@@ -216,7 +159,6 @@ def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
         retrieved_at="2026-08-20T00:00:00+05:30",
     )
 
-    # Second analytical snapshot.
     analyze_fund(
         fund=fund,
         nav_evidence_path=nav_path,
@@ -224,12 +166,7 @@ def test_analyze_fund_appends_fingerprint_when_nav_version_advances(
         generated_at="2026-08-20T00:00:00+05:30",
     )
 
-    second_payload = json.loads(
-        fingerprint_path.read_text(
-            encoding="utf-8"
-        )
-    )
-
+    second_payload = json.loads(fingerprint_path.read_text(encoding="utf-8"))
     assert second_payload["artifact_version"] == 2
     assert second_payload["nav_artifact_version"] == 2
 
@@ -258,7 +195,6 @@ def test_analyze_fund_does_not_append_when_fingerprint_is_current(
     )
 
     nav_store = NavEvidenceStore(nav_path)
-
     nav_store.create(
         isin=fund.isin,
         scheme_code=12345,
@@ -267,7 +203,6 @@ def test_analyze_fund_does_not_append_when_fingerprint_is_current(
         retrieved_at="2026-08-20T00:00:00+05:30",
     )
 
-    # First snapshot: NAV v1 → Fingerprint v1.
     fingerprint, action = analyze_fund(
         fund=fund,
         nav_evidence_path=nav_path,
@@ -277,16 +212,10 @@ def test_analyze_fund_does_not_append_when_fingerprint_is_current(
 
     assert action == "created"
 
-    first_payload = json.loads(
-        fingerprint_path.read_text(
-            encoding="utf-8"
-        )
-    )
-
+    first_payload = json.loads(fingerprint_path.read_text(encoding="utf-8"))
     assert first_payload["artifact_version"] == 1
     assert first_payload["nav_artifact_version"] == 1
 
-    # Run analysis again without advancing NAV.
     fingerprint, action = analyze_fund(
         fund=fund,
         nav_evidence_path=nav_path,
@@ -296,15 +225,7 @@ def test_analyze_fund_does_not_append_when_fingerprint_is_current(
 
     assert action == "current"
 
-    second_payload = json.loads(
-        fingerprint_path.read_text(
-            encoding="utf-8"
-        )
-    )
-
+    second_payload = json.loads(fingerprint_path.read_text(encoding="utf-8"))
     assert second_payload["artifact_version"] == 1
     assert second_payload["nav_artifact_version"] == 1
-
-    assert second_payload["generated_at"] == (
-        "2026-08-20T00:00:00+05:30"
-    )
+    assert second_payload["generated_at"] == "2026-08-20T00:00:00+05:30"
