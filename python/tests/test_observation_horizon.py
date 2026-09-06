@@ -1,13 +1,13 @@
 import pytest
 
-from mission.observation_horizon import (
-    SUPPORTED_OBSERVATION_HORIZONS,
+from lakshya_core.observation_horizon import (
+    SUPPORTED_ANALYTICAL_HORIZONS,
     nearest_supported_horizon,
 )
 
 
-def test_canonical_observation_horizons_are_shared_ladder():
-    assert SUPPORTED_OBSERVATION_HORIZONS == (3, 5, 7, 10)
+def test_canonical_analytical_horizons_are_shared_ladder():
+    assert SUPPORTED_ANALYTICAL_HORIZONS == (3, 5, 7, 10)
 
 
 @pytest.mark.parametrize(
