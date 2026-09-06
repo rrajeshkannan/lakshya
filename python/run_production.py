@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,19 +17,12 @@ from final.compromise_programming import (
     analyze_purpose,
     write_analysis,
 )
+from lakshya_core.hashing import sha256_file
 from mission.resilient_pipeline import _load_purposes, run as run_mission
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
 REVIEW_ARCHIVE_DIR = PROJECT_ROOT / "data" / "reviews"
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _checkpoint_path(purpose_name: str) -> Path:
@@ -64,7 +56,7 @@ def _final_checkpoint_valid(
         return (
             payload.get("contract_version") == FINAL_CONTRACT_VERSION
             and payload.get("purpose") == purpose_name
-            and payload.get("mission_sha256") == _sha256(mission_path)
+            and payload.get("mission_sha256") == sha256_file(mission_path)
             and payload.get("bootstrap_resamples") == bootstrap_resamples
             and payload.get("bootstrap_seed") == bootstrap_seed
         )
@@ -124,7 +116,7 @@ def run_final_stage(
                 "contract_version": FINAL_CONTRACT_VERSION,
                 "purpose": purpose.name,
                 "purpose_horizon_years": purpose.trajectory_horizon_years,
-                "mission_sha256": _sha256(mission_path),
+                "mission_sha256": sha256_file(mission_path),
                 "bootstrap_resamples": bootstrap_resamples,
                 "bootstrap_seed": bootstrap_seed,
                 "informative_spoke_count": len(analysis.axes),
