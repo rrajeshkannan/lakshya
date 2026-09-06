@@ -15,6 +15,7 @@ from team_analysis.composition_fingerprint_store import (
     has_fingerprint,
     load_fingerprint,
     load_fingerprint_evidence,
+    materialize_fingerprint_evidence,
     persist_fingerprint,
 )
 from team_analysis.team import Team
@@ -83,6 +84,7 @@ def test_compact_mission_evidence_migrates_existing_full_fingerprint(tmp_path):
         encoding="utf-8",
     )
 
+    materialize_fingerprint_evidence(full_path, composition)
     elevation, protection = load_fingerprint_evidence(full_path, composition)
 
     assert elevation == original.elevation
