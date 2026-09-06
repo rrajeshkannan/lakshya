@@ -438,7 +438,7 @@ Generated runtime logs such as `staging.log` and `family_attribution.log` are ig
 
 # 12. Persist the annual review snapshot to GitHub
 
-The non-gitignored contents under `data/` form the **long-term historical record** of Lakshya's annual reviews and authoritative inputs. At the end of a completed annual review, persist the intended changes and new review artifacts to Git so a future review can loop back to the historical state and compare what changed.
+The non-gitignored contents under `data/` form the **long-term historical record** of Lakshya's annual reviews and authoritative inputs. At the end of a completed annual review, persist the intended changes and new review artifacts to Git so a future review can recover the prior historical state and compare what changed.
 
 Before committing:
 
@@ -474,7 +474,7 @@ git status --short
 
 The intended annual-review data should now be persisted in GitHub, while generated logs and runtime output remain disposable.
 
-This is the **historical loopback point** for the annual cycle: the next review should be able to recover the prior authoritative inputs and archived evidence from Git rather than relying on memory or regenerated runtime output.
+This is the **historical snapshot point** for the annual cycle: the next review should be able to recover the prior authoritative inputs and archived evidence from Git rather than relying on memory or regenerated runtime output.
 
 ---
 
