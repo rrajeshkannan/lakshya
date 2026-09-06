@@ -139,7 +139,7 @@ Check:
 - a FINAL winner is present;
 - the summary looks complete and sensible.
 
-If anything is missing or unexpected, **stop**. Do not manually edit the output to make the review continue. See [Errors and recovery](#9-errors-and-recovery).
+If anything is missing or unexpected, **stop**. Do not manually edit the output to make the review continue. See [Errors and recovery](#13-errors-and-recovery).
 
 The detailed FINAL evidence is available in `output/` if a deeper review is needed.
 
@@ -432,13 +432,55 @@ Keep the annual review archive under:
 data/reviews/YYYY-MM-DD/
 ```
 
-Commit the intended annual review artifacts to Git according to the repository's normal review practice. Generated runtime logs such as `staging.log` and `family_attribution.log` are ignored and are not committed.
+Generated runtime logs such as `staging.log` and `family_attribution.log` are ignored by Git and are not part of the canonical annual review record.
 
 ---
 
-# 12. What happens next
+# 12. Persist the annual review snapshot to GitHub
 
-At this point the analytical review and Purpose reconciliation are complete.
+The non-gitignored contents under `data/` form the **long-term historical record** of Lakshya's annual reviews and authoritative inputs. At the end of a completed annual review, persist the intended changes and new review artifacts to Git so a future review can loop back to the historical state and compare what changed.
+
+Before committing:
+
+```bash
+git status --short
+```
+
+Review the list carefully. The annual review commit should contain the deliberate changes and new historical artifacts under `data/`, including the current `data/reviews/YYYY-MM-DD/` snapshot and any deliberate updates to authoritative inputs such as `data/fund/funds_in_scope.csv` or `data/purpose/purposes.csv`.
+
+Generated files covered by `.gitignore` should remain ignored. In particular, do not try to archive:
+
+- `data/cache/`;
+- `data/fingerprints/composition/`;
+- generated `staging.log`;
+- generated `family_attribution.log`;
+- runtime contents under `output/`.
+
+Do **not** use `git add .` blindly if there are unrelated working-tree changes. Add only the intended annual-review changes.
+
+When the working tree contains only the intended annual-review data changes, for example:
+
+```bash
+git add data/
+git status --short
+git commit -m "Archive Lakshya annual review YYYY-MM-DD"
+```
+
+Then verify:
+
+```bash
+git status --short
+```
+
+The intended annual-review data should now be persisted in GitHub, while generated logs and runtime output remain disposable.
+
+This is the **historical loopback point** for the annual cycle: the next review should be able to recover the prior authoritative inputs and archived evidence from Git rather than relying on memory or regenerated runtime output.
+
+---
+
+# 13. What happens next
+
+At this point the analytical review, Purpose reconciliation, and annual review snapshot are complete.
 
 The next Lakshya stage is the separate **CURRENT → TARGET transition**:
 
@@ -458,7 +500,7 @@ Do **not** treat the FINAL winner or Purpose Staging result as an instruction to
 
 ---
 
-# 13. Errors and recovery
+# 14. Errors and recovery
 
 ## Rule 1 — stop when a command fails
 
@@ -536,7 +578,7 @@ Do not force the commit. Return to the staging turns and deliberately allocate t
 
 ---
 
-# 14. If you are unsure what to do
+# 15. If you are unsure what to do
 
 Use this decision tree:
 
@@ -576,7 +618,7 @@ commit
 
 ---
 
-# 15. One-page annual checklist
+# 16. One-page annual checklist
 
 ```text
 [ ] Review/update data/fund/funds_in_scope.csv
@@ -613,6 +655,16 @@ commit
     python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
 
 [ ] CHECKPOINT: confirm authoritative purposes.csv and backup
+
+[ ] CHECKPOINT: review intended annual-review changes under data/
+
+[ ] Persist annual review snapshot to GitHub
+    git status --short
+    git add data/
+    git status --short
+    git commit -m "Archive Lakshya annual review YYYY-MM-DD"
+
+[ ] CHECKPOINT: git status --short is clean for intended review changes
 
 [ ] STOP
 
