@@ -14,7 +14,7 @@ The complete annual review has two distinct parts: the analytical production cha
 
 ```mermaid
 flowchart TD
-    A[Manual Fund scope\ndata/fund/funds_in_scope.csv] --> B[Manual Purpose inputs\ndata/purpose/purposes.csv]
+    A[Manual Fund scope<br/>data/fund/funds_in_scope.csv] --> B[Manual Purpose inputs<br/>data/purpose/purposes.csv]
     B --> C[FUND admission]
     C --> D[Persisted NAV evidence]
     D --> E[TEAM candidate generation]
@@ -24,7 +24,7 @@ flowchart TD
     H --> I[COMPOSITION 5% weight grid]
     I --> J[Persisted Composition fingerprint]
     J --> K[Global COMPOSITION 40-D Pareto frontier]
-    K --> L{MISSION Purpose]
+    K --> L{MISSION Purpose}
     L --> M[Achievability when finite target exists]
     L --> N[Open-ended Purpose: no Achievability]
     M --> O[Purpose Protection frontier]
@@ -57,7 +57,7 @@ flowchart TD
     AI -->|Yes| AJ[Purpose Staging COMMIT]
     AJ --> AK[Authoritative purposes.csv updated]
     AK --> AL[Annual historical snapshot]
-    AL --> AM[Git commit / loopback record]
+    AL --> AM[Git commit / historical snapshot]
     AM --> AN[CURRENT → TARGET transition planning]
 ```
 
@@ -176,7 +176,7 @@ No stage is permitted to use a later stage merely to make its own universe small
 | FINAL | ordering, robustness diagnostics, winner, audit bundle | Family Architecture Validation / human review |
 | FAMILY ARCHITECTURE VALIDATION | family attribution, concentration and dependency observations | human review / Purpose Staging context |
 | PURPOSE STAGING | staged Purpose state, reconciliation, Achievability | authoritative Purpose input after explicit commit |
-| HISTORICAL SNAPSHOT | durable annual `data/` state | future annual review / loopback |
+| HISTORICAL SNAPSHOT | durable annual `data/` state | future annual review |
 
 The production invariant is:
 
@@ -564,7 +564,7 @@ The generated `staging.log` remains beside them for forensic diagnosis but is ig
 
 ---
 
-# 14. Historical snapshot and loopback execution
+# 14. Historical snapshot execution
 
 After Purpose Staging is explicitly committed, the annual review reaches its persistence boundary. The durable `data/` state becomes part of Lakshya's historical memory.
 
@@ -574,7 +574,6 @@ sequenceDiagram
     participant Data as Lakshya data/
     participant Ignore as Git ignore rules
     participant Git as Git repository
-    participant Future as Future annual review
 
     Reviewer->>Data: inspect annual review changes
     Data-->>Reviewer: authoritative inputs + review artifacts
@@ -584,8 +583,6 @@ sequenceDiagram
     Reviewer->>Git: git diff --cached after selective staging
     Reviewer->>Git: commit intended annual snapshot
     Git-->>Reviewer: durable review history
-    Future->>Git: recover prior annual data / evidence
-    Git-->>Future: historical loopback state
 ```
 
 The intended persistence distinction is:
@@ -599,20 +596,6 @@ The intended persistence distinction is:
 | `staging.log` | generated forensic log, Git-ignored |
 | `family_attribution.log` | generated forensic log, Git-ignored |
 | `output/` | disposable/regenerable runtime area |
-
-This creates the long-term loop:
-
-```text
-annual review
-     ↓
-reviewed data/
-     ↓
-Git snapshot
-     ↓
-next annual review
-     ↓
-loopback to prior state
-```
 
 The annual snapshot is a historical record, not a transaction ledger or automatic trading instruction.
 
