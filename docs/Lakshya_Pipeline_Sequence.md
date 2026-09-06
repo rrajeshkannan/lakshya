@@ -317,15 +317,15 @@ distance / regret d(i,j) = 1 - x(i,j)
 
 Primary ordering:
 
-\[
+$$
 L_2(i)=\sqrt{\sum_j d_{ij}^{2}}
-\]
+$$
 
 Worst-spoke diagnostic:
 
-\[
+$$
 L_\infty(i)=\max_j d_{ij}
-\]
+$$
 
 Joint diagnostic:
 
