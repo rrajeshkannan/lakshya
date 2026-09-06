@@ -1,22 +1,10 @@
-"""Canonical analytical horizon convention shared by MISSION and TRAJECTORY."""
+"""MISSION-facing alias for the shared analytical-horizon contract."""
 
-from __future__ import annotations
+from lakshya_core.observation_horizon import (
+    SUPPORTED_ANALYTICAL_HORIZONS,
+    nearest_supported_horizon,
+)
 
-SUPPORTED_OBSERVATION_HORIZONS: tuple[int, ...] = (3, 5, 7, 10)
+SUPPORTED_OBSERVATION_HORIZONS = SUPPORTED_ANALYTICAL_HORIZONS
 
-
-def nearest_supported_horizon(horizon_years: float) -> int | None:
-    """Return the longest supported analytical horizon not beyond a request.
-
-    The analytical horizon ladder is deliberately shared across MISSION's
-    Elevation comparison and TRAJECTORY observation. A requested Purpose
-    horizon is therefore never used directly as an observation horizon.
-    """
-    if horizon_years <= 0:
-        raise ValueError("horizon_years must be positive")
-
-    eligible = [
-        years for years in SUPPORTED_OBSERVATION_HORIZONS
-        if years <= horizon_years
-    ]
-    return max(eligible) if eligible else None
+__all__ = ["SUPPORTED_OBSERVATION_HORIZONS", "nearest_supported_horizon"]
