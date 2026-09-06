@@ -17,8 +17,8 @@ def _fixture(tmp_path: Path) -> Path:
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,value,desired,monthly_plan,analytical_horizon_years\n"
-        "A,2036-01-01,100,300,10,\n"
-        "B,2036-01-01,200,300,10,\n",
+        "A,2036-01-01,100,2000,10,\n"
+        "B,2036-01-01,200,1000,10,\n",
         encoding="utf-8",
     )
     review = data / "reviews" / "2026-09-06"
@@ -88,6 +88,20 @@ def test_acquisition_percentage_updates_recipient_and_leaves_unallocated_pool(tm
     assert float(b["value"]) == pytest.approx(230.0)
     state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
     assert state["pool_capital"] == pytest.approx(20.0)
+
+
+def test_acquisition_percentages_share_same_pool_base(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,60,\nB,,,,,,40,\n"), data_dir=data)
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    rows = {row["name"]: row for row in _read(staging / "purposes_staged.csv")}
+    # A released 100 of capital; 60% and 40% must both use that same 100 base.
+    assert float(rows["A"]["value"]) == pytest.approx(60.0)
+    assert float(rows["B"]["value"]) == pytest.approx(240.0)
+    state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
+    assert state["pool_capital"] == pytest.approx(0.0)
 
 
 def test_acquisition_percentages_cannot_exceed_100(tmp_path: Path):
