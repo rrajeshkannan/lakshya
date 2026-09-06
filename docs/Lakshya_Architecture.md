@@ -122,10 +122,9 @@ The principal Fund evidence families are:
 ```text
 Elevation
 Protection
-Resilience
 ```
 
-Evidence quality is a guardrail around interpretation, not a fourth behavioural dimension.
+Evidence quality is a guardrail around interpretation, not a behavioural dimension.
 
 ## 3.2 Fund admission
 
@@ -150,7 +149,7 @@ Fund admission
       ↓
 canonical NAV evidence
       ↓
-rolling windows / drawdown episodes
+rolling windows / drawdown severity
       ↓
 Fund evidence
       ↓
@@ -162,7 +161,7 @@ The preferred analytical direction is:
 ```text
 DAILY OBSERVATIONS
        ↓
-ROLLING WINDOWS / EPISODES
+ROLLING WINDOWS / DRAWDOWN SEVERITY
        ↓
 DISTRIBUTIONS / SUMMARIES
        ↓
@@ -247,45 +246,11 @@ maximum severity
 
 These are behavioural landmarks, not universal definitions of acceptable adversity.
 
-Protection describes severity terrain. It does not describe the recovery journey.
-
-### Resilience
-
-Question:
-
-> **What happens to the capital after adversity begins?**
-
-Resilience is observed through individual drawdown episodes:
-
-```text
-high-water mark
-       ↓
-     decline
-       ↓
-     trough
-       ↓
-    recovery
-       ↓
-high-water mark restored
-```
-
-Episode evidence distinguishes:
-
-- decline duration;
-- recovery duration when actually observed;
-- underwater duration;
-- episode state (`recovered` / `ongoing`); and
-- episode-level depth and timing.
-
-An ongoing episode has unknown recovery duration; unknown is not zero and is not estimated.
-
-Resilience therefore remains analytically distinct from Protection.
+Protection describes severity terrain.
 
 ## 3.5 Supporting Fund evidence
 
-Supporting evidence may deepen interpretation without automatically becoming a new Compass dimension. Examples include downside RMS and individual episode records.
-
-Optional narrower lenses such as benchmark-relative capture, Sortino or Calmar do not redefine intrinsic Fund behaviour.
+Supporting evidence may deepen interpretation without automatically becoming a new Compass dimension. Optional narrower lenses such as benchmark-relative capture, Sortino or Calmar do not redefine intrinsic Fund behaviour.
 
 > **A benchmark is an analytical lens, not an intrinsic property of the fund.**
 
@@ -398,17 +363,7 @@ Protection contributes the same native 12-dimensional severity/frequency surface
 
 Protection is horizon-free in the native model.
 
-## 4.5 Resilience boundary discovery
-
-Fund-level Resilience exists, but it is **not currently part of the TEAM comparator gate**.
-
-That exclusion is deliberate and architectural:
-
-> **A lower-stage calculation does not automatically become a higher-stage input.**
-
-TEAM has not earned a requirement to use Fund Resilience for its collective frontier. The underlying Fund evidence remains meaningful and available for later interpretation.
-
-## 4.6 TEAM frontier
+## 4.5 TEAM frontier
 
 TEAM uses weak exact Pareto non-dominance over the complete declared 40-dimensional surface.
 
@@ -425,7 +380,7 @@ A Team can remain because of a genuine trade-off between dimensions.
 
 The current implementation uses a streaming frontier approach for memory-conscious processing of potentially large candidate universes without changing the dominance semantics.
 
-## 4.7 TEAM boundary
+## 4.6 TEAM boundary
 
 TEAM owns:
 
@@ -583,7 +538,7 @@ Trajectory is descriptive and does not remove a MISSION survivor in the current 
 The observation convention is:
 
 ```text
-latest observed NAV = end
+latest NAV = end
 requested target start = end - requested years
 actual start = latest observation on/before target start
 preserve all observations through latest
@@ -1153,8 +1108,7 @@ FUND
 ├─ admission
 ├─ NAV evidence
 ├─ Elevation
-├─ Protection
-└─ Resilience
+└─ Protection
         │
         │ selected evidence crosses only when earned
         ▼
