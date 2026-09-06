@@ -129,6 +129,28 @@ def persist_fingerprint(fingerprint: CompositionFingerprint, root: Path) -> Path
     return destination
 
 
+def materialize_fingerprint_evidence(
+    path: Path,
+    composition: Composition,
+) -> Path:
+    """Create compact MISSION evidence from an existing complete fingerprint."""
+    with path.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    _validate_envelope(
+        payload,
+        path=path,
+        kind="composition_fingerprint",
+        schema_version=FINGERPRINT_SCHEMA_VERSION,
+        composition=composition,
+    )
+    elevation = _elevation_from_payload(payload["elevation"])
+    protection = _protection_from_payload(payload["protection"])
+    return _write_json_atomic(
+        evidence_path(path.parent, composition),
+        _evidence_to_payload(composition, elevation, protection),
+    )
+
+
 def _rolling_from_dict(value: dict | None) -> RollingReturnEvidence | None:
     return None if value is None else RollingReturnEvidence(**value)
 
@@ -175,34 +197,10 @@ def load_fingerprint_evidence(
     path: Path,
     composition: Composition,
 ) -> tuple[ElevationEvidence, ProtectionEvidence]:
-    """Load only the persisted Elevation and Protection evidence needed by MISSION.
-
-    Existing complete fingerprints are accepted as a one-time migration source
-    when the compact sidecar is absent. The sidecar is then persisted so later
-    MISSION runs never deserialize the large Composition NAV trajectory.
-    """
-    sidecar = path.with_name(path.stem + ".evidence.json")
-    try:
-        with sidecar.open("r", encoding="utf-8") as handle:
-            payload = json.load(handle)
-    except FileNotFoundError:
-        with path.open("r", encoding="utf-8") as handle:
-            full_payload = json.load(handle)
-        _validate_envelope(
-            full_payload,
-            path=path,
-            kind="composition_fingerprint",
-            schema_version=FINGERPRINT_SCHEMA_VERSION,
-            composition=composition,
-        )
-        elevation = _elevation_from_payload(full_payload["elevation"])
-        protection = _protection_from_payload(full_payload["protection"])
-        _write_json_atomic(
-            sidecar,
-            _evidence_to_payload(composition, elevation, protection),
-        )
-        return elevation, protection
-
+    """Load only the persisted Elevation and Protection evidence needed by MISSION."""
+    sidecar = evidence_path(path.parent, composition)
+    with sidecar.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
     _validate_envelope(
         payload,
         path=sidecar,
