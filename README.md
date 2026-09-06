@@ -4,8 +4,24 @@ Lakshya is a family-oriented investment analysis architecture for understanding,
 
 ## Production Architecture
 
+The analytical production chain is:
+
 ```text
 FUND → TEAM → COMPOSITION → MISSION → FINAL
+```
+
+The complete annual-review flow continues through family-level observation, human-controlled Purpose reconciliation, and historical persistence:
+
+```text
+FUND → TEAM → COMPOSITION → MISSION → FINAL
+    ↓
+FAMILY ARCHITECTURE VALIDATION
+    ↓
+PURPOSE STAGING
+    ↓
+HISTORICAL SNAPSHOT
+    ↓
+CURRENT → TARGET TRANSITION   [separate next-stage architecture]
 ```
 
 The stages deliberately earn information from below rather than importing higher-order semantics prematurely.
@@ -149,6 +165,79 @@ No subjective Purpose score, Purpose-specific spoke weighting, Composition regio
 
 ---
 
+# FAMILY ARCHITECTURE VALIDATION
+
+### What family-level consequence follows from the independently derived Purpose decisions?
+
+This is a **post-FINAL observational layer**, not another optimization stage.
+
+It attributes each Purpose's current capital through its FINAL Composition and aggregates the result at Fund and AMC/ecosystem level so common dependency is visible.
+
+The core contract is:
+
+```text
+Purpose current capital
+        ×
+FINAL Composition fund weight
+        =
+Attributed capital
+```
+
+The layer does not alter FINAL winners, impose concentration thresholds, create substitute Compositions, or optimize family allocations.
+
+Detailed execution and integrity rules are documented in `docs/Lakshya_Family_Architecture_Validation.md`.
+
+---
+
+# PURPOSE STAGING
+
+### What happens if the reviewer changes Purpose requirements or redistributes released capital/SIP?
+
+Purpose Staging is a **human-in-the-loop reconciliation workspace**, not an optimizer.
+
+The reviewer controls:
+
+- `value` — current capital;
+- `monthly_plan` — monthly contribution;
+- `desired` — target;
+- `due` / `analytical_horizon_years` — horizon; and
+- acquisition percentages for capital/SIP pools.
+
+The accounting contract is:
+
+```text
+Purpose reduction → common pool
+pool acquisition  → another Purpose
+```
+
+Direct creation of capital or SIP is prohibited. Acquisition percentages use the same pool base at the start of the acquisition phase for that turn.
+
+The authoritative `data/purpose/purposes.csv` changes only at explicit COMMIT, after the reviewer is satisfied and both pools are zero.
+
+Detailed operation is documented in `docs/Lakshya_Purpose_Staging.md`.
+
+---
+
+# HISTORICAL SNAPSHOT
+
+### What becomes Lakshya's durable annual memory?
+
+After Purpose Staging is committed, the reviewer deliberately inspects the intended `data/` changes and commits the annual snapshot to Git.
+
+The durable record is primarily:
+
+```text
+data/fund/
+data/purpose/
+data/reviews/<as-of>/
+```
+
+Generated forensic logs such as `staging.log` and `family_attribution.log` are Git-ignored. Runtime `output/` is disposable/regenerable.
+
+This historical snapshot is memory, not a transaction instruction. The separate CURRENT → TARGET transition comes next.
+
+---
+
 # Running Lakshya
 
 ## First run / annual review — end to end
@@ -167,7 +256,7 @@ python python/run_production.py --as-of 2026-09-06
 
 Run this command from the repository root.
 
-It runs the complete production chain:
+It runs the analytical production chain:
 
 ```text
 FUND
@@ -182,6 +271,8 @@ FINAL
 ```
 
 More precisely, the runner invokes the resilient upstream MISSION pipeline and then executes FINAL for each requested Purpose. FINAL consumes the persisted MISSION survivor checkpoints; it does not rebuild upstream evidence merely because FINAL is being run.
+
+The broader annual review then proceeds through the separate Family Architecture Validation and Purpose Staging commands described below and in `docs/Lakshya_HowTo.md`.
 
 ### Clean first run / deliberate full rebuild
 
@@ -332,6 +423,8 @@ bootstrap
 joint L2/L∞ frontier
 summary
 ```
+
+For the practical annual-review sequence, see `docs/Lakshya_HowTo.md`.
 
 For the full architectural explanation, see `docs/Lakshya_Architecture.md`.
 
