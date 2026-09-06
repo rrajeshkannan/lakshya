@@ -1,6 +1,8 @@
 """Human-in-the-loop Purpose staging and common-pool reconciliation.
 
 The production Purpose source remains untouched while the reviewer iterates.
+The same dated workspace is updated in place; ``working_revision`` advances
+with each successful turn and never resets the underlying staged state.
 Each turn applies reviewer-selected Purpose lever values, records any capital
 or SIP released by lower values, then allocates the resulting pool according
 to explicit acquisition percentages. Acquisition amounts are applied to the
@@ -154,6 +156,7 @@ def initialize_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
         "as_of": as_of,
         "source_purposes_sha256": sha256_file(source),
         "turn": 0,
+        "working_revision": 0,
         "pool_capital": 0.0,
         "pool_monthly_sip": 0.0,
         "status": "STAGING",
@@ -279,7 +282,7 @@ def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, 
             acquired_sip += amount
             staged[name]["monthly_plan"] = f"{(_number(staged[name]['monthly_plan'], 'monthly_plan') or 0.0) + amount:g}"
             ledger.append({"turn": turn, "kind": "ACQUIRE_SIP", "purpose": name, "amount": f"{amount:.2f}", "pool_after": f"{base_sip - acquired_sip:.2f}"})
-            logger.info("TURN=%s ACQUIRE_SIP purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, sp, base_sip - acquired_sip)
+            logger.info("TURN=%s ACQUIRE_SIP purpose=%s pct=%.4f amount=%.2f pool=%.2f", turn, name, sp, amount, base_sip - acquired_sip)
     pool_capital = base_capital - base_capital * capital_pct / 100.0
     pool_sip = base_sip - base_sip * sip_pct / 100.0
     return pool_capital, pool_sip
@@ -352,7 +355,7 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
             "status": status,
         })
     _write_csv(directory / "achievability_latest.csv", RESULT_FIELDS, results)
-    state.update({"turn": turn, "pool_capital": pool_capital, "pool_monthly_sip": pool_sip, "last_turn_input_sha256": sha256_file(turn_path)})
+    state.update({"turn": turn, "working_revision": turn, "pool_capital": pool_capital, "pool_monthly_sip": pool_sip, "last_turn_input_sha256": sha256_file(turn_path)})
     _atomic_write(directory / "staging_state.json", json.dumps(state, indent=2, sort_keys=True) + "\n")
     logger.info("TURN_COMPLETE turn=%s pool_capital=%.2f pool_monthly_sip=%.2f", turn, pool_capital, pool_sip)
     return directory
@@ -372,6 +375,7 @@ def commit_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     shutil.copy2(authoritative, backup)
     _atomic_write(authoritative, staged.read_text(encoding="utf-8"))
     state["status"] = "COMMITTED"
+    state["committed_working_revision"] = state["working_revision"]
     state["committed_source_sha256"] = sha256_file(authoritative)
     _atomic_write(directory / "staging_state.json", json.dumps(state, indent=2, sort_keys=True) + "\n")
     with (directory / "staging.log").open("a", encoding="utf-8") as handle:
