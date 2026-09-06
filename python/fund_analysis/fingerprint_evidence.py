@@ -1,13 +1,12 @@
 """
 Persistent Fund behavioural-fingerprint evidence.
 
-This module persists the output of the Fund-stage behavioural engine.
+This module persists the active output of the Fund-stage behavioural engine.
 
 The fingerprint contains only observed behavioural evidence:
 
     Elevation
     Protection
-    Resilience
 
 It contains no score, ranking, suitability judgement, or recommendation.
 
@@ -42,11 +41,7 @@ class FingerprintEvidenceStore:
         nav_artifact_version: int,
         generated_at: str,
     ) -> None:
-        """
-        Create a persistent Fund fingerprint artifact.
-
-        The target path must not already contain an artifact.
-        """
+        """Create a persistent Fund fingerprint artifact."""
 
         if self.path.exists():
             raise FingerprintEvidenceAlreadyExistsError(
@@ -62,7 +57,6 @@ class FingerprintEvidenceStore:
             "fund": fingerprint["fund"],
             "elevation": fingerprint["elevation"],
             "protection": fingerprint["protection"],
-            "resilience": fingerprint["resilience"],
         }
 
         self._write(payload)
@@ -74,16 +68,7 @@ class FingerprintEvidenceStore:
         nav_artifact_version: int,
         generated_at: str,
     ) -> None:
-        """
-        Append the next Fund fingerprint snapshot.
-
-        The new snapshot must be derived from a strictly newer NAV
-        evidence artifact version.
-
-        The existing snapshot is never modified conceptually; the
-        current materialized file advances to the next snapshot.
-        Git preserves the previous state.
-        """
+        """Append the next Fund fingerprint snapshot."""
 
         if not self.path.exists():
             raise ValueError(
@@ -104,15 +89,12 @@ class FingerprintEvidenceStore:
             )
 
         payload = {
-            "artifact_version": (
-                existing["artifact_version"] + 1
-            ),
+            "artifact_version": existing["artifact_version"] + 1,
             "nav_artifact_version": int(nav_artifact_version),
             "generated_at": generated_at,
             "fund": fingerprint["fund"],
             "elevation": fingerprint["elevation"],
             "protection": fingerprint["protection"],
-            "resilience": fingerprint["resilience"],
         }
 
         self._write(payload)
@@ -125,7 +107,6 @@ class FingerprintEvidenceStore:
             "fund",
             "elevation",
             "protection",
-            "resilience",
         }
 
         missing = required_dimensions - set(fingerprint)
@@ -142,13 +123,6 @@ class FingerprintEvidenceStore:
             exist_ok=True,
         )
 
-        with self.path.open(
-            "w",
-            encoding="utf-8",
-        ) as f:
-            json.dump(
-                payload,
-                f,
-                indent=2,
-            )
+        with self.path.open("w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
             f.write("\n")
