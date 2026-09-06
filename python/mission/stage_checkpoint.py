@@ -2,20 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 from pathlib import Path
 
+from lakshya_core.hashing import sha256_file
+
 STAGE_CHECKPOINT_SCHEMA_VERSION = 1
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def marker_path(output_path: Path) -> Path:
@@ -45,7 +38,7 @@ def write_completion_marker(
         "stage": stage,
         "as_of": as_of,
         "output_file": output_path.name,
-        "output_sha256": _sha256(output_path),
+        "output_sha256": sha256_file(output_path),
         "row_count": row_count,
         "inputs": dict(sorted((inputs or {}).items())),
     }
@@ -85,7 +78,7 @@ def is_valid_completion_marker(
             return False
         if payload.get("output_file") != output_path.name:
             return False
-        if payload.get("output_sha256") != _sha256(output_path):
+        if payload.get("output_sha256") != sha256_file(output_path):
             return False
         expected_inputs = dict(sorted((inputs or {}).items()))
         return payload.get("inputs", {}) == expected_inputs
