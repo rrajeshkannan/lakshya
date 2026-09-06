@@ -6,7 +6,6 @@ from lakshya_core.models import (
     Fund,
     ElevationEvidence,
     ProtectionEvidence,
-    ResilienceEvidence,
     FundFingerprint,
 )
 from fund_analysis.fingerprint_serialization import fingerprint_to_dict
@@ -53,18 +52,6 @@ def test_fund_fingerprint_can_be_serialized_to_evidence_dict():
             days_at_or_above_threshold={},
             pct_days_at_or_above_threshold={},
         ),
-        resilience=ResilienceEvidence(
-            episode_count=2,
-            recovered_count=1,
-            ongoing_count=1,
-            median_depth_pct=20.0,
-            worst_depth_pct=30.0,
-            median_decline_days_recovered=30.0,
-            median_recovery_days=60.0,
-            median_underwater_days_recovered=90.0,
-            median_underwater_days_ongoing=120.0,
-            episodes=[],
-        ),
     )
 
     evidence = fingerprint_to_dict(fingerprint)
@@ -75,10 +62,9 @@ def test_fund_fingerprint_can_be_serialized_to_evidence_dict():
 
     assert "elevation" in evidence
     assert "protection" in evidence
-    assert "resilience" in evidence
+    assert "resilience" not in evidence
 
     assert evidence["protection"]["median_severity_pct"] == 10.0
-    assert evidence["resilience"]["episode_count"] == 2
 
 
 def test_fund_fingerprint_serialization_is_json_safe():
@@ -106,18 +92,6 @@ def test_fund_fingerprint_serialization_is_json_safe():
             maximum_severity_pct=0.0,
             days_at_or_above_threshold={},
             pct_days_at_or_above_threshold={},
-        ),
-        resilience=ResilienceEvidence(
-            episode_count=0,
-            recovered_count=0,
-            ongoing_count=0,
-            median_depth_pct=0.0,
-            worst_depth_pct=0.0,
-            median_decline_days_recovered=0.0,
-            median_recovery_days=0.0,
-            median_underwater_days_recovered=0.0,
-            median_underwater_days_ongoing=0.0,
-            episodes=[],
         ),
     )
 
