@@ -17,6 +17,7 @@ from lakshya_core.hashing import sha256_file
 import argparse
 import csv
 import json
+import os
 import platform
 import time
 import uuid
@@ -66,6 +67,8 @@ DATA_DIR = PROJECT_ROOT / "data"
 NAV_DIR = DATA_DIR / "nav"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
+CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
+CHECKPOINT_INDEX_SCHEMA_VERSION = 1
 OUTPUT_DIR = PROJECT_ROOT / "output"
 LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
 MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
@@ -266,23 +269,104 @@ def _candidate_compositions(teams):
         yield from generate_compositions(team)
 
 
-def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | None) -> int:
-    """Compute only missing fingerprints and persist each result immediately."""
+def _checkpoint_metadata(path: Path) -> dict[str, int] | None:
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    return {
+        "size": stat.st_size,
+        "mtime_ns": stat.st_mtime_ns,
+        "inode": stat.st_ino,
+    }
+
+
+def _load_checkpoint_index(candidates_sha256: str) -> dict[str, dict[str, int]]:
+    try:
+        with CHECKPOINT_INDEX_PATH.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if (
+        payload.get("schema_version") != CHECKPOINT_INDEX_SCHEMA_VERSION
+        or payload.get("composition_candidates_sha256") != candidates_sha256
+        or payload.get("fingerprint_schema_version") != FINGERPRINT_SCHEMA_VERSION
+        or not isinstance(payload.get("entries"), dict)
+    ):
+        return {}
+    return payload["entries"]
+
+
+def _publish_checkpoint_index(candidates_sha256: str, entries: dict[str, dict[str, int]]) -> None:
+    payload = {
+        "schema_version": CHECKPOINT_INDEX_SCHEMA_VERSION,
+        "composition_candidates_sha256": candidates_sha256,
+        "fingerprint_schema_version": FINGERPRINT_SCHEMA_VERSION,
+        "entries": entries,
+    }
+    CHECKPOINT_INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
+    temporary = CHECKPOINT_INDEX_PATH.with_suffix(CHECKPOINT_INDEX_PATH.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    temporary.replace(CHECKPOINT_INDEX_PATH)
+
+
+def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], dict[str, dict[str, int]], str]:
+    """Scan Composition checkpoints using the durable index as a narrow cache.
+
+    The index can accelerate only metadata matches. Every miss, stale entry,
+    malformed entry, or changed file falls back to authoritative validation via
+    has_fingerprint(). The returned entries are published only after all missing
+    Composition work has successfully persisted.
+    """
+    candidates_sha256 = _input_hash(OUTPUT_DIR / "composition_candidates.csv")
+    indexed_entries = _load_checkpoint_index(candidates_sha256)
+    index_reusable = bool(indexed_entries)
     total = existing = 0
     missing_compositions: list[Composition] = []
+    valid_entries: dict[str, dict[str, int]] = {}
+    indexed_hits = authoritative_checks = 0
+
     for composition in _candidate_compositions(teams):
         total += 1
+        identity = composition_identity(composition)
+        path = fingerprint_path(FINGERPRINT_DIR, composition)
+        metadata = _checkpoint_metadata(path)
+        indexed_metadata = indexed_entries.get(identity) if index_reusable else None
+        if metadata is not None and indexed_metadata == metadata:
+            existing += 1
+            indexed_hits += 1
+            valid_entries[identity] = metadata
+            continue
+        authoritative_checks += 1
         if has_fingerprint(FINGERPRINT_DIR, composition):
             existing += 1
+            refreshed = _checkpoint_metadata(path)
+            if refreshed is not None:
+                valid_entries[identity] = refreshed
         else:
             missing_compositions.append(composition)
+
+    _detail(
+        f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} missing={len(missing_compositions)} "
+        f"indexed_hits={indexed_hits} authoritative_checks={authoritative_checks} index_reusable={index_reusable}"
+    )
+    return total, existing, missing_compositions, valid_entries, candidates_sha256
+
+
+def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | None) -> int:
+    """Compute only missing fingerprints and persist each result immediately."""
+    total, existing, missing_compositions, checkpoint_entries, candidates_sha256 = _scan_composition_checkpoints(teams)
     missing = len(missing_compositions)
     _log(f"  fingerprint checkpoint scan: total={total} existing={existing} missing={missing}")
-    _detail(f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} missing={missing} workers={max_workers or 'auto'}")
     _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
     if missing == 0:
         _log("  all Composition fingerprints already persisted; no recomputation required")
-        _detail("FINGERPRINT_STAGE_SKIPPED reason=all_checkpoints_present")
+        _publish_checkpoint_index(candidates_sha256, checkpoint_entries)
+        _detail(f"FINGERPRINT_STAGE_SKIPPED reason=all_checkpoints_present index_entries={len(checkpoint_entries)}")
         _manifest_update("composition_evidence", "complete", total=total, newly_computed=0, reused=existing)
         return total
 
@@ -297,6 +381,12 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
             _detail(f"FINGERPRINT_FAILED composition={identity} error={error!r}")
             continue
         destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
+        metadata = _checkpoint_metadata(destination)
+        if metadata is None:
+            failed += 1
+            _detail(f"FINGERPRINT_FAILED composition={identity} error=checkpoint_missing_after_persist")
+            continue
+        checkpoint_entries[identity] = metadata
         completed += 1
         _detail(f"FINGERPRINT_PERSISTED index={completed}/{missing} composition={identity} path={destination.relative_to(PROJECT_ROOT)}")
         processed = completed + failed
@@ -312,8 +402,9 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
         _manifest_update("composition_evidence", "failed", total=total, newly_computed=completed, failed=failed)
         raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
     elapsed = time.perf_counter() - started
+    _publish_checkpoint_index(candidates_sha256, checkpoint_entries)
     _log(f"  Composition evidence complete: {total} persisted | newly computed={completed} | elapsed={elapsed:.1f}s")
-    _detail(f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} elapsed_seconds={elapsed:.3f}")
+    _detail(f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} elapsed_seconds={elapsed:.3f} index_entries={len(checkpoint_entries)}")
     _manifest_update("composition_evidence", "complete", total=total, reused=existing, newly_computed=completed, elapsed_seconds=round(elapsed, 3))
     return total
 
