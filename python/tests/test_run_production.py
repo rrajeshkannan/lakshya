@@ -22,9 +22,9 @@ def test_final_checkpoint_is_invalidated_when_mission_changes(tmp_path: Path, mo
     monkeypatch.setattr("run_production.OUTPUT_DIR", tmp_path)
 
     # Compute the real mission hash by using the runner's helper contract.
-    from run_production import _sha256
+    from lakshya_core.hashing import sha256_file
 
-    payload["mission_sha256"] = _sha256(mission_path)
+    payload["mission_sha256"] = sha256_file(mission_path)
     _write_checkpoint(checkpoint, payload)
     (tmp_path / "final_Test_summary.csv").write_text("purpose\nTest\n", encoding="utf-8")
 
