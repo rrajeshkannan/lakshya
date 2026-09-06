@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from final.compromise_programming import (
+    _bootstrap_percentile_coordinate,
     build_purpose_surface,
     distance_from_utopia,
     joint_l2_linf_frontier,
@@ -162,3 +163,21 @@ def test_constant_dimension_is_not_a_final_spoke(tmp_path: Path):
     assert metadata.loc[
         metadata["axis"] == "elevation_7y_positive_period_pct", "range"
     ].iloc[0] == pytest.approx(0.0)
+
+
+def test_bootstrap_percentile_coordinate_matches_average_rank():
+    population = np.array([1.0, 2.0, 3.0])
+    sampled = np.array([1.0, 2.0, 3.0])
+
+    coordinates = _bootstrap_percentile_coordinate(population, sampled)
+
+    assert np.allclose(coordinates, [0.0, 0.5, 1.0])
+
+
+def test_bootstrap_percentile_coordinate_uses_average_ties():
+    population = np.array([1.0, 2.0, 3.0])
+    sampled = np.array([1.0, 2.0, 2.0])
+
+    coordinates = _bootstrap_percentile_coordinate(population, sampled)
+
+    assert np.allclose(coordinates, [0.0, 0.75, 1.0])
