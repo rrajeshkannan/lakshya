@@ -3,20 +3,13 @@
 from __future__ import annotations
 
 from datetime import date
-import hashlib
 import json
 import os
 from pathlib import Path
 
+from lakshya_core.hashing import sha256_file
+
 ARCHIVE_SCHEMA_VERSION = 1
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _atomic_copy(source: Path, destination: Path) -> None:
@@ -57,9 +50,9 @@ def _write_json_if_same_or_absent(path: Path, payload: dict) -> None:
 
 
 def _copy_if_same_or_absent(source: Path, destination: Path) -> str:
-    source_hash = _sha256(source)
+    source_hash = sha256_file(source)
     if destination.is_file():
-        destination_hash = _sha256(destination)
+        destination_hash = sha256_file(destination)
         if destination_hash != source_hash:
             raise FileExistsError(
                 f"Historical review record already exists with different content: {destination}"
@@ -130,7 +123,7 @@ def archive_final_summaries(
                 f"expected {final_contract_version!r}, "
                 f"got {checkpoint_payload.get('contract_version')!r}"
             )
-        prepared.append((purpose, source, checkpoint_payload, _sha256(source)))
+        prepared.append((purpose, source, checkpoint_payload, sha256_file(source)))
 
     review_dir = archive_root / as_of
     manifest_purposes = [
@@ -157,7 +150,7 @@ def archive_final_summaries(
     # keeps a conflicting historical record from producing a partial update.
     for purpose, source, _, summary_hash in prepared:
         destination = review_dir / f"{purpose}_summary.csv"
-        if destination.is_file() and _sha256(destination) != summary_hash:
+        if destination.is_file() and sha256_file(destination) != summary_hash:
             raise FileExistsError(
                 f"Historical review record already exists with different content: {destination}"
             )
