@@ -268,13 +268,15 @@ def _candidate_compositions(teams):
 
 def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | None) -> int:
     """Compute only missing fingerprints and persist each result immediately."""
-    total = existing = missing = 0
+    total = existing = 0
+    missing_compositions: list[Composition] = []
     for composition in _candidate_compositions(teams):
         total += 1
         if has_fingerprint(FINGERPRINT_DIR, composition):
             existing += 1
         else:
-            missing += 1
+            missing_compositions.append(composition)
+    missing = len(missing_compositions)
     _log(f"  fingerprint checkpoint scan: total={total} existing={existing} missing={missing}")
     _detail(f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} missing={missing} workers={max_workers or 'auto'}")
     _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
@@ -284,15 +286,10 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
         _manifest_update("composition_evidence", "complete", total=total, newly_computed=0, reused=existing)
         return total
 
-    def missing_compositions():
-        for composition in _candidate_compositions(teams):
-            if not has_fingerprint(FINGERPRINT_DIR, composition):
-                yield composition
-
     started = time.perf_counter()
     completed = failed = 0
     for composition, fingerprint, error in analyze_compositions_parallel_resilient(
-        missing_compositions(), fund_histories, max_workers=max_workers
+        missing_compositions, fund_histories, max_workers=max_workers
     ):
         identity = composition_identity(composition)
         if error is not None:
