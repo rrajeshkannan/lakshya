@@ -6,7 +6,7 @@ import pytest
 
 from lps.nav_evidence import NavEvidenceStore
 from lps.positions import Position, PositionId
-from lps.valuation import current_total, value_position, value_positions
+from lps.valuation import total_market_value, value_position, value_positions
 
 
 def make_store(tmp_path, isin="INF001"):
@@ -78,7 +78,7 @@ def test_value_positions_retains_all_positions_and_values_active_ones(tmp_path):
     assert valued[1].market_value is None
 
 
-def test_current_total_sums_position_market_values(tmp_path):
+def test_total_market_value_sums_position_market_values(tmp_path):
     store_a = make_store(tmp_path, "INF001")
     store_b = make_store(tmp_path, "INF002")
     positions = value_positions(
@@ -86,7 +86,7 @@ def test_current_total_sums_position_market_values(tmp_path):
         {"INF001": store_a, "INF002": store_b},
         date(2026, 8, 18),
     )
-    assert current_total(positions) == Decimal("3271.80")
+    assert total_market_value(positions) == Decimal("3271.80")
 
 
 def test_value_positions_requires_nav_store_for_active_position(tmp_path):
