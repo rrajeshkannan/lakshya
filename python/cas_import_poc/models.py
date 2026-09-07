@@ -25,7 +25,7 @@ class CanonicalTransaction:
 
 @dataclass(frozen=True)
 class PositionKey:
-    """Stable ownership identity for the POC."""
+    """Stable ownership identity for a Position."""
 
     investor: str
     folio: str
@@ -33,14 +33,11 @@ class PositionKey:
 
 
 @dataclass(frozen=True)
-class PositionObservation:
-    """Current position observation for one Position."""
+class Position:
+    """Factual Position reconstructed from canonical transaction history."""
 
     key: PositionKey
     units: Decimal
-    nav: Decimal
-    market_value: Decimal
-    valuation_as_of_date: date
 
 
 @dataclass(frozen=True)
