@@ -7,6 +7,7 @@ import getpass
 from pathlib import Path
 
 from .adapter import adapt_cas
+from .current_state import derive_current_state
 from .ledger import write_ledger
 from .positions import reconstruct_positions
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
@@ -49,12 +50,15 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     print(f"Persisted canonical ledger: {ledger_path.relative_to(PROJECT_ROOT)}")
 
     positions = reconstruct_positions(transactions)
-    active_positions = [position for position in positions if position.units != 0]
+    current_states = derive_current_state(positions)
+    active_current_states = [state for state in current_states if state.units != 0]
+
     print(f"Reconstructed {len(positions)} Position(s).")
-    print(f"Active Position(s): {len(active_positions)}")
+    print(f"Derived {len(current_states)} Current State(s).")
+    print(f"Active Current State(s): {len(active_current_states)}")
 
     print(f"Investor: {ledger_investor}")
-    print("POC parse + validation + adaptation + ledger persistence + Position reconstruction: PASS")
+    print("POC parse + validation + adaptation + ledger persistence + Position reconstruction + Current State derivation: PASS")
 
 
 def main() -> None:
