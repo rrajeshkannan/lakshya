@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from cas_import_poc.adapter import adapt_cas, adapt_transaction
-from cas_import_poc.models import Position, PositionKey
+from cas_import_poc.models import Position, PositionId
 from cas_import_poc.positions import reconstruct_positions
 from cas_import_poc.validation import reconcile_unit_balance
 
@@ -89,12 +89,12 @@ def test_reconcile_unit_balance_detects_mismatch():
 
 
 def test_position_identity_is_investor_folio_isin():
-    key = PositionKey("Amma", "12345678", "INF000000000")
+    position_id = PositionId("Amma", "12345678", "INF000000000")
 
-    assert key == PositionKey("Amma", "12345678", "INF000000000")
-    assert key != PositionKey("Appanna", "12345678", "INF000000000")
-    assert key != PositionKey("Amma", "87654321", "INF000000000")
-    assert key != PositionKey("Amma", "12345678", "INF111111111")
+    assert position_id == PositionId("Amma", "12345678", "INF000000000")
+    assert position_id != PositionId("Appanna", "12345678", "INF000000000")
+    assert position_id != PositionId("Amma", "87654321", "INF000000000")
+    assert position_id != PositionId("Amma", "12345678", "INF111111111")
 
 
 def test_reconstruct_positions_collapses_transactions_by_position_identity():
@@ -123,7 +123,7 @@ def test_reconstruct_positions_collapses_transactions_by_position_identity():
 
     assert positions == [
         Position(
-            key=PositionKey("Amma", "12345678", "INF000000000"),
+            id=PositionId("Amma", "12345678", "INF000000000"),
             units=Decimal("12"),
         )
     ]
@@ -160,10 +160,10 @@ def test_reconstruct_positions_keeps_investor_folio_and_isin_distinct():
     positions = reconstruct_positions(transactions)
 
     assert positions == [
-        Position(PositionKey("Amma", "12345678", "INF000000000"), Decimal("10")),
-        Position(PositionKey("Amma", "12345678", "INF111111111"), Decimal("40")),
-        Position(PositionKey("Amma", "87654321", "INF000000000"), Decimal("30")),
-        Position(PositionKey("Appanna", "12345678", "INF000000000"), Decimal("20")),
+        Position(PositionId("Amma", "12345678", "INF000000000"), Decimal("10")),
+        Position(PositionId("Amma", "12345678", "INF111111111"), Decimal("40")),
+        Position(PositionId("Amma", "87654321", "INF000000000"), Decimal("30")),
+        Position(PositionId("Appanna", "12345678", "INF000000000"), Decimal("20")),
     ]
 
 
