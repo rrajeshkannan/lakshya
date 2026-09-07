@@ -1,5 +1,6 @@
 data/cache/
 data/fingerprints/composition/
+data/lps/
 python/lakshya.egg-info/
 bin/
 obj/
