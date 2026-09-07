@@ -1,81 +1,67 @@
-"""Valuation of active LPS Positions at an observation date."""
+"""Valuation of LPS Positions at an observation date."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from typing import Mapping
 
-from .current_state import CurrentState
 from .nav_evidence import NavEvidenceStore
-
-
-@dataclass(frozen=True)
-class PositionValuation:
-    """Market-value snapshot for one active Position."""
-
-    current_state: CurrentState
-    valuation_as_of_date: date
-    nav_observation_date: date
-    nav: Decimal
-    market_value: Decimal
+from .positions import Position
 
 
 def value_position(
-    current_state: CurrentState,
+    position: Position,
     nav_store: NavEvidenceStore,
     valuation_as_of_date: date,
-) -> PositionValuation | None:
-    """Value one Position using the applicable NAV on or before the date.
+) -> Position:
+    """Return the Position enriched with its applicable NAV and market value."""
+    if position.units == 0:
+        return position
 
-    Zero-unit historical Positions are retained in Current State but are not
-    part of active CURRENT, so they return no valuation.
-    """
-    units = current_state.position.units
-    if units == 0:
-        return None
-
-    observation_date, nav = nav_store.as_of(valuation_as_of_date)
+    _observation_date, nav = nav_store.as_of(valuation_as_of_date)
     nav_decimal = Decimal(str(nav))
 
-    return PositionValuation(
-        current_state=current_state,
-        valuation_as_of_date=valuation_as_of_date,
-        nav_observation_date=observation_date.date(),
+    return Position(
+        id=position.id,
+        units=position.units,
         nav=nav_decimal,
-        market_value=units * nav_decimal,
+        market_value=position.units * nav_decimal,
     )
 
 
-def build_current(
-    current_states: list[CurrentState],
+def value_positions(
+    positions: list[Position],
     nav_stores: Mapping[str, NavEvidenceStore],
     valuation_as_of_date: date,
-) -> list[PositionValuation]:
-    """Build the active CURRENT valuation snapshot for all Positions."""
-    valuations = []
-
-    for state in current_states:
-        if state.position.units == 0:
+) -> list[Position]:
+    """Value every Position, retaining zero-unit historical Positions."""
+    valued = []
+    for position in positions:
+        if position.units == 0:
+            valued.append(position)
             continue
 
-        isin = state.position.key.isin
+        isin = position.id.isin
         try:
             store = nav_stores[isin]
         except KeyError as exc:
             raise KeyError(f"No NAV evidence store for ISIN {isin}") from exc
+        valued.append(value_position(position, store, valuation_as_of_date))
 
-        valuation = value_position(state, store, valuation_as_of_date)
-        if valuation is not None:
-            valuations.append(valuation)
-
-    return valuations
+    return valued
 
 
-def current_total(valuations: list[PositionValuation]) -> Decimal:
-    """Return total market value represented by an active CURRENT snapshot."""
+def current_total(positions: list[Position]) -> Decimal:
+    """Return total market value represented by active Positions."""
     return sum(
-        (valuation.market_value for valuation in valuations),
+        (
+            position.market_value or Decimal("0")
+            for position in positions
+            if position.units != 0
+        ),
         Decimal("0"),
     )
+
+
+__all__ = ["value_position", "value_positions", "current_total"]
