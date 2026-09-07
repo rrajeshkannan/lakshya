@@ -26,7 +26,7 @@ def run_nav_pipeline(
         if progress:
             progress(f"[{index:02d}/{total:02d}] {isin} — fetching NAV...")
 
-        nav_evidence_path = data_root / "nav" / f"{isin}.json"
+        nav_evidence_path = data_root / "lps" / "nav" / f"{isin}.json"
 
         try:
             scheme_code = nav_source.resolve_scheme_code(isin)
