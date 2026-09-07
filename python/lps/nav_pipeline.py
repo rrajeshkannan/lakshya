@@ -24,7 +24,7 @@ def run_nav_pipeline(
 
     for index, isin in enumerate(isins, start=1):
         if progress:
-            progress(f"[{index:02d}/{total}] {isin} — fetching NAV...")
+            progress(f"[{index:02d}/{total:02d}] {isin} — fetching NAV...")
 
         nav_evidence_path = data_root / "nav" / f"{isin}.json"
 
@@ -56,7 +56,7 @@ def run_nav_pipeline(
                 nav_action = "created"
 
             if progress:
-                progress(f"[{index:02d}/{total}] {isin} — NAV {nav_action}")
+                progress(f"[{index:02d}/{total:02d}] {isin} — NAV {nav_action}")
 
             results.append(
                 {
