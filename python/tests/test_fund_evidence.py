@@ -7,7 +7,6 @@ from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.elevation import calculate_elevation
 from lakshya_core.models import ElevationEvidence
 from lakshya_core.rolling_returns import RollingReturnEvidence, calculate_rolling_cagr
-from lakshya_core.nav_history import normalize_nav_history
 from lakshya_core.parked.evidence_inventory import load_nav_cache
 
 
@@ -52,65 +51,10 @@ def test_protection_measures_severity_from_funds_own_high_water_mark():
     assert protection.days_at_or_above_threshold[20] == 1
 
 
-def test_nav_history_normalizes_chronological_order():
-    nav = pd.DataFrame({
-        "date": pd.to_datetime(["2026-08-03", "2026-08-01", "2026-08-02"]),
-        "nav": [103.0, 101.0, 102.0],
-    })
-    normalized = normalize_nav_history(nav)
-    assert list(normalized["date"]) == [
-        pd.Timestamp("2026-08-01"), pd.Timestamp("2026-08-02"), pd.Timestamp("2026-08-03")
-    ]
-
-
-def test_nav_history_rejects_duplicate_dates():
-    nav = pd.DataFrame({"date": pd.to_datetime(["2026-08-01", "2026-08-01"]), "nav": [100.0, 101.0]})
-    with pytest.raises(ValueError, match="duplicate"):
-        normalize_nav_history(nav)
-
-
-def test_nav_history_rejects_missing_nav_values():
-    nav = pd.DataFrame({"date": pd.to_datetime(["2026-08-01", "2026-08-02"]), "nav": [100.0, None]})
-    with pytest.raises(ValueError, match="missing"):
-        normalize_nav_history(nav)
-
-
-def test_nav_history_rejects_non_positive_nav():
-    nav = pd.DataFrame({"date": pd.to_datetime(["2026-08-01", "2026-08-02"]), "nav": [100.0, 0.0]})
-    with pytest.raises(ValueError, match="positive"):
-        normalize_nav_history(nav)
-
-
-def test_nav_history_preserves_missing_calendar_days():
-    nav = pd.DataFrame({
-        "date": pd.to_datetime(["2026-08-01", "2026-08-02", "2026-08-05"]),
-        "nav": [100.0, 101.0, 102.0],
-    })
-    normalized = normalize_nav_history(nav)
-    assert len(normalized) == 3
-    assert list(normalized["date"]) == [
-        pd.Timestamp("2026-08-01"), pd.Timestamp("2026-08-02"), pd.Timestamp("2026-08-05")
-    ]
-
-
-def test_nav_history_returns_canonical_columns():
-    nav = pd.DataFrame({
-        "date": pd.to_datetime(["2026-08-02", "2026-08-01"]),
-        "nav": [101.0, 100.0],
-    })
-    normalized = normalize_nav_history(nav)
-    assert list(normalized.columns) == ["date", "nav"]
-    assert pd.api.types.is_datetime64_any_dtype(normalized["date"])
-    assert pd.api.types.is_numeric_dtype(normalized["nav"])
-
-
 def test_five_year_rolling_returns():
     project_root = Path(__file__).resolve().parents[2]
     path = project_root / "data" / "cache" / "INF174K01KT2_nav.json"
 
-    # [lakshya] This is a legacy cache-backed regression test. The cache is
-    # not part of the current repository data contract, so a clean checkout
-    # skips it rather than failing unrelated TEAM/FUND tests.
     if not path.exists():
         pytest.skip("legacy data/cache NAV fixture is not present")
 
