@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from lakshya_core.nav_history import normalize_nav_history
 from .observation_horizon import SUPPORTED_OBSERVATION_HORIZONS
 
 
@@ -36,18 +37,13 @@ class TrajectoryObservation:
 
 
 def _prepare_nav(nav: pd.DataFrame) -> pd.DataFrame:
-    if set(nav.columns) != {"date", "nav"}:
-        raise ValueError("NAV trajectory must contain exactly 'date' and 'nav' columns.")
+    """Cross the canonical NAV boundary before trajectory observation.
 
-    data = nav.copy()
-    data["date"] = pd.to_datetime(data["date"])
-    data = data.sort_values("date").drop_duplicates("date", keep="last").reset_index(drop=True)
-
-    if data.empty:
-        raise ValueError("NAV trajectory cannot be empty.")
-    if data["nav"].isna().any() or (data["nav"] <= 0).any():
-        raise ValueError("NAV trajectory must contain positive, non-null NAV values.")
-    return data
+    Trajectory is downstream analytical observation, not a second NAV-cleaning
+    boundary. Reuse the shared canonical contract so duplicate dates and
+    other ambiguous source states are rejected consistently everywhere.
+    """
+    return normalize_nav_history(nav)
 
 
 def select_observable_horizon(nav: pd.DataFrame, nominal_horizon_years: int) -> int | None:
