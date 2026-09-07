@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 from lps.nav_evidence import NavEvidenceStore
@@ -100,7 +102,8 @@ def test_run_nav_pipeline_leaves_unchanged_evidence_unchanged(tmp_path):
     )
 
     assert results[0]["nav_action"] == "unchanged"
-    assert NavEvidenceStore(path).artifact_version() == 1
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["artifact_version"] == 1
 
 
 def test_run_nav_pipeline_reports_failure_and_continues(tmp_path):
