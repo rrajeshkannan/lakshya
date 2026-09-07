@@ -97,6 +97,43 @@ class NavEvidenceStore:
 
         return pd.Timestamp(observations[0]["date"])
 
+    def as_of(self, as_of: pd.Timestamp) -> tuple[pd.Timestamp, float]:
+        """
+        Return the applicable NAV observation as of a requested date.
+
+        The applicable observation is the latest recorded NAV on or before
+        the requested date. Missing calendar days therefore use the most
+        recent actual observation rather than manufacturing a NAV.
+
+        Returns:
+            A ``(observation_date, nav)`` tuple so callers retain both the
+            value used and the factual date on which it was observed.
+        """
+
+        if not self.path.exists():
+            raise ValueError(
+                f"NAV evidence artifact does not exist: {self.path}"
+            )
+
+        payload = self._read()
+        observations = payload["observations"]
+
+        if not observations:
+            raise ValueError(
+                "NAV evidence artifact contains no observations."
+            )
+
+        requested_date = pd.Timestamp(as_of)
+        for observation in observations:
+            observation_date = pd.Timestamp(observation["date"])
+            if observation_date <= requested_date:
+                return observation_date, float(observation["nav"])
+
+        raise ValueError(
+            "NAV evidence artifact has no observation on or before "
+            f"{requested_date.strftime('%Y-%m-%d')}."
+        )
+
     def update(
         self,
         *,
