@@ -1,4 +1,4 @@
-"""Translate casparser CAMS output into Lakshya's small canonical vocabulary."""
+"""Translate casparser CAMS output into Lakshya's transaction vocabulary."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from .models import CanonicalTransaction
+from .models import Transaction
 
 
 # Keep the normal path explicit. Unknown parser types are surfaced rather than guessed.
@@ -55,12 +55,12 @@ def _event_type(parser_type: Any) -> str:
         raise ValueError(f"Unsupported casparser transaction type: {key}") from exc
 
 
-def adapt_transaction(*, investor: str, folio: str, isin: str, transaction: Any) -> CanonicalTransaction:
+def adapt_transaction(*, investor: str, folio: str, isin: str, transaction: Any) -> Transaction:
     """Adapt one casparser transaction object without exposing its schema downstream."""
     if not isin:
         raise ValueError("Cannot adapt transaction without ISIN.")
     description = str(getattr(transaction, "description", ""))
-    return CanonicalTransaction(
+    return Transaction(
         transaction_date=_as_date(transaction.date),
         event_type=_event_type(transaction.type),
         investor=investor,
@@ -73,10 +73,10 @@ def adapt_transaction(*, investor: str, folio: str, isin: str, transaction: Any)
     )
 
 
-def adapt_cas(data: Any, *, investor_override: str | None = None) -> list[CanonicalTransaction]:
-    """Adapt an entire CAMS/KFintech CASData object to canonical transactions."""
+def adapt_cas(data: Any, *, investor_override: str | None = None) -> list[Transaction]:
+    """Adapt an entire CAMS/KFintech CASData object to Lakshya transactions."""
     investor = investor_override or str(data.investor_info.name).strip()
-    rows: list[CanonicalTransaction] = []
+    rows: list[Transaction] = []
     for folio in data.folios:
         for scheme in folio.schemes:
             isin = scheme.isin
