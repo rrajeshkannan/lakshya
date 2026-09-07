@@ -25,12 +25,18 @@ from lakshya_core.nav_history import normalize_nav_history
 
 def build_collective_nav(
     fund_histories: Mapping[str, pd.DataFrame],
+    *,
+    assume_canonical: bool = False,
 ) -> pd.DataFrame:
     """Build the collective NAV trajectory for a Team.
 
     Args:
-        fund_histories: Mapping of Fund identifier to canonical (or
-            canonicalizable) NAV history containing ``date`` and ``nav``.
+        fund_histories: Mapping of Fund identifier to NAV history containing
+            ``date`` and ``nav``.
+        assume_canonical: When True, treat the supplied histories as already
+            validated canonical NAV histories. This is an internal fast path
+            for callers that already crossed the NAV-history boundary.
+            When False, histories are normalized and validated here.
 
     Returns:
         A DataFrame with ``date`` and ``nav`` columns in chronological order.
@@ -45,10 +51,14 @@ def build_collective_nav(
     if not fund_histories:
         raise ValueError("A Team must contain at least one Fund.")
 
-    histories = {
-        fund_id: normalize_nav_history(history)
-        for fund_id, history in fund_histories.items()
-    }
+    histories = (
+        dict(fund_histories)
+        if assume_canonical
+        else {
+            fund_id: normalize_nav_history(history)
+            for fund_id, history in fund_histories.items()
+        }
+    )
 
     starts = [history["date"].min() for history in histories.values()]
     ends = [history["date"].max() for history in histories.values()]
