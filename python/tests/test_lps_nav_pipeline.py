@@ -24,6 +24,10 @@ class FakeNavSource:
         )
 
 
+def nav_path(tmp_path, isin):
+    return tmp_path / "lps" / "nav" / f"{isin}.json"
+
+
 def test_run_nav_pipeline_creates_evidence(tmp_path):
     results = run_nav_pipeline(
         isins=["ISIN_A", "ISIN_B"],
@@ -35,12 +39,13 @@ def test_run_nav_pipeline_creates_evidence(tmp_path):
     assert [result["status"] for result in results] == ["success", "success"]
     assert [result["nav_action"] for result in results] == ["created", "created"]
 
-    store = NavEvidenceStore(tmp_path / "nav" / "ISIN_A.json")
+    store = NavEvidenceStore(nav_path(tmp_path, "ISIN_A"))
     assert store.latest_date().date().isoformat() == "2026-08-03"
 
 
 def test_run_nav_pipeline_updates_only_new_observations(tmp_path):
-    path = tmp_path / "nav" / "ISIN_A.json"
+    path = nav_path(tmp_path, "ISIN_A")
+    path.parent.mkdir(parents=True)
     store = NavEvidenceStore(path)
     store.create(
         isin="ISIN_A",
@@ -79,7 +84,8 @@ def test_run_nav_pipeline_updates_only_new_observations(tmp_path):
 
 
 def test_run_nav_pipeline_leaves_unchanged_evidence_unchanged(tmp_path):
-    path = tmp_path / "nav" / "ISIN_A.json"
+    path = nav_path(tmp_path, "ISIN_A")
+    path.parent.mkdir(parents=True)
     store = NavEvidenceStore(path)
     store.create(
         isin="ISIN_A",
