@@ -7,11 +7,13 @@ import getpass
 from pathlib import Path
 
 from .adapter import adapt_cas
+from .ledger import write_ledger
 from .positions import reconstruct_positions
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 INPUT_DIR = PROJECT_ROOT / "input"
+LPS_DATA_DIR = PROJECT_ROOT / "data" / "lps"
 
 
 def _load_casparser():
@@ -41,13 +43,18 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     transactions = adapt_cas(data, investor_override=investor)
     print(f"Adapted {len(transactions)} canonical transaction(s).")
 
+    ledger_investor = investor or str(data.investor_info.name).strip()
+    ledger_path = LPS_DATA_DIR / ledger_investor / "canonical_transactions.csv"
+    write_ledger(ledger_path, transactions)
+    print(f"Persisted canonical ledger: {ledger_path.relative_to(PROJECT_ROOT)}")
+
     positions = reconstruct_positions(transactions)
     active_positions = [position for position in positions if position.units != 0]
     print(f"Reconstructed {len(positions)} Position(s).")
     print(f"Active Position(s): {len(active_positions)}")
 
-    print(f"Investor: {investor or data.investor_info.name}")
-    print("POC parse + validation + adaptation + Position reconstruction: PASS")
+    print(f"Investor: {ledger_investor}")
+    print("POC parse + validation + adaptation + ledger persistence + Position reconstruction: PASS")
 
 
 def main() -> None:
