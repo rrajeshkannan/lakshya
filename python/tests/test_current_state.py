@@ -1,0 +1,27 @@
+from decimal import Decimal
+
+from cas_import_poc.current_state import CurrentState, derive_current_state
+from cas_import_poc.models import Position, PositionKey
+
+
+def test_derive_current_state_promotes_position_units():
+    position = Position(
+        key=PositionKey("Amma", "F1", "INF001"),
+        units=Decimal("123.45"),
+    )
+
+    states = derive_current_state([position])
+
+    assert states == [CurrentState(position=position, units=Decimal("123.45"))]
+
+
+def test_derive_current_state_retains_zero_balance_historical_position():
+    position = Position(
+        key=PositionKey("Amma", "F2", "INF002"),
+        units=Decimal("0"),
+    )
+
+    states = derive_current_state([position])
+
+    assert len(states) == 1
+    assert states[0].units == Decimal("0")
