@@ -1,4 +1,4 @@
-"""Factual Position identity and reconstruction owned by LPS."""
+"""First-class factual Position model owned by LPS."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class PositionKey:
-    """Stable ownership identity for a Position."""
+class PositionId:
+    """Stable identity for a Position."""
 
     investor: str
     folio: str
@@ -21,10 +21,17 @@ class PositionKey:
 
 @dataclass(frozen=True)
 class Position:
-    """Factual Position reconstructed from canonical transaction history."""
+    """Factual Position reconstructed from canonical transaction history.
 
-    key: PositionKey
+    NAV and market value are populated when the Position is valued for an
+    LPS review run.  A Position reconstructed directly from transactions has
+    those derived valuation fields unset.
+    """
+
+    id: PositionId
     units: Decimal
+    nav: Decimal | None = None
+    market_value: Decimal | None = None
 
 
 def reconstruct_positions(
@@ -33,24 +40,28 @@ def reconstruct_positions(
     """Group transactions by Position identity and derive net units held."""
     from collections import defaultdict
 
-    units_by_key: dict[PositionKey, Decimal] = defaultdict(lambda: Decimal("0"))
+    units_by_id: dict[PositionId, Decimal] = defaultdict(lambda: Decimal("0"))
 
     for transaction in transactions:
-        key = PositionKey(
+        position_id = PositionId(
             investor=transaction.investor,
             folio=transaction.folio,
             isin=transaction.isin,
         )
         if transaction.units is not None:
-            units_by_key[key] += transaction.units
+            units_by_id[position_id] += transaction.units
 
     return [
-        Position(key=key, units=units)
-        for key, units in sorted(
-            units_by_key.items(),
-            key=lambda item: (item[0].investor, item[0].folio, item[0].isin),
+        Position(id=position_id, units=units)
+        for position_id, units in sorted(
+            units_by_id.items(),
+            key=lambda item: (
+                item[0].investor,
+                item[0].folio,
+                item[0].isin,
+            ),
         )
     ]
 
 
-__all__ = ["PositionKey", "Position", "reconstruct_positions"]
+__all__ = ["PositionId", "Position", "reconstruct_positions"]
