@@ -51,7 +51,9 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
 
     positions = reconstruct_positions(transactions)
     current_states = derive_current_state(positions)
-    active_current_states = [state for state in current_states if state.units != 0]
+    active_current_states = [
+        state for state in current_states if state.position.units != 0
+    ]
 
     print(f"Reconstructed {len(positions)} Position(s).")
     print(f"Derived {len(current_states)} Current State(s).")
