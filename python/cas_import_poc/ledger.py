@@ -1,4 +1,4 @@
-"""Persistence for Lakshya's parser-independent canonical transaction ledger."""
+"""Persistence for Lakshya's family-wide transaction ledger."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from .models import CanonicalTransaction
+from .models import Transaction
 
 
-LEDGER_FIELDS = (
+TRANSACTION_FIELDS = (
     "transaction_date",
     "event_type",
     "investor",
@@ -23,13 +23,24 @@ LEDGER_FIELDS = (
 )
 
 
-def write_ledger(path: Path, transactions: list[CanonicalTransaction]) -> None:
-    """Write canonical transactions as a simple, exact CSV ledger."""
+def write_ledger(path: Path, transactions: list[Transaction]) -> None:
+    """Write the family-wide transaction collection as a simple CSV ledger."""
     path.parent.mkdir(parents=True, exist_ok=True)
+    ordered = sorted(
+        transactions,
+        key=lambda transaction: (
+            transaction.transaction_date,
+            transaction.investor,
+            transaction.folio,
+            transaction.isin,
+            transaction.event_type,
+            transaction.source_description,
+        ),
+    )
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=LEDGER_FIELDS)
+        writer = csv.DictWriter(handle, fieldnames=TRANSACTION_FIELDS)
         writer.writeheader()
-        for transaction in transactions:
+        for transaction in ordered:
             writer.writerow(
                 {
                     "transaction_date": transaction.transaction_date.isoformat(),
@@ -45,15 +56,15 @@ def write_ledger(path: Path, transactions: list[CanonicalTransaction]) -> None:
             )
 
 
-def read_ledger(path: Path) -> list[CanonicalTransaction]:
-    """Read a persisted canonical transaction ledger."""
+def read_ledger(path: Path) -> list[Transaction]:
+    """Read the family-wide persisted transaction collection."""
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
-        if tuple(reader.fieldnames or ()) != LEDGER_FIELDS:
-            raise ValueError("Canonical ledger has an unexpected column layout.")
+        if tuple(reader.fieldnames or ()) != TRANSACTION_FIELDS:
+            raise ValueError("Transactions file has an unexpected column layout.")
 
         return [
-            CanonicalTransaction(
+            Transaction(
                 transaction_date=date.fromisoformat(row["transaction_date"]),
                 event_type=row["event_type"],
                 investor=row["investor"],
@@ -66,7 +77,7 @@ def read_ledger(path: Path) -> list[CanonicalTransaction]:
             )
             for row in reader
         ]
-
+    
 
 def _text(value: Decimal | None) -> str:
     return "" if value is None else str(value)
