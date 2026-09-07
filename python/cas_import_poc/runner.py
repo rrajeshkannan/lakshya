@@ -7,10 +7,10 @@ import getpass
 from pathlib import Path
 
 from .adapter import adapt_cas
-from .current_state import derive_current_state
 from .ledger import write_ledger
-from .positions import reconstruct_positions
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
+from lps.current_state import derive_current_state
+from lps.positions import reconstruct_positions
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 INPUT_DIR = PROJECT_ROOT / "input"
