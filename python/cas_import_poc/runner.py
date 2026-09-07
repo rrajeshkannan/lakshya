@@ -9,7 +9,7 @@ from pathlib import Path
 from .adapter import adapt_cas
 from .ledger import write_ledger
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
-from lps.current_state import derive_current_state
+from lps.position_persistence import write_positions
 from lps.positions import reconstruct_positions
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -45,22 +45,23 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     print(f"Adapted {len(transactions)} canonical transaction(s).")
 
     ledger_investor = investor or str(data.investor_info.name).strip()
-    ledger_path = LPS_DATA_DIR / ledger_investor / "canonical_transactions.csv"
+    ledger_path = LPS_DATA_DIR / f"{ledger_investor.lower()}_canonical_transactions.csv"
     write_ledger(ledger_path, transactions)
-    print(f"Persisted canonical ledger: {ledger_path.relative_to(PROJECT_ROOT)}")
+    print(f"Persisted canonical transactions: {ledger_path.relative_to(PROJECT_ROOT)}")
 
     positions = reconstruct_positions(transactions)
-    current_states = derive_current_state(positions)
-    active_current_states = [
-        state for state in current_states if state.position.units != 0
-    ]
+    write_positions(
+        LPS_DATA_DIR / f"{ledger_investor.lower()}_positions.csv",
+        positions,
+    )
+
+    active_positions = [position for position in positions if position.units != 0]
 
     print(f"Reconstructed {len(positions)} Position(s).")
-    print(f"Derived {len(current_states)} Current State(s).")
-    print(f"Active Current State(s): {len(active_current_states)}")
-
+    print(f"Active Position(s): {len(active_positions)}")
+    print(f"Persisted Positions: {ledger_investor.lower()}_positions.csv")
     print(f"Investor: {ledger_investor}")
-    print("POC parse + validation + adaptation + ledger persistence + Position reconstruction + Current State derivation: PASS")
+    print("LPS parse + validation + adaptation + Transactions persistence + Position reconstruction + Positions persistence: PASS")
 
 
 def main() -> None:
