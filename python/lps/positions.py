@@ -1,18 +1,38 @@
-"""Reconstruct factual Positions from canonical transaction history."""
+"""Factual Position identity and reconstruction owned by LPS."""
 
 from __future__ import annotations
 
-from collections import defaultdict
+from dataclasses import dataclass
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from cas_import_poc.models import CanonicalTransaction
-from cas_import_poc.models import Position, PositionKey
+if TYPE_CHECKING:
+    from cas_import_poc.models import CanonicalTransaction
+
+
+@dataclass(frozen=True)
+class PositionKey:
+    """Stable ownership identity for a Position."""
+
+    investor: str
+    folio: str
+    isin: str
+
+
+@dataclass(frozen=True)
+class Position:
+    """Factual Position reconstructed from canonical transaction history."""
+
+    key: PositionKey
+    units: Decimal
 
 
 def reconstruct_positions(
     transactions: list[CanonicalTransaction],
 ) -> list[Position]:
     """Group transactions by Position identity and derive net units held."""
+    from collections import defaultdict
+
     units_by_key: dict[PositionKey, Decimal] = defaultdict(lambda: Decimal("0"))
 
     for transaction in transactions:
@@ -31,3 +51,6 @@ def reconstruct_positions(
             key=lambda item: (item[0].investor, item[0].folio, item[0].isin),
         )
     ]
+
+
+__all__ = ["PositionKey", "Position", "reconstruct_positions"]
