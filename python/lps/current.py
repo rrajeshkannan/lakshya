@@ -52,7 +52,11 @@ def build_current_snapshot(
     positions = reconstruct_positions(transactions)
     current_states = derive_current_state(positions)
 
-    isins = {state.position.key.isin for state in current_states if state.units != 0}
+    isins = {
+        state.position.key.isin
+        for state in current_states
+        if state.position.units != 0
+    }
     nav_stores = {
         isin: NavEvidenceStore(nav_root / f"{isin}.json")
         for isin in isins
