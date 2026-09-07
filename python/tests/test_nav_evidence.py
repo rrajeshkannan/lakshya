@@ -308,3 +308,96 @@ def test_nav_evidence_store_reports_latest_observation_date(tmp_path):
     )
 
     assert store.latest_date() == pd.Timestamp("2026-08-03")
+
+
+def test_nav_evidence_store_returns_latest_observation_on_or_before_date(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-18",
+                    "2026-08-17",
+                    "2026-08-14",
+                    "2026-08-13",
+                    "2026-08-12",
+                ]
+            ),
+            "nav": [109.06, 109.57, 109.78, 109.95, 110.24],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-19T16:00:00+05:30",
+    )
+
+    observation_date, value = store.as_of(pd.Timestamp("2026-08-15"))
+
+    assert observation_date == pd.Timestamp("2026-08-14")
+    assert value == 109.78
+
+
+def test_nav_evidence_store_as_of_returns_same_observation_for_adjacent_missing_day(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                [
+                    "2026-08-18",
+                    "2026-08-17",
+                    "2026-08-14",
+                ]
+            ),
+            "nav": [109.06, 109.57, 109.78],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-19T16:00:00+05:30",
+    )
+
+    assert store.as_of(pd.Timestamp("2026-08-16")) == (
+        pd.Timestamp("2026-08-14"),
+        109.78,
+    )
+
+
+def test_nav_evidence_store_as_of_rejects_date_before_first_observation(
+    tmp_path,
+):
+    path = tmp_path / "INFTEST123.json"
+
+    nav = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2026-08-14"]),
+            "nav": [109.78],
+        }
+    )
+
+    store = NavEvidenceStore(path)
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=nav,
+        retrieved_at="2026-08-19T16:00:00+05:30",
+    )
+
+    with pytest.raises(ValueError, match="on or before"):
+        store.as_of(pd.Timestamp("2026-08-13"))
