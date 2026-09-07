@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from fund_analysis.analyze_fund import analyze_fund
-from fund_analysis.nav_evidence import NavEvidenceStore
-from lakshya_core.nav_history import normalize_nav_history
+from lps.nav_evidence import NavEvidenceStore
+from lps.nav_history import normalize_nav_history
 
 
 def run_fund_pipeline(
@@ -22,68 +22,33 @@ def run_fund_pipeline(
     """
 
     data_root = Path(data_root)
-
     total = len(funds)
-
     results = []
 
     for index, fund in enumerate(funds, start=1):
-
         if progress:
-            progress(
-                f"[{index:02d}/{total}] "
-                f"{fund.name} — fetching NAV..."
-            )
+            progress(f"[{index:02d}/{total}] {fund.name} — fetching NAV...")
 
-        nav_evidence_path = (
-            data_root
-            / "nav"
-            / f"{fund.isin}.json"
-        )
-
-        fingerprint_evidence_path = (
-            data_root
-            / "fingerprints"
-            / f"{fund.isin}.json"
-        )
+        nav_evidence_path = data_root / "nav" / f"{fund.isin}.json"
+        fingerprint_evidence_path = data_root / "fingerprints" / f"{fund.isin}.json"
 
         try:
-            scheme_code = nav_source.resolve_scheme_code(
-                fund.isin
-            )
-
-            raw_nav = nav_source.fetch_nav_history(
-                scheme_code
-            )
-
+            scheme_code = nav_source.resolve_scheme_code(fund.isin)
+            raw_nav = nav_source.fetch_nav_history(scheme_code)
             nav = normalize_nav_history(raw_nav)
 
-            nav_evidence_path.parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-
-            store = NavEvidenceStore(
-                nav_evidence_path
-            )
+            nav_evidence_path.parent.mkdir(parents=True, exist_ok=True)
+            store = NavEvidenceStore(nav_evidence_path)
 
             if nav_evidence_path.exists():
                 latest_date = store.latest_date()
-
-                new_nav = nav[
-                    nav["date"] > latest_date
-                ]
+                new_nav = nav[nav["date"] > latest_date]
 
                 if not new_nav.empty:
-                    store.update(
-                        nav=new_nav,
-                        retrieved_at=generated_at,
-                    )
-
+                    store.update(nav=new_nav, retrieved_at=generated_at)
                     nav_action = "updated"
                 else:
                     nav_action = "unchanged"
-
             else:
                 store.create(
                     isin=fund.isin,
@@ -92,14 +57,10 @@ def run_fund_pipeline(
                     nav=nav,
                     retrieved_at=generated_at,
                 )
-
                 nav_action = "created"
 
             if progress:
-                progress(
-                    f"[{index:02d}/{total}] "
-                    f"{fund.name} — NAV {nav_action}"
-                )
+                progress(f"[{index:02d}/{total}] {fund.name} — NAV {nav_action}")
 
             _, fingerprint_action = analyze_fund(
                 fund=fund,
@@ -110,27 +71,22 @@ def run_fund_pipeline(
 
             if progress:
                 progress(
-                    f"[{index:02d}/{total}] "
-                    f"{fund.name} — "
+                    f"[{index:02d}/{total}] {fund.name} — "
                     f"fingerprint {fingerprint_action}"
                 )
 
-            results.append(
-                {
-                    "isin": fund.isin,
-                    "status": "success",
-                    "nav_action": nav_action,
-                    "fingerprint_action": fingerprint_action,
-                }
-            )
+            results.append({
+                "isin": fund.isin,
+                "status": "success",
+                "nav_action": nav_action,
+                "fingerprint_action": fingerprint_action,
+            })
 
         except Exception as exc:
-            results.append(
-                {
-                    "isin": fund.isin,
-                    "status": "failed",
-                    "error": str(exc),
-                }
-            )
+            results.append({
+                "isin": fund.isin,
+                "status": "failed",
+                "error": str(exc),
+            })
 
     return results
