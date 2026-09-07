@@ -11,7 +11,7 @@ from lps.positions import Position, PositionId
 
 
 @dataclass(frozen=True)
-class CanonicalTransaction:
+class Transaction:
     """Normalized actual transaction retained by LPS."""
 
     transaction_date: date
@@ -39,7 +39,7 @@ class ReconciliationResult:
 
 
 __all__ = [
-    "CanonicalTransaction",
+    "Transaction",
     "PositionId",
     "Position",
     "ReconciliationResult",
