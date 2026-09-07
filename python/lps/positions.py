@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from cas_import_poc.models import CanonicalTransaction
+    from cas_import_poc.models import Transaction
 
 
 @dataclass(frozen=True)
@@ -21,10 +21,10 @@ class PositionId:
 
 @dataclass(frozen=True)
 class Position:
-    """Factual Position reconstructed from canonical transaction history.
+    """Factual Position reconstructed from transaction history.
 
     NAV and market value are populated when the Position is valued for an
-    LPS review run.  A Position reconstructed directly from transactions has
+    LPS review run. A Position reconstructed directly from transactions has
     those derived valuation fields unset.
     """
 
@@ -35,7 +35,7 @@ class Position:
 
 
 def reconstruct_positions(
-    transactions: list[CanonicalTransaction],
+    transactions: list[Transaction],
 ) -> list[Position]:
     """Group transactions by Position identity and derive net units held."""
     from collections import defaultdict
