@@ -7,7 +7,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from lps.positions import Position, PositionKey
+from lps.positions import Position, PositionId
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,7 @@ class ReconciliationResult:
 
 __all__ = [
     "CanonicalTransaction",
-    "PositionKey",
+    "PositionId",
     "Position",
     "ReconciliationResult",
 ]
