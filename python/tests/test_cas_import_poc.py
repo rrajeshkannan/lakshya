@@ -5,7 +5,8 @@ from types import SimpleNamespace
 import pytest
 
 from cas_import_poc.adapter import adapt_cas, adapt_transaction
-from cas_import_poc.models import PositionKey
+from cas_import_poc.models import Position, PositionKey
+from cas_import_poc.positions import reconstruct_positions
 from cas_import_poc.validation import reconcile_unit_balance
 
 
@@ -94,6 +95,97 @@ def test_position_identity_is_investor_folio_isin():
     assert key != PositionKey("Appanna", "12345678", "INF000000000")
     assert key != PositionKey("Amma", "87654321", "INF000000000")
     assert key != PositionKey("Amma", "12345678", "INF111111111")
+
+
+def test_reconstruct_positions_collapses_transactions_by_position_identity():
+    transactions = [
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(units=Decimal("10")),
+        ),
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(type="PURCHASE_SIP", units=Decimal("5")),
+        ),
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(type="REDEMPTION", units=Decimal("-3")),
+        ),
+    ]
+
+    positions = reconstruct_positions(transactions)
+
+    assert positions == [
+        Position(
+            key=PositionKey("Amma", "12345678", "INF000000000"),
+            units=Decimal("12"),
+        )
+    ]
+
+
+def test_reconstruct_positions_keeps_investor_folio_and_isin_distinct():
+    transactions = [
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(units=Decimal("10")),
+        ),
+        adapt_transaction(
+            investor="Appanna",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(units=Decimal("20")),
+        ),
+        adapt_transaction(
+            investor="Amma",
+            folio="87654321",
+            isin="INF000000000",
+            transaction=_transaction(units=Decimal("30")),
+        ),
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF111111111",
+            transaction=_transaction(units=Decimal("40")),
+        ),
+    ]
+
+    positions = reconstruct_positions(transactions)
+
+    assert positions == [
+        Position(PositionKey("Amma", "12345678", "INF000000000"), Decimal("10")),
+        Position(PositionKey("Amma", "12345678", "INF111111111"), Decimal("40")),
+        Position(PositionKey("Amma", "87654321", "INF000000000"), Decimal("30")),
+        Position(PositionKey("Appanna", "12345678", "INF000000000"), Decimal("20")),
+    ]
+
+
+def test_reconstruct_positions_ignores_non_unit_events():
+    transactions = [
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(units=Decimal("10")),
+        ),
+        adapt_transaction(
+            investor="Amma",
+            folio="12345678",
+            isin="INF000000000",
+            transaction=_transaction(type="STAMP_DUTY_TAX", units=None),
+        ),
+    ]
+
+    positions = reconstruct_positions(transactions)
+
+    assert positions[0].units == Decimal("10")
 
 
 def test_adapt_cas_uses_investor_override_for_lakshya_label():
