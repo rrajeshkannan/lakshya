@@ -1,4 +1,4 @@
-"""Build and report LPS CURRENT valuation snapshots for family investors."""
+"""Build, persist, and report LPS CURRENT valuation snapshots for family investors."""
 
 from __future__ import annotations
 
@@ -7,9 +7,11 @@ from datetime import date
 from pathlib import Path
 
 from lps.current import CurrentSnapshot, build_current_snapshot
+from lps.current_persistence import persist_current_snapshot
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = PROJECT_ROOT / "data"
+CURRENT_ROOT = DATA_ROOT / "lps" / "current"
 
 
 def build_family_current(
@@ -47,7 +49,7 @@ def _parse_date(value: str) -> date:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build an LPS CURRENT valuation snapshot."
+        description="Build and persist an LPS CURRENT valuation snapshot."
     )
     parser.add_argument("investors", nargs="+", help="Family investor names.")
     parser.add_argument(
@@ -64,12 +66,14 @@ def main() -> None:
             investor=investor,
             valuation_as_of_date=args.valuation_as_of_date,
         )
+        path = persist_current_snapshot(snapshot, CURRENT_ROOT)
         active = len(snapshot.valuations)
         print(f"{investor}: CURRENT as of {snapshot.valuation_as_of_date}")
         print(f"  transactions through: {snapshot.transaction_through_date}")
         print(f"  current states:       {len(snapshot.current_states)}")
         print(f"  active positions:     {active}")
         print(f"  total market value:   {snapshot.total_market_value}")
+        print(f"  persisted:             {path}")
         print()
 
 
