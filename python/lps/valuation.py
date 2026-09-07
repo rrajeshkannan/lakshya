@@ -52,7 +52,7 @@ def value_positions(
     return valued
 
 
-def current_total(positions: list[Position]) -> Decimal:
+def total_market_value(positions: list[Position]) -> Decimal:
     """Return total market value represented by active Positions."""
     return sum(
         (
@@ -64,4 +64,4 @@ def current_total(positions: list[Position]) -> Decimal:
     )
 
 
-__all__ = ["value_position", "value_positions", "current_total"]
+__all__ = ["value_position", "value_positions", "total_market_value"]
