@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from mission.survivor_trajectory_experiment import observe_survivors_for_purpose
+from mission.trajectory_observation import observe_trajectory
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.team import Team
@@ -96,3 +97,14 @@ def test_observation_uses_canonical_composition_identity():
 def test_invalid_purpose_horizon_is_rejected():
     with pytest.raises(ValueError, match="positive"):
         observe_survivors_for_purpose([], 0)
+
+
+def test_trajectory_rejects_duplicate_dates_at_canonical_boundary():
+    data = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2020-01-01", "2020-01-01", "2021-01-01"]),
+            "nav": [100, 101, 110],
+        }
+    )
+    with pytest.raises(ValueError, match="duplicate dates"):
+        observe_trajectory(data, 1)
