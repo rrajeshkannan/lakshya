@@ -61,14 +61,14 @@ def test_adapt_unknown_parser_type_is_explicit_failure():
         )
 
 
-def test_reconcile_unit_balance_ignores_non_unit_tax_rows():
+def test_reconcile_unit_balance_uses_parser_signed_unit_movements():
     result = reconcile_unit_balance(
         Decimal("100"),
         Decimal("115"),
         [
             _transaction(type="PURCHASE", units=Decimal("20")),
             _transaction(type="STAMP_DUTY_TAX", units=None),
-            _transaction(type="REDEMPTION", units=Decimal("5")),
+            _transaction(type="REDEMPTION", units=Decimal("-5")),
         ],
     )
 
