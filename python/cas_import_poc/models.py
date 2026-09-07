@@ -1,4 +1,4 @@
-"""Small, parser-independent CAS import POC domain models."""
+"""CAS import boundary models and compatibility exports."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from typing import Optional
+
+from lps.positions import Position, PositionKey
 
 
 @dataclass(frozen=True)
@@ -24,23 +26,6 @@ class CanonicalTransaction:
 
 
 @dataclass(frozen=True)
-class PositionKey:
-    """Stable ownership identity for a Position."""
-
-    investor: str
-    folio: str
-    isin: str
-
-
-@dataclass(frozen=True)
-class Position:
-    """Factual Position reconstructed from canonical transaction history."""
-
-    key: PositionKey
-    units: Decimal
-
-
-@dataclass(frozen=True)
 class ReconciliationResult:
     """Scheme-level unit-balance reconciliation result."""
 
@@ -51,3 +36,11 @@ class ReconciliationResult:
     @property
     def passed(self) -> bool:
         return self.computed_closing_units == self.printed_closing_units
+
+
+__all__ = [
+    "CanonicalTransaction",
+    "PositionKey",
+    "Position",
+    "ReconciliationResult",
+]
