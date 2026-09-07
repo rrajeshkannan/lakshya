@@ -4,9 +4,9 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from cas_import_poc.models import Position, PositionKey
 from lps.current_state import CurrentState
 from lps.nav_evidence import NavEvidenceStore
+from lps.positions import Position, PositionKey
 from lps.valuation import build_current, current_total, value_position
 
 
