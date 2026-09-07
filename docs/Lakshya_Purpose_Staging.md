@@ -6,7 +6,9 @@ Purpose Staging is a deliberately small human-in-the-loop review workspace after
 
 The production architecture remains:
 
-`FUND → TEAM → COMPOSITION → MISSION → FINAL → FAMILY ARCHITECTURE VALIDATION → PURPOSE STAGING REVIEW`
+`FUND → TEAM → COMPOSITION → MISSION → FINAL → FAMILY ARCHITECTURE VALIDATION → PURPOSE STAGING → HISTORICAL SNAPSHOT`
+
+After the annual snapshot is deliberately committed, the separate **CURRENT → TARGET transition** begins. Purpose Staging does not perform that transition and does not need actual holding/account information.
 
 Purpose Staging does **not** alter FUND, TEAM, COMPOSITION, MISSION, FINAL, or the selected FINAL Composition. It reruns only the existing Achievability calculation against the observed upper return already persisted for each Purpose's FINAL winner.
 
@@ -106,6 +108,20 @@ python python/run_purpose_staging.py commit --as-of 2026-09-06
 Before commit, the authoritative Purpose file is backed up into the staging workspace as `purposes_before_commit.csv`. The staged file is then promoted to `data/purpose/purposes.csv` and the workspace becomes `COMMITTED`.
 
 A non-zero remaining pool blocks commit. This prevents an incomplete redistribution from silently becoming the new authoritative Purpose state.
+
+## Historical handoff
+
+Purpose Staging is not itself the annual persistence boundary. After an explicit successful commit, the reviewer inspects the intended annual `data/` changes and deliberately commits the historical snapshot to Git.
+
+The resulting historical snapshot is the durable handoff into the next annual review. It is **not** a transaction ledger and it does not contain an automatically derived actual-holdings state.
+
+The next stage is deliberately separate:
+
+```text
+HISTORICAL SNAPSHOT
+        ↓
+CURRENT → TARGET transition
+```
 
 ## Design position
 
