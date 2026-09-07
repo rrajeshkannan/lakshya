@@ -6,6 +6,10 @@ obj/
 __pycache__/
 *.pyc
 
+# Local CAS input evidence (never commit family statements/password-bearing files)
+input/*
+!input/.gitkeep
+
 # Generated Lakshya analytical/runtime output
 output/*
 !output/.gitkeep
