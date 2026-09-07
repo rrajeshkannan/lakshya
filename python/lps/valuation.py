@@ -32,11 +32,11 @@ def value_position(
     Zero-unit historical Positions are retained in Current State but are not
     part of active CURRENT, so they return no valuation.
     """
-    if current_state.units == 0:
+    units = current_state.position.units
+    if units == 0:
         return None
 
     observation_date, nav = nav_store.as_of(valuation_as_of_date)
-    units = current_state.units
     nav_decimal = Decimal(str(nav))
 
     return PositionValuation(
@@ -57,7 +57,7 @@ def build_current(
     valuations = []
 
     for state in current_states:
-        if state.units == 0:
+        if state.position.units == 0:
             continue
 
         isin = state.position.key.isin
