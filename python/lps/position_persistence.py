@@ -6,7 +6,7 @@ import csv
 from decimal import Decimal
 from pathlib import Path
 
-from .positions import Position
+from .positions import Position, PositionId
 
 
 POSITION_FIELDS = (
@@ -66,9 +66,6 @@ def _text(value: Decimal | None) -> str:
 
 def _decimal(value: str) -> Decimal | None:
     return None if value == "" else Decimal(value)
-
-
-from .positions import PositionId
 
 
 __all__ = ["POSITION_FIELDS", "write_positions", "read_positions"]
