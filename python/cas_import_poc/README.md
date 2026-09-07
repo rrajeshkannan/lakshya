@@ -13,9 +13,11 @@ original CAMS CAS PDF
         ↓
  Lakshya adapter
         ↓
-canonical transactions
+    transactions
         ↓
-  local LPS ledger
+  local LPS state
+        ↓
+    positions
 ```
 
 The POC deliberately keeps the parser-specific model inside the import boundary. Downstream code consumes only the small Lakshya representations in `models.py`.
@@ -69,11 +71,14 @@ python -m cas_import_poc.runner input/Appanna_CAS_01012006-07092026.pdf --invest
 
 The password is requested interactively and is never stored by the POC.
 
-A successful run persists the canonical transaction ledger locally at:
+Both runs maintain the same family-wide LPS files:
 
 ```text
-data/lps/<Investor>/canonical_transactions.csv
+data/lps/transactions.csv
+data/lps/positions.csv
 ```
+
+Each record retains its `investor` identity, so Amma and Appanna remain distinct without requiring separate files. Re-running one investor's full-history CAS replaces that investor's records in the family-wide files while retaining the other investors' records.
 
 `data/lps/` is Git-ignored because it contains family investment state.
 
@@ -84,9 +89,10 @@ The POC checks:
 1. parser-level `parse_warnings` are surfaced as a hard validation failure;
 2. every scheme's opening + parsed unit movements reproduces the printed closing balance;
 3. parser transaction types are translated into Lakshya's shared event vocabulary;
-4. every adapted transaction has the Position identity fields `Investor + Folio + ISIN`;
+4. every transaction has the Position identity fields `Investor + Folio + ISIN`;
 5. no ISIN means a hard failure rather than an inferred identity;
-6. persisted canonical transactions can be read back without changing their values.
+6. persisted transactions can be read back without changing their values;
+7. Positions are reconstructed from the transactions and retain zero-unit historical Positions.
 
 ## Tests
 
@@ -100,4 +106,4 @@ The CAS import unit tests use small synthetic parser-like objects and do not req
 
 ## POC status
 
-The POC now parses, validates, adapts, persists the canonical transaction ledger, and reconstructs factual Positions. It does **not** yet implement annual checkpoint/re-import reconciliation or produce the final CURRENT artifact. Those follow only when the next concrete requirement is earned.
+The POC now parses, validates, adapts, persists the family-wide transaction collection, and reconstructs factual Positions. It does **not** yet implement annual checkpoint/re-import reconciliation or produce the final CURRENT artifact. Those follow only when the next concrete requirement is earned.
