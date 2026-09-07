@@ -4,10 +4,9 @@ from decimal import Decimal
 import pandas as pd
 import pytest
 
-from lps.current_state import CurrentState
 from lps.nav_evidence import NavEvidenceStore
-from lps.positions import Position, PositionKey
-from lps.valuation import build_current, current_total, value_position
+from lps.positions import Position, PositionId
+from lps.valuation import current_total, value_position, value_positions
 
 
 def make_store(tmp_path, isin="INF001"):
@@ -26,67 +25,70 @@ def make_store(tmp_path, isin="INF001"):
     return store
 
 
-def state(units=Decimal("10"), isin="INF001"):
-    position = Position(
-        key=PositionKey("Amma", "F1", isin),
+def position(units=Decimal("10"), isin="INF001"):
+    return Position(
+        id=PositionId("Amma", "F1", isin),
         units=units,
     )
-    return CurrentState(position=position)
 
 
 def test_value_position_uses_exact_nav_date(tmp_path):
-    valuation = value_position(state(), make_store(tmp_path), date(2026, 8, 18))
-    assert valuation is not None
-    assert valuation.nav_observation_date == date(2026, 8, 18)
-    assert valuation.nav == Decimal("109.06")
-    assert valuation.market_value == Decimal("1090.60")
+    valued = value_position(position(), make_store(tmp_path), date(2026, 8, 18))
+    assert valued.nav == Decimal("109.06")
+    assert valued.market_value == Decimal("1090.60")
 
 
 def test_value_position_uses_latest_nav_on_or_before_date(tmp_path):
-    valuation = value_position(state(), make_store(tmp_path), date(2026, 8, 16))
-    assert valuation is not None
-    assert valuation.nav_observation_date == date(2026, 8, 14)
-    assert valuation.nav == Decimal("109.78")
-    assert valuation.market_value == Decimal("1097.80")
+    valued = value_position(position(), make_store(tmp_path), date(2026, 8, 16))
+    assert valued.nav == Decimal("109.78")
+    assert valued.market_value == Decimal("1097.80")
 
 
 def test_value_position_fails_before_first_nav(tmp_path):
     with pytest.raises(ValueError):
-        value_position(state(), make_store(tmp_path), date(2026, 8, 13))
+        value_position(position(), make_store(tmp_path), date(2026, 8, 13))
 
 
-def test_zero_unit_historical_position_is_excluded_from_current(tmp_path):
-    valuation = value_position(
-        state(units=Decimal("0")),
+def test_zero_unit_historical_position_is_retained_without_valuation(tmp_path):
+    valued = value_position(
+        position(units=Decimal("0")),
         make_store(tmp_path),
         date(2026, 8, 18),
     )
-    assert valuation is None
+    assert valued.units == Decimal("0")
+    assert valued.nav is None
+    assert valued.market_value is None
 
 
-def test_build_current_uses_position_isin_and_excludes_zero_units(tmp_path):
+def test_value_positions_retains_all_positions_and_values_active_ones(tmp_path):
     store_a = make_store(tmp_path, "INF001")
     store_b = make_store(tmp_path, "INF002")
-    valuations = build_current(
-        [state(Decimal("10"), "INF001"), state(Decimal("0"), "INF002")],
+    positions = [position(Decimal("10"), "INF001"), position(Decimal("0"), "INF002")]
+
+    valued = value_positions(
+        positions,
         {"INF001": store_a, "INF002": store_b},
         date(2026, 8, 18),
     )
-    assert len(valuations) == 1
-    assert valuations[0].current_state.position.key.isin == "INF001"
+
+    assert len(valued) == 2
+    assert valued[0].id.isin == "INF001"
+    assert valued[0].market_value == Decimal("1090.60")
+    assert valued[1].id.isin == "INF002"
+    assert valued[1].market_value is None
 
 
 def test_current_total_sums_position_market_values(tmp_path):
     store_a = make_store(tmp_path, "INF001")
     store_b = make_store(tmp_path, "INF002")
-    valuations = build_current(
-        [state(Decimal("10"), "INF001"), state(Decimal("20"), "INF002")],
+    positions = value_positions(
+        [position(Decimal("10"), "INF001"), position(Decimal("20"), "INF002")],
         {"INF001": store_a, "INF002": store_b},
         date(2026, 8, 18),
     )
-    assert current_total(valuations) == Decimal("3271.80")
+    assert current_total(positions) == Decimal("3271.80")
 
 
-def test_build_current_requires_nav_store_for_active_position(tmp_path):
+def test_value_positions_requires_nav_store_for_active_position(tmp_path):
     with pytest.raises(KeyError, match="INF001"):
-        build_current([state()], {}, date(2026, 8, 18))
+        value_positions([position()], {}, date(2026, 8, 18))
