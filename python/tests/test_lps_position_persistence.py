@@ -4,8 +4,8 @@ from lps.position_persistence import read_positions, write_positions
 from lps.positions import Position, PositionId
 
 
-def test_write_and_read_positions_preserves_full_collection(tmp_path):
-    path = tmp_path / "amma_positions.csv"
+def test_write_and_read_positions_preserves_family_collection(tmp_path):
+    path = tmp_path / "positions.csv"
     positions = [
         Position(
             id=PositionId("Amma", "F1", "INF001"),
@@ -14,7 +14,13 @@ def test_write_and_read_positions_preserves_full_collection(tmp_path):
             market_value=Decimal("1052.625"),
         ),
         Position(
-            id=PositionId("Amma", "F2", "INF002"),
+            id=PositionId("Appanna", "F2", "INF002"),
+            units=Decimal("20"),
+            nav=Decimal("50"),
+            market_value=Decimal("1000"),
+        ),
+        Position(
+            id=PositionId("Amma", "F3", "INF003"),
             units=Decimal("0"),
         ),
     ]
@@ -25,7 +31,7 @@ def test_write_and_read_positions_preserves_full_collection(tmp_path):
 
 
 def test_positions_persistence_has_stable_column_layout(tmp_path):
-    path = tmp_path / "appanna_positions.csv"
+    path = tmp_path / "positions.csv"
     write_positions(path, [])
 
     assert path.read_text(encoding="utf-8").splitlines()[0] == (
