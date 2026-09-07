@@ -71,18 +71,18 @@ def build_collective_nav(
             "Team members have no common period of observed NAV history."
         )
 
-    timeline = pd.DatetimeIndex(
-        sorted(
-            {
-                date
-                for history in histories.values()
-                for date in history.loc[
-                    history["date"].between(common_start, common_end),
-                    "date",
-                ]
-            }
-        )
-    )
+    # [lakshya] Canonical histories are already sorted, unique, and typed.
+    # Build the union through pandas Index operations rather than iterating
+    # every Timestamp through a Python set/sorted cycle. This preserves the
+    # exact Collective Timeline contract while avoiding substantial Python
+    # datetime iteration overhead across the streamed Team universe.
+    timeline = pd.DatetimeIndex([])
+    for history in histories.values():
+        dates = history["date"]
+        start = dates.searchsorted(common_start, side="left")
+        end = dates.searchsorted(common_end, side="right")
+        member_dates = pd.DatetimeIndex(dates.iloc[start:end])
+        timeline = timeline.union(member_dates)
 
     collective = pd.DataFrame({"date": timeline})
 
@@ -92,14 +92,15 @@ def build_collective_nav(
     collective["nav"] = 0
 
     for history in histories.values():
-        series = history.set_index("date")["nav"]
-        collective_nav = series.reindex(timeline, method="ffill")
+        dates = history["date"]
+        navs = history["nav"]
+        positions = dates.searchsorted(timeline, side="right") - 1
 
-        if collective_nav.isna().any():
+        if (positions < 0).any():
             raise ValueError(
                 "Unable to construct a complete as-of collective trajectory."
             )
 
-        collective["nav"] = collective["nav"] + collective_nav.to_numpy()
+        collective["nav"] = collective["nav"] + navs.iloc[positions].to_numpy()
 
     return collective.reset_index(drop=True)
