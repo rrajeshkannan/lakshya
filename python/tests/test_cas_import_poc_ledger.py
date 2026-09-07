@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from cas_import_poc.ledger import read_ledger, write_ledger
-from cas_import_poc.models import CanonicalTransaction
+from cas_import_poc.models import Transaction
 
 
 def _transaction(**kwargs):
@@ -18,13 +18,14 @@ def _transaction(**kwargs):
         "source_description": "Purchase",
     }
     values.update(kwargs)
-    return CanonicalTransaction(**values)
+    return Transaction(**values)
 
 
-def test_ledger_round_trip_preserves_canonical_transactions(tmp_path):
+def test_ledger_round_trip_preserves_transactions_for_multiple_investors(tmp_path):
     transactions = [
         _transaction(),
         _transaction(
+            investor="Appanna",
             transaction_date=date(2026, 9, 2),
             event_type="Redemption",
             units=Decimal("-2.500"),
@@ -40,15 +41,25 @@ def test_ledger_round_trip_preserves_canonical_transactions(tmp_path):
             source_description="Stamp Duty",
         ),
     ]
-    path = tmp_path / "ledger.csv"
+    path = tmp_path / "transactions.csv"
 
     write_ledger(path, transactions)
 
-    assert read_ledger(path) == transactions
+    assert read_ledger(path) == sorted(
+        transactions,
+        key=lambda transaction: (
+            transaction.transaction_date,
+            transaction.investor,
+            transaction.folio,
+            transaction.isin,
+            transaction.event_type,
+            transaction.source_description,
+        ),
+    )
 
 
-def test_ledger_writes_expected_canonical_columns(tmp_path):
-    path = tmp_path / "ledger.csv"
+def test_ledger_writes_expected_transaction_columns(tmp_path):
+    path = tmp_path / "transactions.csv"
     write_ledger(path, [_transaction()])
 
     assert path.read_text(encoding="utf-8").splitlines()[0] == (
@@ -57,7 +68,7 @@ def test_ledger_writes_expected_canonical_columns(tmp_path):
 
 
 def test_ledger_rejects_unexpected_columns(tmp_path):
-    path = tmp_path / "ledger.csv"
+    path = tmp_path / "transactions.csv"
     path.write_text("investor,isin\nAmma,INF000000000\n", encoding="utf-8")
 
     try:
@@ -65,4 +76,4 @@ def test_ledger_rejects_unexpected_columns(tmp_path):
     except ValueError as exc:
         assert "unexpected column layout" in str(exc)
     else:
-        raise AssertionError("Expected invalid ledger layout to fail")
+        raise AssertionError("Expected invalid transactions layout to fail")
