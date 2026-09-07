@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from cas_import_poc.models import Position
+from lps.positions import Position
 
 
 @dataclass(frozen=True)
