@@ -1,14 +1,14 @@
 # Lakshya — How To Run
 
-This is the practical operating guide for running Lakshya. Follow it in order. You do not need to understand the analytical internals to run a review.
+This is the practical operating guide for a Lakshya annual review. Follow it in order. Analytical internals are documented in `docs/Lakshya_Architecture.md` and the execution sequence is documented in `docs/Lakshya_Pipeline_Sequence.md`.
+
+**As of:** 2026-09-07
 
 ---
 
-## 1. Before you start — review the manual inputs
+# 1. Before you start
 
-Run commands from the **repository root**.
-
-Make sure Python and the project dependencies are installed:
+Run commands from the repository root.
 
 ```bash
 cd /path/to/lakshya
@@ -17,48 +17,36 @@ python -m pip install -r python/requirements.txt
 
 Do not edit generated files under `output/` or `data/reviews/` by hand.
 
-### 1A. Review Funds in Scope
+## 1A. Review Fund scope
 
-The first manual input to the Lakshya flow is the Fund scope:
+Review:
 
 ```text
 data/fund/funds_in_scope.csv
 ```
 
-Review this file deliberately before every annual review.
+The two admission categories are:
 
-It contains the Funds Lakshya is allowed to consider, using two admission categories:
+- `CURRENT` — already held / currently part of the family portfolio;
+- `POTENTIAL` — a possible new entry.
 
-- **CURRENT** — a fund already held / currently part of the family portfolio;
-- **POTENTIAL** — a fund the family is willing to consider as a possible new entry.
+These are scope/admission categories, not quality rankings or hidden Purpose priorities. The 8-year lived-history rule applies to POTENTIAL/new-entry Funds; CURRENT Funds may be younger and remain valid.
 
-These are **scope/admission categories**, not quality or preference rankings.
+## 1B. Review Purpose inputs
 
-When the family decides to change the Fund universe:
-
-- add or remove Funds deliberately;
-- assign the appropriate `CURRENT` or `POTENTIAL` status;
-- check the CSV carefully before running production.
-
-Do not use `funds_in_scope.csv` to encode downstream Purpose priorities or to manually force a Fund to win.
-
-### 1B. Review Purpose inputs
-
-The authoritative Purpose input is:
+Review:
 
 ```text
 data/purpose/purposes.csv
 ```
 
-If Purpose values, targets, SIPs or dates have changed since the last review, make those changes in the authoritative input **before starting a new production review**.
-
-Once the manual inputs are checked, continue to the production run.
+Update Purpose values, targets, SIPs or dates deliberately before starting a new analytical review.
 
 ---
 
-# 2. Run the production review
+# 2. Run production
 
-Use the review date as `YYYY-MM-DD`.
+Use:
 
 ```bash
 python python/run_production.py --as-of YYYY-MM-DD
@@ -70,84 +58,58 @@ Example:
 python python/run_production.py --as-of 2026-09-06
 ```
 
-This runs the production chain:
+Optional selected Purposes:
 
-```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --purposes Retirement Edu_B
 ```
 
-A normal annual review does **not** require deleting `output/`. Valid checkpoints are reused automatically.
+Resume an interrupted upstream run only when appropriate:
 
-### If you intentionally want a clean rebuild
+```bash
+python python/run_production.py --as-of YYYY-MM-DD --resume-from global
+python python/run_production.py --as-of YYYY-MM-DD --resume-from mission
+```
 
-Only do this when a deliberate full rebuild is required:
+A normal annual review does not require deleting `output/`; valid checkpoints are reused automatically.
+
+A deliberate clean rebuild, when genuinely required, is:
 
 ```bash
 rm -rf output/*
 python python/run_production.py --as-of YYYY-MM-DD
 ```
 
-### Optional: run selected Purposes
+The analytical chain is:
 
-```bash
-python python/run_production.py --as-of YYYY-MM-DD --purposes Retirement Edu_B
+```text
+FUND → TEAM → COMPOSITION → MISSION → FINAL
 ```
-
-### If a previous upstream run was interrupted
-
-Resume from the appropriate persisted checkpoint:
-
-```bash
-python python/run_production.py --as-of YYYY-MM-DD --resume-from global
-```
-
-or:
-
-```bash
-python python/run_production.py --as-of YYYY-MM-DD --resume-from mission
-```
-
-Use these only when an interrupted run needs to be resumed.
 
 ---
 
-# 3. MANUAL CHECKPOINT — review the production result
+# 3. MANUAL CHECKPOINT — inspect FINAL
 
-**Stop here and review before continuing.**
-
-For each Purpose in the review, inspect:
+Stop and inspect, for every Purpose being reviewed:
 
 ```text
 output/final_<Purpose>_summary.csv
 ```
 
-For example:
+Confirm:
 
-```text
-output/final_Retirement_summary.csv
-output/final_Edu_B_summary.csv
-output/final_Home_Loan_summary.csv
-output/final_Marriage_summary.csv
-output/final_Stitch_summary.csv
-output/final_Kutti_summary.csv
-```
+- the expected file exists;
+- production completed successfully;
+- a FINAL winner exists; and
+- the result is complete and sensible.
 
-Check:
-
-- the file exists for every Purpose being reviewed;
-- the run completed without an error;
-- a FINAL winner is present;
-- the summary looks complete and sensible.
-
-If anything is missing or unexpected, **stop**. Do not manually edit the output to make the review continue. See [Errors and recovery](#13-errors-and-recovery).
-
-The detailed FINAL evidence is available in `output/` if a deeper review is needed.
+If anything is missing or unexpected, stop. Do not edit generated output to make the review continue.
 
 ---
 
 # 4. Run Family Architecture Validation
 
-After the production review has completed successfully:
+After production:
 
 ```bash
 python python/run_family_attribution.py --as-of YYYY-MM-DD
@@ -159,13 +121,7 @@ Example:
 python python/run_family_attribution.py --as-of 2026-09-06
 ```
 
-This creates the family-level review artifacts under:
-
-```text
-data/reviews/YYYY-MM-DD/
-```
-
-The main files are:
+Review:
 
 ```text
 family_capital_attribution.csv
@@ -175,32 +131,28 @@ family_purpose_dependency.csv
 family_attribution_manifest.json
 ```
 
-The generated `family_attribution.log` is a runtime/review-session log, not a canonical review artifact. It is ignored by Git and does not need to be committed.
+These are descriptive family-level observations. Do not manually alter FINAL winners because of what you see here.
+
+The generated `family_attribution.log` is forensic runtime output and is Git-ignored.
 
 ---
 
 # 5. MANUAL CHECKPOINT — review the family picture
 
-**Stop here and review before starting Purpose Staging.**
+Look at:
 
-Open the four CSV files above and look at:
+1. attribution of family capital across Funds;
+2. Fund concentration;
+3. AMC concentration; and
+4. Purpose dependencies.
 
-1. how family capital is attributed across funds;
-2. fund concentration;
-3. AMC concentration;
-4. which Purposes depend on which funds/compositions.
-
-This step is **observation only**. Do not change the FINAL winners manually because of what you see here.
-
-If the result is understood and the family is ready to review its Purpose requirements, continue to Purpose Staging.
+This is observation, not optimization. If the family understands the result and is ready to review Purpose requirements, continue.
 
 ---
 
 # 6. Start Purpose Staging
 
-Purpose Staging is the review workspace used to adjust Purpose requirements and redistribute released capital/SIP before committing the new Purpose state.
-
-Initialize it once for the review:
+Initialize:
 
 ```bash
 python python/run_purpose_staging.py init --as-of YYYY-MM-DD
@@ -212,54 +164,47 @@ Example:
 python python/run_purpose_staging.py init --as-of 2026-09-06
 ```
 
-The workspace is created at:
+Workspace:
 
 ```text
 data/reviews/YYYY-MM-DD/purpose_staging/
 ```
 
-It contains:
+Structured state:
 
 ```text
 purposes_staged.csv
 reconciliation_ledger.csv
 achievability_latest.csv
 staging_state.json
-staging.log
 ```
 
-The authoritative `data/purpose/purposes.csv` is **not changed** by `init`.
-
-`staging.log` is a generated execution/forensic log. It is kept beside the staging workspace so a review session can be diagnosed if needed, but it is **ignored by Git and is not part of the canonical annual review record**.
-
-The structured staging artifacts (`purposes_staged.csv`, `reconciliation_ledger.csv`, `achievability_latest.csv`, and `staging_state.json`) are the review state that should be retained according to the repository's annual-review practice.
+The authoritative `data/purpose/purposes.csv` is not changed by INIT. `staging.log` is a Git-ignored forensic log.
 
 ---
 
-# 7. MANUAL CHECKPOINT — decide what to change in Purpose Staging
+# 7. MANUAL CHECKPOINT — decide the staging turn
 
-Before each staging turn, the reviewer decides what should happen.
-
-The reviewer can change:
+The reviewer controls:
 
 - `value` — current capital;
-- `monthly_plan` — monthly SIP/contribution;
+- `monthly_plan` — monthly contribution;
 - `desired` — target;
 - `due` — target date;
 - `analytical_horizon_years` — analytical horizon.
 
-A turn can also specify:
+A turn may additionally specify:
 
-- `capital_acquire_pct` — percentage of the available capital pool to give to a Purpose;
-- `sip_acquire_pct` — percentage of the available monthly-SIP pool to give to a Purpose.
+- `capital_acquire_pct`;
+- `sip_acquire_pct`.
 
-Create a small CSV for the turn with this exact header:
+Use this header:
 
 ```text
 purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct
 ```
 
-Leave a field blank when it should remain unchanged.
+Blank fields mean unchanged.
 
 Example:
 
@@ -269,51 +214,32 @@ Home_Loan,600000,10000,,,,,
 Retirement,,,,,,60,
 ```
 
-Save the file somewhere convenient, for example:
-
-```text
-review_turn_01.csv
-```
-
-### Important
-
-Do **not** increase `value` or `monthly_plan` directly to create money or SIP.
-
-If a Purpose needs additional capital or SIP, first release it from another Purpose by reducing its staged `value` or `monthly_plan`, then allocate the available pool using acquisition percentages.
+Do not create money or SIP by directly increasing `value` or `monthly_plan`. Release from another Purpose first, then acquire from the common pool.
 
 ---
 
-# 8. Run the staging turn
+# 8. Run a staging turn
 
 ```bash
 python python/run_purpose_staging.py turn --as-of YYYY-MM-DD --input path/to/turn.csv
 ```
 
-Example:
+The turn:
 
-```bash
-python python/run_purpose_staging.py turn --as-of 2026-09-06 --input review_turn_01.csv
-```
+1. applies the requested staged changes;
+2. releases reductions into the capital/SIP pools;
+3. applies acquisition percentages to the pool available at the start of the acquisition phase;
+4. records the movement in the cumulative ledger;
+5. recalculates Achievability; and
+6. pauses for review.
 
-The system will:
-
-1. apply the requested Purpose changes;
-2. put reductions in `value` into the capital pool;
-3. put reductions in `monthly_plan` into the SIP pool;
-4. allocate requested pool percentages;
-5. update the reconciliation ledger;
-6. recalculate Achievability; and
-7. stop for review.
-
-Acquisition percentages in a turn are applied to the **same pool available at the start of the acquisition phase**. They are not applied sequentially to a shrinking pool.
-
-Any unallocated pool remains available for the next turn.
+Acquisition percentages are not applied sequentially to a shrinking pool. Any unallocated pool remains available for the next turn.
 
 ---
 
-# 9. MANUAL CHECKPOINT — review every staging turn
+# 9. MANUAL CHECKPOINT — inspect every turn
 
-After **every** `turn` command, stop and inspect:
+After every turn, inspect:
 
 ```text
 data/reviews/YYYY-MM-DD/purpose_staging/purposes_staged.csv
@@ -324,40 +250,13 @@ data/reviews/YYYY-MM-DD/purpose_staging/staging_state.json
 
 Check:
 
-### A. Purpose values
+- staged Purpose values and dates;
+- `pool_capital`;
+- `pool_monthly_sip`;
+- every release/acquisition in the ledger; and
+- Achievability status for finite-target Purposes.
 
-Are the staged `value`, `monthly_plan`, `desired` and dates what the reviewer intended?
-
-### B. Pool balances
-
-Check `staging_state.json`:
-
-```text
-pool_capital
-pool_monthly_sip
-```
-
-Make sure every released amount is accounted for.
-
-### C. Reconciliation ledger
-
-Check that every release and acquisition appears in:
-
-```text
-reconciliation_ledger.csv
-```
-
-### D. Achievability
-
-Check:
-
-```text
-achievability_latest.csv
-```
-
-Pay particular attention to the status for each finite-target Purpose.
-
-Possible statuses are:
+Possible Achievability statuses are:
 
 ```text
 NOT_APPLICABLE
@@ -366,163 +265,182 @@ WITHIN_OBSERVED_TERRAIN
 BEYOND_OBSERVED_TERRAIN
 ```
 
-The system is reporting the consequence of the reviewer's changes. It is not choosing the family priority.
-
-### E. Decide whether another turn is needed
-
-If the staged state is not yet what the family wants, prepare another turn and repeat:
+Repeat as necessary:
 
 ```text
-review → turn → inspect → review → turn → inspect → ...
+review → turn → inspect → review → turn → inspect → …
 ```
 
-There is no fixed number of turns.
+There is no automatic Purpose-priority decision.
 
 ---
 
-# 10. Finish Purpose Staging
+# 10. Commit Purpose Staging
 
-Only finish when:
+Commit only when:
 
-- the reviewer is satisfied with every staged Purpose;
-- all released capital has been deliberately allocated or otherwise reconciled;
-- `pool_capital` is zero; and
-- `pool_monthly_sip` is zero.
+- the reviewer is satisfied;
+- `pool_capital = 0`; and
+- `pool_monthly_sip = 0`.
 
-Then run:
+Run:
 
 ```bash
 python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
 ```
 
-Example:
-
-```bash
-python python/run_purpose_staging.py commit --as-of 2026-09-06
-```
-
-Before committing, the system backs up the authoritative Purpose file inside the staging workspace as:
+The system backs up the authoritative Purpose file as:
 
 ```text
 purposes_before_commit.csv
 ```
 
-The staged Purpose file is then promoted to:
+and promotes the staged file to:
 
 ```text
 data/purpose/purposes.csv
 ```
 
-A non-zero capital or SIP pool blocks the commit.
+A non-zero pool blocks the commit.
 
 ---
 
-# 11. MANUAL CHECKPOINT — after commit
+# 11. MANUAL CHECKPOINT — after Purpose commit
 
-Confirm that:
+Confirm:
 
-- the command completed successfully;
-- the staging state is `COMMITTED`;
-- `data/purpose/purposes.csv` contains the intended final Purpose state;
+- staging state is `COMMITTED`;
+- `data/purpose/purposes.csv` contains the intended state; and
 - `purposes_before_commit.csv` exists in the staging workspace.
 
-Keep the annual review archive under:
-
-```text
-data/reviews/YYYY-MM-DD/
-```
-
-Generated runtime logs such as `staging.log` and `family_attribution.log` are ignored by Git and are not part of the canonical annual review record.
-
 ---
 
-# 12. Persist the annual review snapshot to GitHub
+# 12. Persist the annual historical snapshot
 
-The non-gitignored contents under `data/` form the **long-term historical record** of Lakshya's annual reviews and authoritative inputs. At the end of a completed annual review, persist the intended changes and new review artifacts to Git so a future review can recover the prior historical state and compare what changed.
+The annual snapshot is a **human-controlled Git persistence boundary**. It is not an automatic snapshot engine and not a transaction ledger.
 
-Before committing:
+Review intended changes:
 
 ```bash
 git status --short
+git diff
 ```
 
-Review the list carefully. The annual review commit should contain the deliberate changes and new historical artifacts under `data/`, including the current `data/reviews/YYYY-MM-DD/` snapshot and any deliberate updates to authoritative inputs such as `data/fund/funds_in_scope.csv` or `data/purpose/purposes.csv`.
+Commit only intended annual-review state. Do not blindly use `git add .` when unrelated working-tree changes exist.
 
-Generated files covered by `.gitignore` should remain ignored. In particular, do not try to archive:
-
-- `data/cache/`;
-- `data/fingerprints/composition/`;
-- generated `staging.log`;
-- generated `family_attribution.log`;
-- runtime contents under `output/`.
-
-Do **not** use `git add .` blindly if there are unrelated working-tree changes. Add only the intended annual-review changes.
-
-When the working tree contains only the intended annual-review data changes, for example:
+Typical deliberate persistence:
 
 ```bash
 git add data/
 git status --short
 git commit -m "Archive Lakshya annual review YYYY-MM-DD"
-```
-
-Then verify:
-
-```bash
 git status --short
 ```
 
-The intended annual-review data should now be persisted in GitHub, while generated logs and runtime output remain disposable.
+Do not archive generated runtime material such as:
 
-This is the **historical snapshot point** for the annual cycle: the next review should be able to recover the prior authoritative inputs and archived evidence from Git rather than relying on memory or regenerated runtime output.
+- `data/cache/`;
+- `data/fingerprints/composition/`;
+- `staging.log`;
+- `family_attribution.log`;
+- runtime contents under `output/`.
+
+The durable annual state is the reviewed authoritative input plus structured review evidence under `data/`.
 
 ---
 
-# 13. What happens next
+# 13. NEXT STAGE — CURRENT → TARGET transition
 
-At this point the analytical review, Purpose reconciliation, and annual review snapshot are complete.
+**Stop the annual-review workflow here.** The next stage is deliberately separate from the analytical production chain.
 
-The next Lakshya stage is the separate **CURRENT → TARGET transition**:
+The transition begins only after the historical snapshot has been deliberately committed.
+
+Its three states must remain distinct:
 
 ```text
-actual holdings
-      ↓
-redemption / cost / tax / exit constraints
-      ↓
-transition plan
-      ↓
-reinvestment
-      ↓
-target architecture
+ANALYTICAL CURRENT
+= what the reviewed Lakshya architecture says today
+
+ECONOMIC CURRENT
+= what the family actually owns at the chosen observation date
+
+TARGET
+= what the reviewed Purpose + FINAL decisions imply should be owned
 ```
 
-Do **not** treat the FINAL winner or Purpose Staging result as an instruction to immediately sell or buy units. Actual redemption and reinvestment require the separate transition-planning stage.
+Do not assume that the analytical CURRENT is the economic CURRENT.
+
+## 13A. First task: source archaeology
+
+There is **no production transition command yet**.
+
+Before coding, inspect the actual portfolio/account material available to the family, especially the identified Geojit material. Determine what the source actually provides for:
+
+- holding/scheme identity;
+- units;
+- current value;
+- observation date;
+- account/folio representation;
+- acquisition or transaction information;
+- cost information and its granularity;
+- source-authoritative versus presentation fields; and
+- facts the source does not provide.
+
+Do not infer actual holdings from:
+
+```text
+funds_in_scope.csv
+FINAL summaries
+Purpose data
+```
+
+Do not manufacture cost basis, acquisition dates, tax lots, exit costs, account semantics, or transaction constraints.
+
+Only after source archaeology should the **minimum sufficient CURRENT contract** be defined.
+
+## 13B. Intended transition sequence
+
+```text
+historical snapshot
+        ↓
+source archaeology
+        ↓
+minimum sufficient CURRENT contract
+        ↓
+source-derived Economic CURRENT
+        ↓
+TARGET from existing reviewed decisions
+        ↓
+CURRENT vs TARGET comparison
+        ↓
+source-derived constraints / feasibility
+        ↓
+human transition plan / execution
+```
+
+The transition layer is not a new portfolio optimizer. It must not replace a FINAL winner merely because an existing holding is inconvenient.
+
+Lakshya may eventually calculate and present a transition analysis, but redemption, purchase, switch and reinvestment remain human-controlled external actions.
 
 ---
 
 # 14. Errors and recovery
 
-## Rule 1 — stop when a command fails
-
-If a command exits with an error:
+If a command fails:
 
 1. stop;
-2. read the error message carefully;
+2. read the error carefully;
 3. do not edit generated files to work around it;
-4. do not continue to the next manual checkpoint;
-5. fix the stated input/checkpoint problem or ask for help.
+4. do not continue to the next checkpoint;
+5. fix the input/checkpoint problem or ask for help.
 
-## Rule 2 — do not delete historical review archives
-
-Do not delete or overwrite files under:
+Do not delete or casually overwrite annual review archives under:
 
 ```text
 data/reviews/YYYY-MM-DD/
 ```
 
-unless there is an explicit reason to correct a review record.
-
-## Common problems
+Common staging issues:
 
 ### `Purpose source is missing required columns`
 
@@ -532,7 +450,7 @@ Check:
 data/purpose/purposes.csv
 ```
 
-The required columns are:
+Required columns:
 
 ```text
 name,due,value,desired,monthly_plan,analytical_horizon_years
@@ -540,7 +458,7 @@ name,due,value,desired,monthly_plan,analytical_horizon_years
 
 ### `Unknown Purpose(s)`
 
-The command or staging CSV contains a Purpose name that is not present in the current Purpose source. Check the spelling against `data/purpose/purposes.csv`.
+Check the spelling against `data/purpose/purposes.csv`.
 
 ### `Staging state missing; initialize first`
 
@@ -550,123 +468,73 @@ Run:
 python python/run_purpose_staging.py init --as-of YYYY-MM-DD
 ```
 
-Do not create `staging_state.json` manually.
-
 ### `Acquisition percentages cannot exceed 100%`
 
-The total capital acquisition percentages, or total SIP acquisition percentages, in that turn exceed 100%. Correct the turn CSV and run the turn again.
-
-### `Purpose ... increased value ... through pool percentages`
-
-A staging turn tried to increase `value` directly. Reduce another Purpose first to release capital, then allocate the pool with `capital_acquire_pct`.
-
-### `Purpose ... increased monthly_plan ... through pool percentages`
-
-A staging turn tried to increase SIP directly. Reduce another Purpose's `monthly_plan` first to release SIP, then allocate the pool with `sip_acquire_pct`.
+Correct the turn CSV so total capital and SIP acquisition percentages are each within 100%.
 
 ### `Required MISSION checkpoint is missing`
 
-The production run has not produced the required MISSION survivor checkpoint for that Purpose, or the checkpoint is not available for the requested review. Stop and rerun/check the production stage before attempting FINAL again.
+Stop and repair/rerun the relevant production checkpoint before attempting FINAL.
 
 ### `MISSION checkpoint is empty`
 
-Stop. Do not try to manufacture a winner. Rerun/check the production pipeline and inspect the relevant MISSION output.
+Do not manufacture a winner. Inspect and rerun the relevant production stage.
 
 ### Commit says the pool is non-zero
 
-Do not force the commit. Return to the staging turns and deliberately allocate the remaining capital/SIP pool, then run `commit` again.
+Return to staging turns and deliberately reconcile the remaining pool.
 
 ---
 
-# 15. If you are unsure what to do
-
-Use this decision tree:
+# 15. One-page annual checklist
 
 ```text
-Command failed?
-    ↓ yes
-STOP → read error → fix input/checkpoint → rerun
-
-Command succeeded?
-    ↓
-Manual checkpoint
-    ↓
-Result understood?
-    ├── no  → STOP and ask for help
-    └── yes
-          ↓
-     next stage
-```
-
-For Purpose Staging:
-
-```text
-turn
- ↓
-inspect values + ledger + pools + Achievability
- ↓
-satisfied?
- ├── no → another turn
- └── yes
-        ↓
-pools both zero?
- ├── no → reconcile pool
- └── yes
-        ↓
-commit
-```
-
----
-
-# 16. One-page annual checklist
-
-```text
-[ ] Review/update data/fund/funds_in_scope.csv
-    CURRENT = existing family holdings
+[ ] Review data/fund/funds_in_scope.csv
+    CURRENT = existing scope/holdings category
     POTENTIAL = possible new candidates
 
-[ ] Review/update data/purpose/purposes.csv
+[ ] Review data/purpose/purposes.csv
 
 [ ] Run production
     python python/run_production.py --as-of YYYY-MM-DD
 
-[ ] CHECKPOINT: inspect final_<Purpose>_summary.csv for every Purpose
+[ ] CHECKPOINT: inspect final_<Purpose>_summary.csv
 
 [ ] Run Family Architecture Validation
     python python/run_family_attribution.py --as-of YYYY-MM-DD
 
-[ ] CHECKPOINT: inspect family attribution / concentration / dependency
+[ ] CHECKPOINT: inspect attribution / concentration / dependency
 
 [ ] Initialize Purpose Staging
     python python/run_purpose_staging.py init --as-of YYYY-MM-DD
 
-[ ] CHECKPOINT: decide the Purpose changes for this turn
+[ ] CHECKPOINT: decide staging turn
 
 [ ] Run staging turn
     python python/run_purpose_staging.py turn --as-of YYYY-MM-DD --input turn.csv
 
-[ ] CHECKPOINT: inspect staged Purposes, ledger, pools and Achievability
+[ ] CHECKPOINT: inspect staged state, ledger, pools, Achievability
 
-[ ] Repeat staging turns until satisfied
+[ ] Repeat turns until satisfied
 
-[ ] CHECKPOINT: confirm capital pool = 0 and SIP pool = 0
+[ ] CHECKPOINT: capital pool = 0; SIP pool = 0
 
 [ ] Commit Purpose Staging
     python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
 
-[ ] CHECKPOINT: confirm authoritative purposes.csv and backup
+[ ] CHECKPOINT: confirm authoritative Purpose state + backup
 
-[ ] CHECKPOINT: review intended annual-review changes under data/
+[ ] CHECKPOINT: review intended annual data/ changes
 
-[ ] Persist annual review snapshot to GitHub
+[ ] Persist annual snapshot
     git status --short
     git add data/
     git status --short
     git commit -m "Archive Lakshya annual review YYYY-MM-DD"
-
-[ ] CHECKPOINT: git status --short is clean for intended review changes
+    git status --short
 
 [ ] STOP
 
-[ ] CURRENT → TARGET transition planning is the next separate stage
+[ ] Begin CURRENT → TARGET as a separate stage
+    FIRST TASK = source archaeology
 ```
