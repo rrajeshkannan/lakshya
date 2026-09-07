@@ -1,14 +1,24 @@
 # Lakshya — How To Run
 
-This is the practical operating guide for a Lakshya annual review. Follow it in order. Analytical internals are documented in `docs/Lakshya_Architecture.md` and the execution sequence is documented in `docs/Lakshya_Pipeline_Sequence.md`.
+This is the practical operating guide for a Lakshya annual review. `docs/Lakshya_Architecture.md` defines the contracts; `docs/Lakshya_Pipeline_Sequence.md` defines execution and persistence boundaries.
 
-**As of:** 2026-09-07
+**As of:** 2026-09-08
+
+The three-system mental model is:
+
+```text
+LPS — observe actual capital
+LFS — form the reviewed architecture
+LTS — transition CURRENT → TARGET
+```
+
+Follow the annual review in order. Do not skip a manual checkpoint.
 
 ---
 
 # 1. Before you start
 
-Run commands from the repository root.
+Run commands from the repository root:
 
 ```bash
 cd /path/to/lakshya
@@ -17,7 +27,45 @@ python -m pip install -r python/requirements.txt
 
 Do not edit generated files under `output/` or `data/reviews/` by hand.
 
-## 1A. Review Fund scope
+## 1A. LPS — prepare factual source evidence
+
+For the mutual-fund holdings boundary, use the family's authoritative CAS evidence.
+
+Policy:
+
+- request the CAS comfortably before the earliest family mutual-fund investment;
+- include all folios, including zero-balance folios;
+- retain the original unmodified CAS PDFs;
+- enter the password interactively and never store it;
+- stop and ask the human when parsing produces warnings or ambiguity;
+- import the full history at every annual review; and
+- review validation before accepting the resulting CURRENT.
+
+The LPS factual collections are family-wide:
+
+```text
+data/lps/transactions.csv
+data/lps/positions.csv
+```
+
+Each record retains investor identity. A Position is identified by `Investor + Folio + ISIN`.
+
+The LPS data model has **Transactions and Positions**. Do not introduce a `CurrentState` object or a Portfolio dimension merely to make a view convenient.
+
+## 1B. LPS — valuation semantics
+
+Keep these dates separate:
+
+```text
+transaction_through_date
+valuation_as_of_date
+```
+
+NAV evidence is sparse. Store actual recorded observations only. For a NAV read as of a date, use the latest recorded observation on or before that date.
+
+Do not manufacture holiday/weekend NAVs or interpolate calendar days.
+
+## 1C. Review Fund scope
 
 Review:
 
@@ -27,12 +75,14 @@ data/fund/funds_in_scope.csv
 
 The two admission categories are:
 
-- `CURRENT` — already held / currently part of the family portfolio;
-- `POTENTIAL` — a possible new entry.
+- `CURRENT` — already held / currently in family scope;
+- `POTENTIAL` — possible new entry.
 
-These are scope/admission categories, not quality rankings or hidden Purpose priorities. The 8-year lived-history rule applies to POTENTIAL/new-entry Funds; CURRENT Funds may be younger and remain valid.
+The 8-year lived-history rule applies to POTENTIAL/new-entry Funds. CURRENT Funds may be younger and remain valid. These categories are admission concepts, not hidden quality rankings or Purpose priorities.
 
-## 1B. Review Purpose inputs
+Scheme Name and AMC remain useful factual identity/reference information. Do not add generic Fund attributes such as category or benchmark unless a downstream contract genuinely consumes them.
+
+## 1D. Review Purpose inputs
 
 Review:
 
@@ -40,11 +90,11 @@ Review:
 data/purpose/purposes.csv
 ```
 
-Update Purpose values, targets, SIPs or dates deliberately before starting a new analytical review.
+Purpose values, targets, SIPs and dates are human-controlled inputs. LFS does not infer or invent them.
 
 ---
 
-# 2. Run production
+# 2. Run LFS production
 
 Use:
 
@@ -64,12 +114,13 @@ Optional selected Purposes:
 python python/run_production.py --as-of YYYY-MM-DD --purposes Retirement Edu_B
 ```
 
-Resume an interrupted upstream run only when appropriate:
+The LFS analytical chain is:
 
-```bash
-python python/run_production.py --as-of YYYY-MM-DD --resume-from global
-python python/run_production.py --as-of YYYY-MM-DD --resume-from mission
+```text
+FUND → TEAM → COMPOSITION → MISSION → FINAL
 ```
+
+TARGET is the reviewed fund-level formation implied by the selected FINAL Composition decisions and Purpose state.
 
 A normal annual review does not require deleting `output/`; valid checkpoints are reused automatically.
 
@@ -80,17 +131,11 @@ rm -rf output/*
 python python/run_production.py --as-of YYYY-MM-DD
 ```
 
-The analytical chain is:
-
-```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL
-```
-
 ---
 
 # 3. MANUAL CHECKPOINT — inspect FINAL
 
-Stop and inspect, for every Purpose being reviewed:
+For every Purpose being reviewed, inspect:
 
 ```text
 output/final_<Purpose>_summary.csv
@@ -105,11 +150,13 @@ Confirm:
 
 If anything is missing or unexpected, stop. Do not edit generated output to make the review continue.
 
+The FINAL result is an analytical decision. It is **not** evidence of the family's actual holdings.
+
 ---
 
 # 4. Run Family Architecture Validation
 
-After production:
+After production and FINAL archival:
 
 ```bash
 python python/run_family_attribution.py --as-of YYYY-MM-DD
@@ -131,7 +178,24 @@ family_purpose_dependency.csv
 family_attribution_manifest.json
 ```
 
-These are descriptive family-level observations. Do not manually alter FINAL winners because of what you see here.
+The core attribution is:
+
+```text
+Purpose current capital
+        ×
+FINAL Composition fund weight
+        =
+Attributed capital
+```
+
+Look at:
+
+1. attribution of family capital across Funds;
+2. Fund concentration;
+3. AMC/ecosystem concentration; and
+4. Purpose dependencies.
+
+This is **observation, not optimization**. Do not manually alter FINAL winners because of what you see here.
 
 The generated `family_attribution.log` is forensic runtime output and is Git-ignored.
 
@@ -139,14 +203,11 @@ The generated `family_attribution.log` is forensic runtime output and is Git-ign
 
 # 5. MANUAL CHECKPOINT — review the family picture
 
-Look at:
+Ask only the descriptive question at this boundary:
 
-1. attribution of family capital across Funds;
-2. Fund concentration;
-3. AMC concentration; and
-4. Purpose dependencies.
+> Where does the family architecture depend on common Funds or investment organizations?
 
-This is observation, not optimization. If the family understands the result and is ready to review Purpose requirements, continue.
+Do not turn the observation into a concentration rule unless a later analytical investigation earns such a rule.
 
 ---
 
@@ -179,7 +240,9 @@ achievability_latest.csv
 staging_state.json
 ```
 
-The authoritative `data/purpose/purposes.csv` is not changed by INIT. `staging.log` is a Git-ignored forensic log.
+The authoritative `data/purpose/purposes.csv` is not changed by INIT. `staging.log` is a forensic log.
+
+Purpose Staging does not alter FUND, TEAM, COMPOSITION, MISSION, FINAL, or the selected FINAL Composition.
 
 ---
 
@@ -191,11 +254,8 @@ The reviewer controls:
 - `monthly_plan` — monthly contribution;
 - `desired` — target;
 - `due` — target date;
-- `analytical_horizon_years` — analytical horizon.
-
-A turn may additionally specify:
-
-- `capital_acquire_pct`;
+- `analytical_horizon_years` — analytical horizon;
+- `capital_acquire_pct`; and
 - `sip_acquire_pct`.
 
 Use this header:
@@ -234,6 +294,8 @@ The turn:
 6. pauses for review.
 
 Acquisition percentages are not applied sequentially to a shrinking pool. Any unallocated pool remains available for the next turn.
+
+Changing `desired` or the horizon changes the analytical requirement; it does not create a capital release.
 
 ---
 
@@ -289,19 +351,19 @@ Run:
 python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
 ```
 
-The system backs up the authoritative Purpose file as:
+Before promotion, the authoritative Purpose file is backed up as:
 
 ```text
 purposes_before_commit.csv
 ```
 
-and promotes the staged file to:
+The staged file is then promoted to:
 
 ```text
 data/purpose/purposes.csv
 ```
 
-A non-zero pool blocks the commit.
+A non-zero pool blocks the commit. This prevents an incomplete redistribution from silently becoming authoritative.
 
 ---
 
@@ -315,7 +377,7 @@ Confirm:
 
 ---
 
-# 12. Persist the annual historical snapshot
+# 12. Persist the annual Historical Snapshot
 
 The annual snapshot is a **human-controlled Git persistence boundary**. It is not an automatic snapshot engine and not a transaction ledger.
 
@@ -345,21 +407,19 @@ Do not archive generated runtime material such as:
 - `family_attribution.log`;
 - runtime contents under `output/`.
 
-The durable annual state is the reviewed authoritative input plus structured review evidence under `data/`.
+The durable annual state is reviewed authoritative input plus structured review evidence under `data/`.
 
 ---
 
-# 13. NEXT STAGE — CURRENT → TARGET transition
+# 13. NEXT STAGE — LTS CURRENT → TARGET
 
-**Stop the annual-review workflow here.** The next stage is deliberately separate from the analytical production chain.
+**Stop the annual-review workflow here.** The transition stage is deliberately separate from LFS analytical production.
 
-The transition begins only after the historical snapshot has been deliberately committed.
-
-Its three states must remain distinct:
+The three states must remain distinct:
 
 ```text
 ANALYTICAL CURRENT
-= what the reviewed Lakshya architecture says today
+= what the reviewed Lakshya architecture says
 
 ECONOMIC CURRENT
 = what the family actually owns at the chosen observation date
@@ -368,7 +428,7 @@ TARGET
 = what the reviewed Purpose + FINAL decisions imply should be owned
 ```
 
-Do not assume that the analytical CURRENT is the economic CURRENT.
+LPS supplies Economic CURRENT. LFS supplies TARGET. LTS analyzes the path between them.
 
 ## 13A. First task: source archaeology
 
@@ -418,9 +478,9 @@ source-derived constraints / feasibility
 human transition plan / execution
 ```
 
-The transition layer is not a new portfolio optimizer. It must not replace a FINAL winner merely because an existing holding is inconvenient.
+Potential future constraints include ELSS lock-in, acquisition-date tax consequences, STCG/LTCG implications, exit loads, transaction costs, liquidity, minimum transaction constraints, SIP/STP/SWP sequencing, and retain/exit/stage/switch/redeem/invest alternatives — only where the source evidence genuinely supports them.
 
-Lakshya may eventually calculate and present a transition analysis, but redemption, purchase, switch and reinvestment remain human-controlled external actions.
+LTS must not become a second portfolio optimizer and cannot execute transactions automatically.
 
 ---
 
@@ -432,15 +492,15 @@ If a command fails:
 2. read the error carefully;
 3. do not edit generated files to work around it;
 4. do not continue to the next checkpoint;
-5. fix the input/checkpoint problem or ask for help.
+5. repair the input/checkpoint problem or ask for help.
 
-Do not delete or casually overwrite annual review archives under:
+Do not casually delete or overwrite annual review archives under:
 
 ```text
 data/reviews/YYYY-MM-DD/
 ```
 
-Common staging issues:
+Common issues:
 
 ### `Purpose source is missing required columns`
 
@@ -484,48 +544,54 @@ Do not manufacture a winner. Inspect and rerun the relevant production stage.
 
 Return to staging turns and deliberately reconcile the remaining pool.
 
+### LPS source evidence is ambiguous
+
+Stop. Do not guess. Preserve the original source, inspect the ambiguity, and resolve it with the human before accepting the factual state.
+
 ---
 
 # 15. One-page annual checklist
 
 ```text
+LPS — FACTUAL OBSERVATION
+[ ] Obtain authoritative full-history CAS / source evidence
+[ ] Preserve original evidence; enter password interactively
+[ ] Validate source import; stop on ambiguity
+[ ] Reconcile family-wide data/lps/transactions.csv
+[ ] Reconstruct / validate data/lps/positions.csv
+[ ] Apply applicable NAV observation for valuation_as_of_date
+[ ] Confirm transaction_through_date and valuation_as_of_date separately
+[ ] Review Purpose mapping; one Position → one Purpose
+[ ] Accept Economic CURRENT only after human review
+
+LFS — FORMATION
 [ ] Review data/fund/funds_in_scope.csv
-    CURRENT = existing scope/holdings category
-    POTENTIAL = possible new candidates
-
 [ ] Review data/purpose/purposes.csv
-
 [ ] Run production
     python python/run_production.py --as-of YYYY-MM-DD
-
 [ ] CHECKPOINT: inspect final_<Purpose>_summary.csv
+[ ] Confirm FINAL results
+[ ] Derive/review TARGET from existing Purpose + FINAL decisions
 
+FAMILY REVIEW
 [ ] Run Family Architecture Validation
     python python/run_family_attribution.py --as-of YYYY-MM-DD
-
 [ ] CHECKPOINT: inspect attribution / concentration / dependency
 
 [ ] Initialize Purpose Staging
     python python/run_purpose_staging.py init --as-of YYYY-MM-DD
-
 [ ] CHECKPOINT: decide staging turn
-
 [ ] Run staging turn
     python python/run_purpose_staging.py turn --as-of YYYY-MM-DD --input turn.csv
-
 [ ] CHECKPOINT: inspect staged state, ledger, pools, Achievability
-
 [ ] Repeat turns until satisfied
-
 [ ] CHECKPOINT: capital pool = 0; SIP pool = 0
-
 [ ] Commit Purpose Staging
     python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
-
 [ ] CHECKPOINT: confirm authoritative Purpose state + backup
 
-[ ] CHECKPOINT: review intended annual data/ changes
-
+HISTORICAL MEMORY
+[ ] Review intended annual data/ changes
 [ ] Persist annual snapshot
     git status --short
     git add data/
@@ -533,8 +599,26 @@ Return to staging turns and deliberately reconcile the remaining pool.
     git commit -m "Archive Lakshya annual review YYYY-MM-DD"
     git status --short
 
-[ ] STOP
-
-[ ] Begin CURRENT → TARGET as a separate stage
-    FIRST TASK = source archaeology
+LTS — TRANSITION
+[ ] STOP annual-review workflow
+[ ] Begin CURRENT → TARGET separately
+[ ] FIRST TASK = source archaeology
+[ ] Define only the minimum sufficient CURRENT contract
 ```
+
+---
+
+# 16. Core operating rule
+
+When in doubt:
+
+```text
+observe before interpreting
+interpret before optimizing
+source before schema
+human before automation
+```
+
+Or, in Lakshya's shorter language:
+
+> **LPS observes. LFS forms. LTS transitions.**
