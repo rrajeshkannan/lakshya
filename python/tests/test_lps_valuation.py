@@ -31,7 +31,7 @@ def state(units=Decimal("10"), isin="INF001"):
         key=PositionKey("Amma", "F1", isin),
         units=units,
     )
-    return CurrentState(position=position, units=units)
+    return CurrentState(position=position)
 
 
 def test_value_position_uses_exact_nav_date(tmp_path):
