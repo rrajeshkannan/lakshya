@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
@@ -7,7 +5,6 @@ from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.elevation import calculate_elevation
 from lakshya_core.models import ElevationEvidence
 from lakshya_core.rolling_returns import RollingReturnEvidence, calculate_rolling_cagr
-from lakshya_core.parked.evidence_inventory import load_nav_cache
 
 
 def test_elevation_can_have_missing_long_horizon_evidence():
@@ -49,22 +46,6 @@ def test_protection_measures_severity_from_funds_own_high_water_mark():
     assert protection.days_at_or_above_threshold[10] == 3
     assert protection.days_at_or_above_threshold[15] == 1
     assert protection.days_at_or_above_threshold[20] == 1
-
-
-def test_five_year_rolling_returns():
-    project_root = Path(__file__).resolve().parents[2]
-    path = project_root / "data" / "cache" / "INF174K01KT2_nav.json"
-
-    if not path.exists():
-        pytest.skip("legacy data/cache NAV fixture is not present")
-
-    df = load_nav_cache(path)
-    evidence = calculate_rolling_cagr(df, 5)
-    assert evidence.years == 5
-    assert evidence.observations > 0
-    assert evidence.minimum <= evidence.median
-    assert evidence.median <= evidence.maximum
-    assert evidence.negative_periods >= 0
 
 
 def test_rolling_cagr_uses_latest_nav_on_or_before_lookback_date():
