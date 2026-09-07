@@ -7,6 +7,7 @@ import getpass
 from pathlib import Path
 
 from .adapter import adapt_cas
+from .positions import reconstruct_positions
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -40,15 +41,13 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     transactions = adapt_cas(data, investor_override=investor)
     print(f"Adapted {len(transactions)} canonical transaction(s).")
 
-    active_blocks = [
-        scheme
-        for folio in data.folios
-        for scheme in folio.schemes
-        if scheme.close != 0
-    ]
-    print(f"Active scheme block(s): {len(active_blocks)}")
+    positions = reconstruct_positions(transactions)
+    active_positions = [position for position in positions if position.units != 0]
+    print(f"Reconstructed {len(positions)} Position(s).")
+    print(f"Active Position(s): {len(active_positions)}")
+
     print(f"Investor: {investor or data.investor_info.name}")
-    print("POC parse + validation + adaptation: PASS")
+    print("POC parse + validation + adaptation + Position reconstruction: PASS")
 
 
 def main() -> None:
