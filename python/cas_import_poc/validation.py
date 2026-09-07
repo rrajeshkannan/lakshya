@@ -8,55 +8,24 @@ from typing import Any, Iterable
 from .models import ReconciliationResult
 
 
-_UNIT_EVENT_TYPES = {
-    "PURCHASE",
-    "PURCHASE_SIP",
-    "REDEMPTION",
-    "SWITCH_IN",
-    "SWITCH_IN_MERGER",
-    "SWITCH_OUT",
-    "SWITCH_OUT_MERGER",
-    "SEGREGATION",
-    "GIFT_IN",
-    "GIFT_OUT",
-    "DIVIDEND_REINVEST",
-}
-
-
-_SIGN_BY_TYPE = {
-    "PURCHASE": Decimal("1"),
-    "PURCHASE_SIP": Decimal("1"),
-    "REDEMPTION": Decimal("-1"),
-    "SWITCH_IN": Decimal("1"),
-    "SWITCH_IN_MERGER": Decimal("1"),
-    "SWITCH_OUT": Decimal("-1"),
-    "SWITCH_OUT_MERGER": Decimal("-1"),
-    "SEGREGATION": Decimal("1"),
-    "GIFT_IN": Decimal("1"),
-    "GIFT_OUT": Decimal("-1"),
-    "DIVIDEND_REINVEST": Decimal("1"),
-}
-
-
 def reconcile_unit_balance(
     opening_units: Decimal,
     printed_closing_units: Decimal,
     transactions: Iterable[Any],
 ) -> ReconciliationResult:
-    """Reconstruct closing units from parsed unit-bearing transaction events."""
+    """Reconstruct closing units using casparser's signed unit movements.
+
+    casparser normalizes transaction ``units`` to economic movement signs
+    before returning the CASData object. In particular, redemption and
+    switch-out units are negative. Lakshya must preserve those source
+    semantics rather than applying a second sign based on transaction type.
+    """
     computed = Decimal(opening_units)
     for transaction in transactions:
-        parser_type = getattr(transaction, "type", None)
-        parser_type = getattr(parser_type, "value", parser_type)
-        parser_type = str(parser_type)
-        if parser_type not in _UNIT_EVENT_TYPES:
-            continue
         units = getattr(transaction, "units", None)
         if units is None:
-            raise ValueError(
-                f"Unit-bearing transaction has no units: {parser_type}"
-            )
-        computed += _SIGN_BY_TYPE[parser_type] * Decimal(str(units))
+            continue
+        computed += Decimal(str(units))
 
     return ReconciliationResult(
         opening_units=Decimal(opening_units),
