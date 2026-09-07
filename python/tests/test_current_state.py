@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from cas_import_poc.current_state import CurrentState, derive_current_state
-from cas_import_poc.models import Position, PositionKey
+from lps.current_state import CurrentState, derive_current_state
+from lps.positions import Position, PositionKey
 
 
 def test_derive_current_state_promotes_position_units():
