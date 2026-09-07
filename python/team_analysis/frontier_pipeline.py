@@ -28,7 +28,7 @@ def stream_team_evidence(
     """
     for team in generate_team_candidates(funds):
         histories = {member.isin: fund_histories[member.isin] for member in team.members}
-        nav = build_collective_nav(histories)
+        nav = build_collective_nav(histories, assume_canonical=True)
         yield team, TeamFingerprint(team, nav)
 
 
