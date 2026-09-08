@@ -78,3 +78,88 @@ def test_turn_releases_capital_and_sip_and_records_ledger(tmp_path: Path):
     initialize_staging("2026-09-06", data_dir=data)
     run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
+    assert state["pool_capital"] == pytest.approx(20.0)
+    assert state["pool_monthly_sip"] == pytest.approx(5.0)
+    ledger = _read(staging / "reconciliation_ledger.csv")
+    assert {row["kind"] for row in ledger} == {"RELEASE_CAPITAL", "RELEASE_SIP"}
+
+
+def test_acquisition_percentage_updates_recipient_and_leaves_unallocated_pool(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,60,\n"), data_dir=data)
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    rows = _read(staging / "purposes_staged.csv")
+    b = next(row for row in rows if row["name"] == "B")
+    assert float(b["value"]) == pytest.approx(230.0)
+    state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
+    assert state["pool_capital"] == pytest.approx(20.0)
+
+
+def test_acquisition_percentages_share_same_pool_base(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,60,\nB,,,,,,40,\n"), data_dir=data)
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    rows = {row["name"]: row for row in _read(staging / "purposes_staged.csv")}
+    assert float(rows["A"]["value"]) == pytest.approx(60.0)
+    assert float(rows["B"]["value"]) == pytest.approx(240.0)
+    state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
+    assert state["pool_capital"] == pytest.approx(0.0)
+
+
+def test_acquisition_percentages_cannot_exceed_100(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    with pytest.raises(ValueError, match="cannot exceed 100"):
+        run_turn(
+            "2026-09-06",
+            _turn(tmp_path, "A,,,,,,70,\nB,,,,,,40,\n"),
+            data_dir=data,
+        )
+
+
+def test_achievability_is_recomputed_after_each_turn(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,,\n"), data_dir=data)
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    initial = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
+    assert set(initial) == {"A", "B"}
+    assert initial["A"]["status"] == "within_observed_terrain"
+    assert initial["B"]["status"] == "within_observed_terrain"
+
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    latest = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
+    assert set(latest) == {"A", "B"}
+    assert float(latest["A"]["required_annual_return"]) > float(initial["A"]["required_annual_return"])
+    assert float(latest["B"]["required_annual_return"]) == pytest.approx(float(initial["B"]["required_annual_return"]))
+    assert latest["A"]["status"] == "within_observed_terrain"
+    assert latest["B"]["status"] == "within_observed_terrain"
+
+
+def test_commit_blocks_with_nonempty_pool(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,,\n"), data_dir=data)
+    with pytest.raises(ValueError, match="common-pool balances remain"):
+        commit_staging("2026-09-06", data_dir=data)
+
+
+def test_commit_preserves_authoritative_backup_and_marks_workspace(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,100,\n"), data_dir=data)
+    source = data / "purpose" / "purposes.csv"
+    original = source.read_text(encoding="utf-8")
+    commit_staging("2026-09-06", data_dir=data)
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    assert (staging / "purposes_before_commit.csv").read_text(encoding="utf-8") == original
+    state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
+    assert state["status"] == "COMMITTED"
+    assert "COMMIT" in (staging / "staging.log").read_text(encoding="utf-8")
