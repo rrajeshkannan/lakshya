@@ -36,7 +36,7 @@ def fingerprint(*, rolling_3y=None, rolling_5y=None, rolling_7y=None, rolling_10
 
 
 def test_requirement_within_observed_terrain():
-    purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=10)
+    purpose = Purpose(name="Retirement", capital=100.0, desired_target=120.0, horizon_years=10)
     required = required_annual_return(purpose)
     fp = fingerprint(rolling_10y=evidence(10, required))
 
@@ -48,7 +48,7 @@ def test_requirement_within_observed_terrain():
 
 
 def test_requirement_beyond_observed_terrain():
-    purpose = Purpose("Retirement", 100.0, desired_target=300.0, horizon_years=10)
+    purpose = Purpose(name="Retirement", capital=100.0, desired_target=300.0, horizon_years=10)
     required = required_annual_return(purpose)
     fp = fingerprint(rolling_10y=evidence(10, required - 0.01))
 
@@ -58,7 +58,7 @@ def test_requirement_beyond_observed_terrain():
 
 
 def test_uses_longest_supported_horizon_not_exceeding_purpose_horizon():
-    purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=8)
+    purpose = Purpose(name="Retirement", capital=100.0, desired_target=120.0, horizon_years=8)
     required = required_annual_return(purpose)
     fp = fingerprint(
         rolling_7y=evidence(7, required),
@@ -72,7 +72,7 @@ def test_uses_longest_supported_horizon_not_exceeding_purpose_horizon():
 
 
 def test_returns_insufficient_evidence_when_no_supported_horizon_exists():
-    purpose = Purpose("Retirement", 100.0, desired_target=120.0, horizon_years=2)
+    purpose = Purpose(name="Retirement", capital=100.0, desired_target=120.0, horizon_years=2)
     required = required_annual_return(purpose)
     fp = fingerprint()
 
@@ -83,7 +83,7 @@ def test_returns_insufficient_evidence_when_no_supported_horizon_exists():
 
 
 def test_open_ended_purpose_is_not_applicable():
-    purpose = Purpose("Stitch", 100.0)
+    purpose = Purpose(name="Stitch", capital=100.0)
     fp = fingerprint(rolling_10y=evidence(10, 0.10))
 
     assessment = assess_achievability(purpose, fp, required_annual_return(purpose))
