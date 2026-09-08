@@ -20,6 +20,7 @@ B = "B"
 C = "C"
 A65_B30_C05 = "A,B,C|A=0.6500,B=0.3000,C=0.0500"
 A85_B05_C10 = "A,B,C|A=0.8500,B=0.0500,C=0.1000"
+POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
 def test_parse_composition_identity_requires_valid_complete_weights():
@@ -71,10 +72,18 @@ def test_build_attribution_rejects_unknown_fund():
         )
 
 
+def _write_positions(path: Path, rows: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(POSITIONS_HEADER + rows, encoding="utf-8")
+
+
 def test_loaders_validate_authoritative_source_shapes(tmp_path: Path):
-    purpose = tmp_path / "purposes.csv"
-    purpose.write_text("name,value\nEdu,100\nRetirement,300\n", encoding="utf-8")
-    assert load_purpose_capital(purpose) == {"Edu": 100.0, "Retirement": 300.0}
+    positions = tmp_path / "positions.csv"
+    _write_positions(
+        positions,
+        "Amma,F1,A,1,100,100,Edu\nAmma,F2,B,1,300,300,Retirement\n",
+    )
+    assert load_purpose_capital(positions) == {"Edu": 100.0, "Retirement": 300.0}
 
     metadata = tmp_path / "funds.csv"
     metadata.write_text(
@@ -122,7 +131,16 @@ def test_run_family_attribution_persists_all_artifacts_and_log(tmp_path: Path):
     funds = data / "fund" / "funds_in_scope_metadata.csv"
     purposes.parent.mkdir(parents=True)
     funds.parent.mkdir(parents=True)
-    purposes.write_text("name,value\nEdu,1000000\nRetirement,3000000\n", encoding="utf-8")
+    purposes.write_text(
+        "name,due,desired,monthly_plan\nEdu,2036-01-01,5500000,40000\nRetirement,2039-04-12,85000000,155000\n",
+        encoding="utf-8",
+    )
+    _write_positions(
+        data / "lps" / "positions.csv",
+        "Amma,F1,A,1,1000000,1000000,Edu\n"
+        "Amma,F2,B,1,1000000,1000000,Retirement\n"
+        "Amma,F3,C,1,2000000,2000000,Retirement\n",
+    )
     funds.write_text(
         "isin,scheme_name,amc\nA,Fund A,AMC 1\nB,Fund B,AMC 1\nC,Fund C,AMC 2\n",
         encoding="utf-8",
@@ -149,7 +167,7 @@ def test_run_family_attribution_persists_all_artifacts_and_log(tmp_path: Path):
     with (review / "family_fund_concentration.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     assert rows[0]["isin"] == A
-    assert float(rows[0]["family_capital_pct"]) == pytest.approx(80.0)
+    assert float(rows[0]["family_capital_pct"]) == pytest.approx(25.0)
 
     manifest = json.loads((review / "family_attribution_manifest.json").read_text(encoding="utf-8"))
     assert manifest["attribution_schema_version"] == ATTRIBUTION_SCHEMA_VERSION
@@ -162,7 +180,11 @@ def test_run_family_attribution_rejects_tampered_archived_summary(tmp_path: Path
     funds = data / "fund" / "funds_in_scope_metadata.csv"
     purposes.parent.mkdir(parents=True)
     funds.parent.mkdir(parents=True)
-    purposes.write_text("name,value\nEdu,100\n", encoding="utf-8")
+    purposes.write_text(
+        "name,due,desired,monthly_plan\nEdu,2036-01-01,100,\n",
+        encoding="utf-8",
+    )
+    _write_positions(data / "lps" / "positions.csv", "Amma,F1,A,1,100,100,Edu\n")
     funds.write_text("isin,scheme_name,amc\nA,Fund A,AMC\n", encoding="utf-8")
     review = data / "reviews" / "2026-09-06"
     review.mkdir(parents=True)
