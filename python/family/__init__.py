@@ -1,5 +1,6 @@
 """Family-level portfolio architecture validation for Lakshya."""
 
+from . import attribution as _attribution
 from .attribution import (
     ATTRIBUTION_SCHEMA_VERSION,
     build_family_attribution,
@@ -13,6 +14,19 @@ from .staging import (
     initialize_staging,
     run_turn,
 )
+from lps.purpose_capital import purpose_capital_from_positions
+
+
+# Family attribution consumes factual Purpose capital from LPS rather than
+# treating capital as human Purpose input.
+def _load_lps_purpose_capital(path=None):
+    if path is None:
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[2] / "data" / "lps" / "positions.csv"
+    return purpose_capital_from_positions(path)
+
+
+_attribution.load_purpose_capital = _load_lps_purpose_capital
 
 # The dated staging workspace may carry mutable working capital, but its
 # source seed must come from intent-only Purpose input plus LPS valuation.
