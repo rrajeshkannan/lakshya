@@ -19,17 +19,18 @@ class PositionId:
 
 @dataclass(frozen=True)
 class Position:
-    """Factual Position reconstructed from transaction history.
+    """Established factual Position owned by LPS.
 
-    NAV and market value are populated when the Position is valued for an
-    LPS review run. A Position reconstructed directly from transactions has
-    those derived valuation fields unset.
+    Units are reconstructed from transaction history. NAV and market value
+    are valuation observations. Purpose is an accepted human attribution and
+    therefore belongs to the established Position state.
     """
 
     id: PositionId
     units: Decimal
     nav: Decimal | None = None
     market_value: Decimal | None = None
+    purpose: str | None = None
 
 
 def reconstruct_positions(
