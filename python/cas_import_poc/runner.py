@@ -7,10 +7,11 @@ import getpass
 from pathlib import Path
 
 from .adapter import adapt_cas
-from .ledger import read_ledger, write_ledger
 from .validation import validate_parse_warnings, validate_scheme_unit_balances
 from lps.position_persistence import read_positions, write_positions
 from lps.positions import Position, reconstruct_positions
+from lps.transaction_persistence import read_transactions, write_transactions
+from lps.transactions import Transaction
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 INPUT_DIR = PROJECT_ROOT / "input"
@@ -30,12 +31,16 @@ def _load_casparser():
     return casparser
 
 
-def _replace_investor_transactions(existing, investor: str, incoming):
+def _replace_investor_transactions(
+    existing: list[Transaction], investor: str, incoming: list[Transaction]
+) -> list[Transaction]:
     retained = [transaction for transaction in existing if transaction.investor != investor]
     return retained + incoming
 
 
-def _replace_investor_positions(existing: list[Position], investor: str, incoming: list[Position]) -> list[Position]:
+def _replace_investor_positions(
+    existing: list[Position], investor: str, incoming: list[Position]
+) -> list[Position]:
     retained = [position for position in existing if position.id.investor != investor]
     return retained + incoming
 
@@ -57,13 +62,17 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     ledger_investor = investor or str(data.investor_info.name).strip()
     print(f"Adapted {len(transactions)} transaction(s) for {ledger_investor}.")
 
-    existing_transactions = read_ledger(TRANSACTIONS_PATH) if TRANSACTIONS_PATH.exists() else []
+    existing_transactions = (
+        read_transactions(TRANSACTIONS_PATH)
+        if TRANSACTIONS_PATH.exists()
+        else []
+    )
     family_transactions = _replace_investor_transactions(
         existing_transactions,
         ledger_investor,
         transactions,
     )
-    write_ledger(TRANSACTIONS_PATH, family_transactions)
+    write_transactions(TRANSACTIONS_PATH, family_transactions)
     print(f"Persisted Transactions: {TRANSACTIONS_PATH.relative_to(PROJECT_ROOT)}")
 
     positions = reconstruct_positions(transactions)
@@ -81,7 +90,10 @@ def run(pdf_path: Path, password: str, investor: str | None = None) -> None:
     print(f"Active Position(s): {len(active_positions)}")
     print(f"Persisted Positions: {POSITIONS_PATH.relative_to(PROJECT_ROOT)}")
     print(f"Investor: {ledger_investor}")
-    print("LPS parse + validation + adaptation + Transactions persistence + Position reconstruction + Positions persistence: PASS")
+    print(
+        "LPS parse + validation + adaptation + Transactions persistence + "
+        "Position reconstruction + Positions persistence: PASS"
+    )
 
 
 def main() -> None:
