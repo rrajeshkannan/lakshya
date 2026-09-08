@@ -27,6 +27,7 @@ def value_position(
         units=position.units,
         nav=nav_decimal,
         market_value=position.units * nav_decimal,
+        purpose=position.purpose,
     )
 
 
