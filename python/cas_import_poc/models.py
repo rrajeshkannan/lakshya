@@ -3,26 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from lps.positions import Position, PositionId
-
-
-@dataclass(frozen=True)
-class Transaction:
-    """Normalized actual transaction retained by LPS."""
-
-    transaction_date: date
-    event_type: str
-    investor: str
-    folio: str
-    isin: str
-    units: Optional[Decimal]
-    amount: Optional[Decimal]
-    price: Optional[Decimal]
-    source_description: str
+from lps.transactions import Transaction
 
 
 @dataclass(frozen=True)
