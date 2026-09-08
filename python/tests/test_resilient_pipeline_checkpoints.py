@@ -71,6 +71,7 @@ def test_global_checkpoint_is_rejected_when_marker_is_missing(tmp_path: Path, mo
 def test_global_checkpoint_is_rejected_for_different_as_of(tmp_path: Path, monkeypatch):
     output = _configure(tmp_path, monkeypatch)
     _write_global_inputs(output)
+    _write_global_checkpoint(output)
     write_csv_checkpoint(
         output / "global_survivors.csv",
         [{"composition": "A|A=1.0"}],
@@ -134,5 +135,5 @@ def test_trajectory_checkpoint_requires_current_contract_version(tmp_path: Path,
     )
 
     assert not pipeline._trajectory_checkpoint_valid(
-        pipeline.Purpose(name="Edu_B", current_capital=0.0, horizon_years=4)
+        pipeline.Purpose(name="Edu_B", capital=0.0, horizon_years=4)
     )
