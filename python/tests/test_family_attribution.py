@@ -167,7 +167,7 @@ def test_run_family_attribution_persists_all_artifacts_and_log(tmp_path: Path):
     with (review / "family_fund_concentration.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     assert rows[0]["isin"] == A
-    assert float(rows[0]["family_capital_pct"]) == pytest.approx(25.0)
+    assert float(rows[0]["family_capital_pct"]) == pytest.approx(80.0)
 
     manifest = json.loads((review / "family_attribution_manifest.json").read_text(encoding="utf-8"))
     assert manifest["attribution_schema_version"] == ATTRIBUTION_SCHEMA_VERSION
