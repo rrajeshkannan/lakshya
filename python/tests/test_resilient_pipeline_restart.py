@@ -88,7 +88,7 @@ def test_valid_mission_checkpoint_is_reusable(tmp_path: Path, monkeypatch):
     _write_global(output)
     _write_mission(output)
 
-    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
+    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, capital=0.0)
     assert pipeline._mission_checkpoint_valid(purpose)
 
 
@@ -100,7 +100,7 @@ def test_mission_checkpoint_becomes_stale_when_global_changes(tmp_path: Path, mo
     (output / "global_survivors.csv").write_text(
         "composition\nMUTATED\n", encoding="utf-8"
     )
-    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
+    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, capital=0.0)
     assert not pipeline._mission_checkpoint_valid(purpose)
 
 
@@ -110,7 +110,7 @@ def test_valid_trajectory_checkpoint_is_reusable(tmp_path: Path, monkeypatch):
     _write_mission(output)
     _write_trajectory_checkpoints(output)
 
-    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
+    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, capital=0.0)
     assert pipeline._trajectory_checkpoint_valid(purpose)
 
 
@@ -125,7 +125,7 @@ def test_trajectory_becomes_stale_when_mission_changes(tmp_path: Path, monkeypat
     frame.loc[0, "composition"] = "B|B=1.0"
     frame.to_csv(mission, index=False)
 
-    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
+    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, capital=0.0)
     assert not pipeline._trajectory_checkpoint_valid(purpose)
 
 
@@ -137,5 +137,5 @@ def test_trajectory_checkpoint_missing_marker_is_not_reusable(tmp_path: Path, mo
     _write_trajectory_checkpoints(output)
     trajectory.with_suffix(trajectory.suffix + ".complete.json").unlink()
 
-    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, current_capital=0.0)
+    purpose = pipeline.Purpose(name="Edu_B", horizon_years=4, capital=0.0)
     assert not pipeline._trajectory_checkpoint_valid(purpose)
