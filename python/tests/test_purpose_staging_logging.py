@@ -10,9 +10,17 @@ def test_staging_log_captures_turn_and_pool_events(tmp_path: Path):
     purpose = data / "purpose" / "purposes.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
-        "name,due,value,desired,monthly_plan,analytical_horizon_years\n"
-        "A,2036-01-01,100,300,10,\n"
-        "B,2036-01-01,200,300,10,\n",
+        "name,due,desired,monthly_plan\n"
+        "A,2036-01-01,300,10\n"
+        "B,2036-01-01,300,10\n",
+        encoding="utf-8",
+    )
+    positions = data / "lps" / "positions.csv"
+    positions.parent.mkdir(parents=True)
+    positions.write_text(
+        "investor,folio,isin,units,nav,market_value,purpose\n"
+        "Amma,F1,PA,1,100,100,A\n"
+        "Amma,F2,PB,1,200,200,B\n",
         encoding="utf-8",
     )
     review = data / "reviews" / "2026-09-06"
