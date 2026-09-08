@@ -9,6 +9,7 @@ import pytest
 from family.staging import commit_staging, initialize_staging, run_turn
 
 TURN_HEADER = "purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct\n"
+POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
 def _fixture(tmp_path: Path) -> Path:
@@ -16,9 +17,17 @@ def _fixture(tmp_path: Path) -> Path:
     purpose = data / "purpose" / "purposes.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
-        "name,due,value,desired,monthly_plan,analytical_horizon_years\n"
-        "A,2036-01-01,100,2000,10,\n"
-        "B,2036-01-01,200,1000,10,\n",
+        "name,due,desired,monthly_plan\n"
+        "A,2036-01-01,2000,10\n"
+        "B,2036-01-01,1000,10\n",
+        encoding="utf-8",
+    )
+    positions = data / "lps" / "positions.csv"
+    positions.parent.mkdir(parents=True)
+    positions.write_text(
+        POSITIONS_HEADER
+        "Amma,F1,PA,1,100,100,A\n"
+        "Amma,F2,PB,1,200,200,B\n",
         encoding="utf-8",
     )
     review = data / "reviews" / "2026-09-06"
@@ -84,7 +93,6 @@ def test_acquisition_percentage_updates_recipient_and_leaves_unallocated_pool(tm
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     rows = _read(staging / "purposes_staged.csv")
     b = next(row for row in rows if row["name"] == "B")
-    # 50 was released from A; 60% of that pool is acquired by B.
     assert float(b["value"]) == pytest.approx(230.0)
     state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
     assert state["pool_capital"] == pytest.approx(20.0)
@@ -97,7 +105,6 @@ def test_acquisition_percentages_share_same_pool_base(tmp_path: Path):
     run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,60,\nB,,,,,,40,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     rows = {row["name"]: row for row in _read(staging / "purposes_staged.csv")}
-    # A released 100 of capital; 60% and 40% must both use that same 100 base.
     assert float(rows["A"]["value"]) == pytest.approx(60.0)
     assert float(rows["B"]["value"]) == pytest.approx(240.0)
     state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
