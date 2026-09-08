@@ -29,12 +29,14 @@ from typing import Any
 from mission.achievability import required_annual_return
 from mission.achievability_interpretation import AchievabilityStatus
 from mission.models import Purpose
+from .purpose_staging_adapter import load_intent_rows
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 SCHEMA_VERSION = 1
 EPSILON = 1e-8
+INTENT_FIELDS = ["name", "due", "desired", "monthly_plan"]
 PURPOSE_FIELDS = ["name", "due", "value", "desired", "monthly_plan", "analytical_horizon_years"]
 TURN_FIELDS = [
     "purpose", "value", "monthly_plan", "desired", "due", "analytical_horizon_years",
@@ -99,10 +101,10 @@ def _integer(value: str, field: str) -> int | None:
     return result
 
 
-def _load_rows(path: Path) -> dict[str, dict[str, str]]:
+def _load_staged_rows(path: Path) -> dict[str, dict[str, str]]:
     rows = _read_csv(path)
-    if not rows or not set(PURPOSE_FIELDS).issubset(rows[0]):
-        raise ValueError(f"Purpose source is missing required columns: {path}")
+    if not rows or set(rows[0]) != set(PURPOSE_FIELDS):
+        raise ValueError(f"Staged Purpose file has an unexpected column layout: {path}")
     result: dict[str, dict[str, str]] = {}
     for row in rows:
         name = row["name"].strip()
@@ -120,7 +122,6 @@ def _purpose(row: dict[str, str], as_of: date) -> Purpose:
     assert value is not None
     desired = _number(row.get("desired", ""), "desired")
     monthly = _number(row.get("monthly_plan", ""), "monthly_plan")
-    analytical = _integer(row.get("analytical_horizon_years", ""), "analytical_horizon_years")
     if desired is not None and desired < 0:
         raise ValueError(f"Negative desired target: {row['name']}")
     if monthly is not None and monthly < 0:
@@ -134,8 +135,21 @@ def _purpose(row: dict[str, str], as_of: date) -> Purpose:
             years -= 1
         if years <= 0:
             raise ValueError(f"Purpose due date is not beyond as-of date: {row['name']}")
-        return Purpose(row["name"], value, desired, years, monthly)
-    return Purpose(row["name"], value, None, None, None, analytical)
+        return Purpose(
+            name=row["name"],
+            due=due,
+            capital=value,
+            desired_target=desired,
+            monthly_contribution=monthly,
+            horizon_years=years,
+        )
+    return Purpose(
+        name=row["name"],
+        capital=value,
+        desired_target=None,
+        monthly_contribution=None,
+        horizon_years=None,
+    )
 
 
 def _directory(data_dir: Path, as_of: str) -> Path:
@@ -145,7 +159,8 @@ def _directory(data_dir: Path, as_of: str) -> Path:
 def initialize_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     date.fromisoformat(as_of)
     source = data_dir / "purpose" / "purposes.csv"
-    rows = _load_rows(source)
+    positions_path = data_dir / "lps" / "positions.csv"
+    rows = load_intent_rows(source, positions_path)
     directory = _directory(data_dir, as_of)
     directory.mkdir(parents=True, exist_ok=True)
     _write_csv(directory / "purposes_staged.csv", PURPOSE_FIELDS, list(rows.values()))
@@ -320,7 +335,7 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
     if not rows or not set(TURN_FIELDS).issubset(rows[0]):
         raise ValueError(f"Turn input is missing required columns: {turn_path}")
     staged_path = directory / "purposes_staged.csv"
-    before = _load_rows(staged_path)
+    before = _load_staged_rows(staged_path)
     logger = _logger(directory / "staging.log")
     turn = int(state["turn"]) + 1
     logger.info("TURN_START turn=%s input=%s", turn, turn_path)
@@ -349,7 +364,7 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
             "monthly_plan": row["monthly_plan"],
             "desired": row["desired"],
             "due": row["due"],
-            "horizon_years": purpose.horizon_years or purpose.analytical_horizon_years or "",
+            "horizon_years": purpose.horizon_years or purpose.trajectory_horizon_years or "",
             "required_annual_return": "" if required is None else f"{required:.10f}",
             "observed_upper_return": "" if upper is None else f"{upper:.10f}",
             "status": status,
@@ -373,7 +388,17 @@ def commit_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     staged = directory / "purposes_staged.csv"
     backup = directory / "purposes_before_commit.csv"
     shutil.copy2(authoritative, backup)
-    _atomic_write(authoritative, staged.read_text(encoding="utf-8"))
+    staged_rows = _load_staged_rows(staged)
+    intent_rows = [
+        {
+            "name": row["name"],
+            "due": row["due"],
+            "desired": row["desired"],
+            "monthly_plan": row["monthly_plan"],
+        }
+        for row in staged_rows.values()
+    ]
+    _write_csv(authoritative, INTENT_FIELDS, intent_rows)
     state["status"] = "COMMITTED"
     state["committed_working_revision"] = state["working_revision"]
     state["committed_source_sha256"] = sha256_file(authoritative)
