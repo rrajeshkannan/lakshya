@@ -5,7 +5,7 @@ optimize, or modify any Purpose winner. It attributes the consequences of the
 already-selected FINAL Compositions across the family-level Purpose capital.
 
 Contract:
-    purposes.csv current ``value`` -> Purpose capital
+    LPS-valued Positions -> Purpose capital
     dated FINAL summary -> selected Composition
     fund metadata -> fund / AMC identity
 
@@ -26,9 +26,11 @@ from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
 
+from lps.purpose_capital import purpose_capital_from_positions
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 FUND_METADATA_PATH = DATA_DIR / "fund" / "funds_in_scope_metadata.csv"
 REVIEWS_ROOT = DATA_DIR / "reviews"
 
@@ -97,33 +99,13 @@ def parse_composition_identity(identity: str) -> dict[str, float]:
     return {isin: max(0.0, weight) for isin, weight in weights.items()}
 
 
-def load_purpose_capital(path: Path = PURPOSES_PATH) -> dict[str, float]:
-    """Load current Purpose capital from the authoritative Purpose source."""
-    with path.open(newline="", encoding="utf-8") as handle:
-        rows = list(csv.DictReader(handle))
-    required = {"name", "value"}
-    if not rows or not required.issubset(rows[0]):
-        raise ValueError(f"Purpose source is missing required columns: {path}")
-    result: dict[str, float] = {}
-    for row in rows:
-        name = row["name"].strip()
-        if not name or name in result:
-            raise ValueError(f"Invalid or duplicate Purpose in {path}: {name!r}")
-        try:
-            value = float(row["value"])
-        except (TypeError, ValueError) as exc:
-            raise ValueError(f"Invalid current capital for Purpose {name!r}") from exc
-        if value < 0:
-            raise ValueError(f"Negative current capital for Purpose {name!r}")
-        result[name] = value
-    total = sum(result.values())
-    if total <= MONEY_EPSILON:
-        raise ValueError("Total Purpose capital must be positive")
-    return result
+def load_purpose_capital(path: Path = POSITIONS_PATH) -> dict[str, float]:
+    """Load Purpose capital by aggregating valued LPS Positions."""
+    return purpose_capital_from_positions(path)
 
 
 def load_fund_metadata(path: Path = FUND_METADATA_PATH) -> dict[str, dict[str, str]]:
-    """Load current fund identity metadata keyed by ISIN."""
+    """Load fund identity metadata keyed by ISIN."""
     with path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     required = {"isin", "scheme_name", "amc"}
@@ -332,20 +314,20 @@ def run_family_attribution(
     as_of: str,
     *,
     data_dir: Path = DATA_DIR,
-    purposes_path: Path | None = None,
+    positions_path: Path | None = None,
     fund_metadata_path: Path | None = None,
     reviews_root: Path | None = None,
 ) -> list[Path]:
     """Run the auditable post-FINAL family attribution for one review date."""
     date.fromisoformat(as_of)
-    purposes_path = purposes_path or data_dir / "purpose" / "purposes.csv"
+    positions_path = positions_path or data_dir / "lps" / "positions.csv"
     fund_metadata_path = fund_metadata_path or data_dir / "fund" / "funds_in_scope_metadata.csv"
     reviews_root = reviews_root or data_dir / "reviews"
     review_dir = reviews_root / as_of
     log = _logger(review_dir / "family_attribution.log")
     log.info("START as_of=%s", as_of)
-    log.info("Loading Purpose capital source=%s", purposes_path)
-    purpose_capital = load_purpose_capital(purposes_path)
+    log.info("Loading Purpose capital source=%s", positions_path)
+    purpose_capital = load_purpose_capital(positions_path)
     log.info("Loaded purposes=%d total_capital=%.2f", len(purpose_capital), sum(purpose_capital.values()))
     log.info("Loading fund metadata source=%s", fund_metadata_path)
     fund_metadata = load_fund_metadata(fund_metadata_path)
@@ -361,7 +343,7 @@ def run_family_attribution(
         log.info("FINAL winner purpose=%s composition=%s", purpose, identity)
 
     input_hashes = {
-        "purposes_csv_sha256": sha256_file(purposes_path),
+        "positions_csv_sha256": sha256_file(positions_path),
         "fund_metadata_sha256": sha256_file(fund_metadata_path),
         "review_manifest_sha256": sha256_file(review_dir / "review_manifest.json"),
     }
