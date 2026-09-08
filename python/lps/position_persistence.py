@@ -16,6 +16,7 @@ POSITION_FIELDS = (
     "units",
     "nav",
     "market_value",
+    "purpose",
 )
 
 
@@ -34,6 +35,7 @@ def write_positions(path: Path, positions: list[Position]) -> None:
                     "units": str(position.units),
                     "nav": _text(position.nav),
                     "market_value": _text(position.market_value),
+                    "purpose": _text(position.purpose),
                 }
             )
 
@@ -55,12 +57,13 @@ def read_positions(path: Path) -> list[Position]:
                 units=Decimal(row["units"]),
                 nav=_decimal(row["nav"]),
                 market_value=_decimal(row["market_value"]),
+                purpose=row["purpose"] or None,
             )
             for row in reader
         ]
 
 
-def _text(value: Decimal | None) -> str:
+def _text(value: Decimal | str | None) -> str:
     return "" if value is None else str(value)
 
 
