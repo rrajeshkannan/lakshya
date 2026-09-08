@@ -53,3 +53,50 @@ def _turn(tmp_path: Path, rows: str, suffix: str) -> Path:
     path = tmp_path / f"turn_{suffix}.csv"
     path.write_text(TURN_HEADER + rows, encoding="utf-8")
     return path
+
+
+def _read(path: Path):
+    with path.open(newline="", encoding="utf-8") as handle:
+        return list(csv.DictReader(handle))
+
+
+def _state(data: Path) -> dict:
+    path = data / "reviews" / "2026-09-06" / "purpose_staging" / "staging_state.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_working_revision_tracks_turns_without_resetting_cumulative_pool(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    assert _state(data)["working_revision"] == 0
+
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n", "one"), data_dir=data)
+    assert _state(data)["working_revision"] == 1
+    assert _state(data)["pool_capital"] == 100.0
+
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,60,\n", "two"), data_dir=data)
+    assert _state(data)["working_revision"] == 2
+    assert _state(data)["pool_capital"] == 40.0
+
+    run_turn("2026-09-06", _turn(tmp_path, "C,,,,,,100,\n", "three"), data_dir=data)
+    assert _state(data)["working_revision"] == 3
+    assert _state(data)["pool_capital"] == 0.0
+
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    ledger = _read(staging / "reconciliation_ledger.csv")
+    assert [row["turn"] for row in ledger] == ["1", "2", "3"]
+    assert [row["kind"] for row in ledger] == ["RELEASE_CAPITAL", "ACQUIRE_CAPITAL", "ACQUIRE_CAPITAL"]
+    assert [float(row["pool_after"]) for row in ledger] == [100.0, 40.0, 0.0]
+
+
+def test_commit_records_final_working_revision(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n", "one"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,100,\n", "two"), data_dir=data)
+
+    commit_staging("2026-09-06", data_dir=data)
+    state = _state(data)
+    assert state["status"] == "COMMITTED"
+    assert state["working_revision"] == 2
+    assert state["committed_working_revision"] == 2
