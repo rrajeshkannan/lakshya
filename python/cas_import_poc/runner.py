@@ -47,8 +47,23 @@ def _replace_investor_transactions(
 def _replace_investor_positions(
     existing: list[Position], investor: str, incoming: list[Position]
 ) -> list[Position]:
+    existing_by_id = {
+        position.id: position
+        for position in existing
+        if position.id.investor == investor
+    }
     retained = [position for position in existing if position.id.investor != investor]
-    return retained + incoming
+    rebuilt = [
+        Position(
+            id=position.id,
+            units=position.units,
+            purpose=existing_by_id.get(position.id).purpose
+            if position.id in existing_by_id
+            else None,
+        )
+        for position in incoming
+    ]
+    return retained + rebuilt
 
 
 def _persist_valued_positions(
