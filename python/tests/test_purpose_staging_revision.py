@@ -7,6 +7,7 @@ from pathlib import Path
 from family.staging import commit_staging, initialize_staging, run_turn
 
 TURN_HEADER = "purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct\n"
+POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
 def _fixture(tmp_path: Path) -> Path:
@@ -14,10 +15,19 @@ def _fixture(tmp_path: Path) -> Path:
     purpose = data / "purpose" / "purposes.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
-        "name,due,value,desired,monthly_plan,analytical_horizon_years\n"
-        "A,2036-01-01,100,2000,10,\n"
-        "B,2036-01-01,200,1000,10,\n"
-        "C,2036-01-01,300,1000,10,\n",
+        "name,due,desired,monthly_plan\n"
+        "A,2036-01-01,2000,10\n"
+        "B,2036-01-01,1000,10\n"
+        "C,2036-01-01,1000,10\n",
+        encoding="utf-8",
+    )
+    positions = data / "lps" / "positions.csv"
+    positions.parent.mkdir(parents=True)
+    positions.write_text(
+        POSITIONS_HEADER
+        "Amma,F1,PA,1,100,100,A\n"
+        "Amma,F2,PB,1,200,200,B\n"
+        "Amma,F3,PC,1,300,300,C\n",
         encoding="utf-8",
     )
     review = data / "reviews" / "2026-09-06"
@@ -60,19 +70,14 @@ def test_working_revision_tracks_turns_without_resetting_cumulative_pool(tmp_pat
     initialize_staging("2026-09-06", data_dir=data)
     assert _state(data)["working_revision"] == 0
 
-    # Turn 1 releases 100 into the pool.
     run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n", "one"), data_dir=data)
     assert _state(data)["working_revision"] == 1
     assert _state(data)["pool_capital"] == 100.0
 
-    # Turn 2 consumes 60% of the existing pool; it must start from 100, not
-    # from the original Purpose source.
     run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,60,\n", "two"), data_dir=data)
     assert _state(data)["working_revision"] == 2
     assert _state(data)["pool_capital"] == 40.0
 
-    # Turn 3 consumes the remaining 40%; working-file replacement must preserve
-    # the state produced by turns 1 and 2.
     run_turn("2026-09-06", _turn(tmp_path, "C,,,,,,100,\n", "three"), data_dir=data)
     assert _state(data)["working_revision"] == 3
     assert _state(data)["pool_capital"] == 0.0
