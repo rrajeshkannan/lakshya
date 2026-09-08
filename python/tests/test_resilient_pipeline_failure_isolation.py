@@ -58,7 +58,7 @@ def _write_global(output: Path):
 
 
 def _purpose(name: str):
-    return pipeline.Purpose(name=name, horizon_years=4, current_capital=0.0)
+    return pipeline.Purpose(name=name, horizon_years=4, capital=0.0)
 
 
 def _install_fake_executor(monkeypatch, executor):
