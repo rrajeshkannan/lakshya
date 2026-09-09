@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import csv
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from .models import Purpose
@@ -16,6 +16,17 @@ POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 
 
 INTENT_FIELDS = {"name", "due", "desired", "monthly_plan"}
+
+
+def _parse_due(raw: str, name: str) -> date:
+    """Parse the human Purpose-source date format, with ISO compatibility."""
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        try:
+            return datetime.strptime(raw, "%d-%b-%Y").date()
+        except ValueError as exc:
+            raise ValueError(f"Invalid Purpose due date for {name}: {raw!r}") from exc
 
 
 def _floor_years(start: date, due: date) -> int:
@@ -61,10 +72,7 @@ def load_purposes(
         due = None
         horizon = 7
         if due_raw and due_raw.upper() != "NA":
-            try:
-                due = date.fromisoformat(due_raw)
-            except ValueError as exc:
-                raise ValueError(f"Invalid Purpose due date for {name}: {due_raw!r}") from exc
+            due = _parse_due(due_raw, name)
             horizon = _floor_years(as_of, due)
             if horizon <= 0:
                 raise ValueError(f"Purpose due date is not beyond as-of date: {name}")
