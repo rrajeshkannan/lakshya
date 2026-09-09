@@ -1,10 +1,14 @@
 {
-  "artifact_version": 3,
+  "artifact_version": 1,
   "isin": "INF879O01100",
   "scheme_code": 147481,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-08T01:00:07+05:30",
+  "retrieved_at": "2026-09-09T00:10:34+05:30",
   "observations": [
+    {
+      "date": "2026-09-07",
+      "nav": 31.6173
+    },
     {
       "date": "2026-09-04",
       "nav": 31.7075

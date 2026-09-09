@@ -1,0 +1,1322 @@
+transaction_date,event_type,investor,folio,isin,units,amount,price,source_description
+2020-02-03,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,294.898,10000.00,33.91,Systematic Investment (1/11)
+2020-03-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,302.024,10000.00,33.11,Systematic Investment (2/11)
+2020-04-03,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,416.146,10000.00,24.03,Systematic Investment (3/11)
+2020-05-04,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,371.885,10000.00,26.89,Systematic Investment (4/11)
+2020-06-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,350.263,10000.00,28.55,Systematic Investment (5/11)
+2020-07-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,332.430,9999.50,30.08,Systematic Investment (6/11)
+2020-07-02,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-08-03,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,325.823,9999.50,30.69,Systematic Investment (7/11)
+2020-08-03,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-09-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,305.515,9999.50,32.73,Systematic Investment (8/11)
+2020-09-02,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-10-05,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,306.827,9999.50,32.59,Systematic Investment (9/11)
+2020-10-05,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-11-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,299.745,9999.50,33.36,Systematic Investment (10/11)
+2020-11-02,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-12-02,Systematic Investment,Amma,91069892872 / 0,INF846K01CQ8,260.539,9999.50,38.38,Systematic Investment (11/11)
+2020-12-02,Stamp Duty,Amma,91069892872 / 0,INF846K01CQ8,,0.50,,*** Stamp Duty ***
+2020-12-02,Reversal,Amma,91069892872 / 0,INF846K01CQ8,-260.539,-9999.50,38.38,Systematic Investment Rejection (11/11)
+2024-03-13,Redemption,Amma,91069892872 / 0,INF846K01CQ8,-3305.556,-174597.72,52.82,"Redemption less TDS, STT"
+2024-03-13,STT Paid,Amma,91069892872 / 0,INF846K01CQ8,,1.75,,*** STT Paid ***
+2021-05-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,32.246,1999.90,62.02,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-11,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,30.069,1999.90,66.51,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,29.018,1999.90,68.92,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,28.160,1999.90,71.02,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.926,1999.90,77.14,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.207,1999.90,79.34,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-10-18,Purchase,Amma,91069892872 / 0,INF846K01EH3,24.437,1999.90,81.84,"Purchase Trxn.Ref.No.212880676013/HDFC BANK LTD- 759, ITC CENTRE, ANNA SALAI,OP"
+2021-10-18,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,24.657,1999.90,81.11,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.412,1999.90,78.70,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2021-12-13,Purchase,Amma,91069892872 / 0,INF846K01EH3,127.058,9999.50,78.70,"Purchase Trxn.Ref.No.213456937547/HDFC BANK LTD- 759, ITC CENTRE, ANNA SALAI,OP"
+2021-12-13,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.50,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,24.905,1999.90,80.30,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,26.909,1999.90,74.32,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,27.627,1999.90,72.39,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,26.342,1999.90,75.92,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,29.885,1999.90,66.92,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,29.934,1999.90,66.81,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,28.533,1999.90,70.09,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.932,1999.90,77.12,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,24.986,1999.90,80.04,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,26.034,1999.90,76.82,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.912,1999.90,77.18,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,25.679,1999.90,77.88,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,26.946,1999.90,74.22,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,26.787,1999.90,74.66,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EH3,27.445,1999.90,72.87,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EH3,,0.10,,*** Stamp Duty ***
+2023-12-21,Redemption,Amma,91069892872 / 0,INF846K01EH3,-694.868,-66692.76,95.98,"Redemption less TDS, STT"
+2023-12-21,STT Paid,Amma,91069892872 / 0,INF846K01EH3,,0.67,,*** STT Paid ***
+2024-03-13,Redemption,Amma,91069892872 / 0,INF846K01EH3,-81.178,-8017.87,98.77,"Redemption less TDS, STT"
+2024-03-13,STT Paid,Amma,91069892872 / 0,INF846K01EH3,,0.08,,*** STT Paid ***
+2021-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,857.590,14999.25,17.49,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,371.623,6499.68,17.49,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,798.257,14999.25,18.79,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,754.489,14999.25,19.88,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,326.946,6499.68,19.88,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,742.537,14999.25,20.20,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,321.766,6499.68,20.20,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,691.210,14999.25,21.70,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,299.524,6499.68,21.70,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,662.804,14999.25,22.63,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,287.215,6499.68,22.63,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,656.997,14999.25,22.83,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,284.699,6499.68,22.83,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,659.888,14999.25,22.73,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,285.952,6499.68,22.73,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,654.703,14999.25,22.91,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,283.705,6499.68,22.91,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,698.940,14999.25,21.46,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,302.874,6499.68,21.46,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,725.302,14999.25,20.68,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,314.298,6499.68,20.68,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,682.715,14999.25,21.97,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,295.843,6499.68,21.97,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,798.257,14999.25,18.79,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,798.257,14999.25,18.79,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,766.833,14999.25,19.56,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,332.294,6499.68,19.56,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,682.094,14999.25,21.99,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,295.574,6499.68,21.99,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,670.507,14999.25,22.37,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,290.553,6499.68,22.37,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,710.865,14999.25,21.10,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,308.042,6499.68,21.10,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,703.200,14999.25,21.33,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,304.720,6499.68,21.33,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,697.964,14999.25,21.49,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,302.451,6499.68,21.49,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,734.178,14999.25,20.43,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,318.144,6499.68,20.43,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,728.119,14999.25,20.60,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,315.518,6499.68,20.60,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,750.713,14999.25,19.98,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.75,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01J46,325.309,6499.68,19.98,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2026-01-02,Redemption,Amma,91069892872 / 0,INF846K01J46,-23831.205,-888180.13,37.27,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Amma,91069892872 / 0,INF846K01J46,,8.88,,*** STT Paid ***
+2021-05-11,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,308.686,15999.20,51.83,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-11,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,287.394,15999.20,55.67,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,268.263,15999.20,59.64,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-08-03,Purchase,Amma,91069892872 / 0,INF846K01K35,2903.286,178464.98,61.47,Lateral Shift In (From Axis Short Term Fund - Direct Growth F.No:91069892872)
+2021-08-03,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,8.92,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,264.013,15999.20,60.60,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,245.236,15999.20,65.24,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,238.119,15999.20,67.19,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,235.490,15999.20,67.94,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,236.290,15999.20,67.71,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,226.875,15999.20,70.52,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,237.342,15999.20,67.41,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,244.748,15999.20,65.37,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,230.702,15999.20,69.35,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,260.234,15999.20,61.48,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,258.636,15999.20,61.86,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,250.105,15999.20,63.97,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,231.169,15999.20,69.21,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,219.468,15999.20,72.90,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,225.977,15999.20,70.80,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,224.613,15999.20,71.23,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,219.317,15999.20,72.95,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,224.771,15999.20,71.18,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,224.676,15999.20,71.21,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Amma,91069892872 / 0,INF846K01K35,229.808,15999.20,69.62,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Amma,91069892872 / 0,INF846K01K35,,0.80,,*** Stamp Duty ***
+2020-01-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,655.317,15000.00,22.8897,Systematic Investment(NAV Dt : 10/01/2020) (1/12)
+2020-02-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,646.819,15000.00,23.1904,Systematic Investment(NAV Dt : 10/02/2020) (2/12)
+2020-03-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,644.543,15000.00,23.2723,Systematic Investment(NAV Dt : 11/03/2020) (3/12)
+2020-04-13,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,645.714,15000.00,23.2301,Systematic Investment(NAV Dt : 13/04/2020) (4/12)
+2020-05-11,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,635.790,15000.00,23.5927,Systematic Investment(NAV Dt : 11/05/2020) (5/12)
+2020-06-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,625.733,15000.00,23.9719,Systematic Investment(NAV Dt : 10/06/2020) (6/12)
+2020-07-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,612.042,14999.25,24.5069,Systematic Investment(NAV Dt : 10/07/2020) (7/12)
+2020-07-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,610.304,14999.25,24.5767,Systematic Investment(NAV Dt : 10/08/2020) (8/12)
+2020-08-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,608.560,14999.25,24.6471,Systematic Investment(NAV Dt : 10/09/2020) (9/12)
+2020-09-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,602.566,14999.25,24.8923,Systematic Investment(NAV Dt : 12/10/2020) (10/12)
+2020-10-12,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,598.259,14999.25,25.0715,Systematic Investment(NAV Dt : 10/11/2020) (11/12)
+2020-11-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,91069892872 / 0,INF846K01EI1,594.581,14999.25,25.2266,Systematic Investment(NAV Dt : 10/12/2020) (12/12)
+2020-12-10,Stamp Duty,Amma,91069892872 / 0,INF846K01EI1,,0.75,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,91069892872 / 0,INF846K01EI1,-594.581,-14999.25,25.2266,Systematic Investment Rejection (12/12)
+2021-08-02,Redemption,Amma,91069892872 / 0,INF846K01EI1,-6885.647,-178473.90,25.9197,Lateral Shift Out (To Axis Small Cap Fund Direct Growth F.No:91069892872)
+2020-02-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,555.247,20000.00,36.02,Systematic Investment (1/11)
+2020-03-11,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,604.230,20000.00,33.10,Systematic Investment (2/11)
+2020-04-13,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,689.417,20000.00,29.01,Systematic Investment (3/11)
+2020-05-11,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,686.577,20000.00,29.13,Systematic Investment (4/11)
+2020-06-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,650.830,20000.00,30.73,Systematic Investment (5/11)
+2020-07-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,617.825,19999.00,32.37,Systematic Investment (6/11)
+2020-07-10,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,592.387,19999.00,33.76,Systematic Investment (7/11)
+2020-08-10,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,588.725,19999.00,33.97,Systematic Investment (8/11)
+2020-09-10,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,565.903,19999.00,35.34,Systematic Investment (9/11)
+2020-10-12,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,530.759,19999.00,37.68,Systematic Investment (10/11)
+2020-11-10,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,91070076461 / 0,INF846K01DP8,497.611,19999.00,40.19,Systematic Investment (11/11)
+2020-12-10,Stamp Duty,Amma,91070076461 / 0,INF846K01DP8,,1.00,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,91070076461 / 0,INF846K01DP8,-497.611,-19999.00,40.19,Systematic Investment Rejection (11/11)
+2024-04-29,Redemption,Amma,91070076461 / 0,INF846K01DP8,-6081.900,-380114.95,62.50,"Redemption less TDS, STT"
+2024-04-29,STT Paid,Amma,91070076461 / 0,INF846K01DP8,,3.80,,*** STT Paid ***
+2019-11-01,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***SIP Registered***
+2019-11-13,Purchase,Amma,5902067 / 82,INF740K01PL6,4.133,1000.00,241.940,Purchase - via myCAMS Online - DIRECT
+2019-11-14,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Address Updated from KRA Data - First Holder***
+2019-12-09,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Address Updated from KRA Data - First Holder***
+2019-12-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.128,1000.00,242.269,SIP Purchase - Instalment 1/24 - DIRECT
+2020-01-01,Purchase,Amma,5902067 / 82,INF740K01PL6,4.024,1000.00,248.518,Purchase - via myCAMS Online - DIRECT
+2020-01-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,3.988,1000.00,250.768,SIP Purchase - Instalment 2/24 - DIRECT
+2020-02-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,3.919,1000.00,255.163,SIP Purchase - Instalment 3/24 - DIRECT
+2020-03-11,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.418,1000.00,226.354,SIP Purchase - Instalment 4/24 - DIRECT
+2020-04-13,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,5.294,1000.00,188.884,SIP Purchase - Instalment 5/24 - DIRECT
+2020-05-11,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,5.184,1000.00,192.912,SIP Purchase - Instalment 6/24 - DIRECT
+2020-06-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.736,1000.00,211.151,SIP Purchase - Instalment 7/24 - DIRECT
+2020-07-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.453,999.95,224.534,SIP Purchase - Instalment 8/24 - DIRECT
+2020-07-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.262,999.95,234.625,SIP Purchase - Instalment 9/24 - DIRECT
+2020-08-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-09-01,Purchase,Amma,5902067 / 82,INF740K01PL6,4.151,999.95,240.874,Purchase - via myCAMS Online - DIRECT
+2020-09-01,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.267,999.95,234.363,SIP Purchase - Instalment 10/24 - DIRECT
+2020-09-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-10-05,Purchase,Amma,5902067 / 82,INF740K01PL6,4.243,999.95,235.645,Purchase - via myCAMS Online - DIRECT
+2020-10-05,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,4.176,999.95,239.431,SIP Purchase - Instalment 11/24 - DIRECT
+2020-10-12,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,3.906,999.95,256.034,SIP Purchase - Instalment 12/24 - via myCAMS Online - DIRECT
+2020-11-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,3.590,999.95,278.521,SIP Purchase - Instalment 13/24 - via myCAMS Online - DIRECT
+2020-12-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,5902067 / 82,INF740K01PL6,-3.590,-999.95,278.521,SIP Purchase (Reversal) - via Online - Instalment No 13
+2020-12-10,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,-0.05,,*** Stamp Duty ***
+2021-01-06,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Change of Contact details***
+2021-01-06,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***SIP Pause Registered******
+2021-01-11,Systematic Investment,Amma,5902067 / 82,INF740K01PL6,3.321,999.95,301.143,SIP Purchase - Instalment 14/24 - via myCAMS Online - DIRECT
+2021-01-11,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,0.05,,*** Stamp Duty ***
+2021-01-11,Reversal,Amma,5902067 / 82,INF740K01PL6,-3.321,-999.95,301.143,SIP Purchase  (Reversal - Code XX ) - via Online - Instalment No 14
+2021-01-11,Stamp Duty,Amma,5902067 / 82,INF740K01PL6,,-0.05,,*** Stamp Duty ***
+2021-05-01,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***SIPSystematic Cancellationvia Online wef 16-May-2021***
+2023-03-04,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194507600_AMBPG2684H***
+2023-03-22,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***MFU: Data Updation***
+2023-03-23,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Address Updated from KRA Data - First Holder***
+2024-08-14,Redemption,Amma,5902067 / 82,INF740K01PL6,-69.282,-46190.05,666.703,"Redemption Less STT - via myCAMS Online - UTR # CITIN24511920644 , less STT"
+2024-08-14,STT Paid,Amma,5902067 / 82,INF740K01PL6,,0.46,,*** STT Paid ***
+2025-03-25,Misc,Amma,5902067 / 82,INF740K01PL6,,,,***Address Updated from KRA Data - First Holder***
+2017-10-24,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.440,5000.00,592.416,SIP Purchase
+2017-10-25,Misc,Amma,12799161 / 64,INF179K01608,,,,***Registration of Nominee***
+2017-10-25,Misc,Amma,12799161 / 64,INF179K01608,,,,***Address Updated from KRA Data***
+2017-10-26,Misc,Amma,12799161 / 64,INF179K01608,,,,***SIPRegistered - 24/10/2017***
+2017-11-02,Misc,Amma,12799161 / 64,INF179K01608,,,,***Address Updated from KRA Data***
+2017-12-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.826,5000.00,638.914,SIP Purchase - Instalment 2/61
+2018-01-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.549,5000.00,662.350,SIP Purchase - Instalment 3/61
+2018-02-12,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.744,5000.00,645.692,SIP Purchase - Instalment 4/61
+2018-03-12,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.241,5000.00,606.720,SIP Purchase - Instalment 5/61
+2018-04-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.125,5000.00,615.385,SIP Purchase - Instalment 6/61
+2018-05-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.090,5000.00,618.033,SIP Purchase - Instalment 7/61
+2018-06-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.188,5000.00,610.618,SIP Purchase - Instalment 8/61
+2018-07-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.306,5000.00,601.992,SIP Purchase - Instalment 9/61
+2018-08-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.801,5000.00,640.914,SIP Purchase - Instalment 10/61
+2018-09-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.657,5000.00,653.024,SIP Purchase - Instalment 11/61
+2018-10-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.354,5000.00,598.489,SIP Purchase - Instalment 12/61
+2018-11-12,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.180,5000.00,611.215,SIP Purchase - Instalment 13/61
+2018-12-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.380,5000.00,596.674,SIP Purchase - Instalment 14/61
+2019-01-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.872,5000.00,635.130,SIP Purchase - Instalment 15/61
+2019-02-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.162,5000.00,612.599,SIP Purchase - Instalment 16/61
+2019-03-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.742,5000.00,645.846,SIP Purchase - Instalment 17/61
+2019-04-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.421,5000.00,673.767,SIP Purchase - Instalment 18/61
+2019-05-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.716,5000.00,647.993,SIP Purchase - Instalment 19/61
+2019-06-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.259,5000.00,688.833,SIP Purchase - Instalment 20/61
+2019-07-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.431,5000.00,672.899,SIP Purchase - Instalment 21/61
+2019-08-13,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.078,5000.00,618.947,SIP Purchase - Instalment 22/61
+2019-09-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.920,5000.00,631.320,SIP Purchase - Instalment 23/61
+2019-09-27,Misc,Amma,12799161 / 64,INF179K01608,,,,***Lien Marked - 182.482 - In favour of HDFC Bank Ltd.***
+2019-10-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.035,5000.00,622.297,SIP Purchase - Instalment 24/61
+2019-11-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.495,5000.00,667.076,SIP Purchase - Instalment 25/61
+2019-12-07,Misc,Amma,12799161 / 64,INF179K01608,,,,***Address Updated from KRA Data***
+2019-12-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.718,5000.00,647.823,SIP Purchase - Instalment 26/61
+2020-01-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.387,5000.00,676.853,SIP Purchase - Instalment 27/61
+2020-02-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.579,5000.00,659.692,SIP Purchase - Instalment 28/61
+2020-03-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,9.031,5000.00,553.624,SIP Purchase - Instalment 29/61
+2020-04-13,Systematic Investment,Amma,12799161 / 64,INF179K01608,10.384,5000.00,481.524,SIP Purchase - Instalment 30/61
+2020-05-11,Systematic Investment,Amma,12799161 / 64,INF179K01608,10.440,5000.00,478.911,SIP Purchase - Instalment 31/61
+2020-06-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,9.377,5000.00,533.242,SIP Purchase - Instalment 32/61
+2020-07-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,9.077,4999.75,550.809,SIP Purchase - Instalment 33/61
+2020-07-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.672,4999.75,576.552,SIP Purchase - Instalment 34/61
+2020-08-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.644,4999.75,578.428,SIP Purchase - Instalment 35/61
+2020-09-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.666,4999.75,576.946,SIP Purchase - Instalment 36/61
+2020-10-12,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,8.013,4999.75,623.991,SIP Purchase - Instalment 37/61
+2020-11-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-11-28,Misc,Amma,12799161 / 64,INF179K01608,,,,***Lien Removed - 182.482***
+2020-12-10,Systematic Investment,Amma,12799161 / 64,INF179K01608,7.187,4999.75,695.625,SIP Purchase - Instalment 38/61
+2020-12-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,0.25,,*** Stamp Duty ***
+2020-12-10,Misc,Amma,12799161 / 64,INF179K01608,,,,***SIP Cancelled wef 15-Dec-2020***
+2020-12-10,Reversal,Amma,12799161 / 64,INF179K01608,-7.187,-4999.75,695.625,SIP Purchase(Reversal-Standing Instruction Failed) - Instalment No 38
+2020-12-10,Stamp Duty,Amma,12799161 / 64,INF179K01608,,-0.25,,*** Stamp Duty ***
+2023-03-04,Misc,Amma,12799161 / 64,INF179K01608,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194548300_AMBPG2684H***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***CAN Data Updation***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***CAN Change of ARS***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***CAN Change of Address***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***CAN Change of Contact***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***NCT Change of Default Bank Mandate***
+2023-03-18,Misc,Amma,12799161 / 64,INF179K01608,,,,***CAN Change of Permenant Address***
+2023-03-23,Misc,Amma,12799161 / 64,INF179K01608,,,,***Address Updated from KRA Data***
+2025-03-25,Misc,Amma,12799161 / 64,INF179K01608,,,,***Address Updated from KRA Data***
+2018-12-21,Systematic Investment,Amma,15034009 / 63,INF179K01426,70.469,20000.00,283.813,SIP Purchase
+2018-12-22,Misc,Amma,15034009 / 63,INF179K01426,,,,***Change of Account Statement despatch option***
+2018-12-25,Misc,Amma,15034009 / 63,INF179K01426,,,,***SIPRegistered - 21/12/2018***
+2018-12-25,Misc,Amma,15034009 / 63,INF179K01426,,,,***Additional Investor Payout Open Mandate  Registration***
+2019-01-10,Misc,Amma,15034009 / 63,INF179K01426,,,,***Open Mandate Acceptance from BankHDFC Bank Ltd$**9565***
+2019-02-11,Systematic Investment,Amma,15034009 / 63,INF179K01426,72.983,20000.00,274.037,SIP Purchase - Instalment 2/36
+2019-03-11,Systematic Investment,Amma,15034009 / 63,INF179K01426,68.852,20000.00,290.480,SIP Purchase - Instalment 3/36
+2019-04-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,67.033,20000.00,298.359,SIP Purchase - Instalment 4/36
+2019-05-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,70.198,20000.00,284.910,SIP Purchase - Instalment 5/36
+2019-06-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,67.619,20000.00,295.776,SIP Purchase - Instalment 6/36
+2019-07-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,70.674,20000.00,282.991,SIP Purchase - Instalment 7/36
+2019-08-13,Systematic Investment,Amma,15034009 / 63,INF179K01426,75.627,20000.00,264.457,SIP Purchase - Instalment 8/36
+2019-09-11,Systematic Investment,Amma,15034009 / 63,INF179K01426,74.462,20000.00,268.593,SIP Purchase - Instalment 9/36
+2019-09-27,Misc,Amma,15034009 / 63,INF179K01426,,,,***Lien Marked - 637.917 - In favour of HDFC Bank Ltd.***
+2019-10-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,74.678,20000.00,267.815,SIP Purchase - Instalment 10/36
+2019-11-11,Systematic Investment,Amma,15034009 / 63,INF179K01426,70.734,20000.00,282.748,SIP Purchase - Instalment 11/36
+2019-12-07,Misc,Amma,15034009 / 63,INF179K01426,,,,***Address Updated from KRA Data***
+2019-12-10,Systematic Investment,Amma,15034009 / 63,INF179K01426,72.088,20000.00,277.438,SIP Purchase - Instalment 12/36
+2019-12-24,Misc,Amma,15034009 / 63,INF179K01426,,,,***SIP Cancelledvia Online wef 24-Dec-2019***
+2020-11-28,Misc,Amma,15034009 / 63,INF179K01426,,,,***Lien Removed - 637.917***
+2023-03-04,Misc,Amma,15034009 / 63,INF179K01426,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194548300_AMBPG2684H***
+2023-03-23,Misc,Amma,15034009 / 63,INF179K01426,,,,***Address Updated from KRA Data***
+2025-03-25,Misc,Amma,15034009 / 63,INF179K01426,,,,***Address Updated from KRA Data***
+2018-11-13,Systematic Investment,Amma,15034009 / 63,INF179K01AS4,399.289,20000.00,50.089,SIP Purchase
+2018-11-13,Reversal,Amma,15034009 / 63,INF179K01AS4,-399.289,-20000.00,50.089,SIP Purchase(Reversal - Cheque Dishonoured / Collection Dishonoured) - Instalment No 1
+2018-11-14,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***Registration of Nominee***
+2018-11-16,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***SIPRegistered - 13/11/2018***
+2018-11-16,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***Additional Investor Payout Open Mandate  Registration***
+2018-11-20,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***Address Updated from KRA Data***
+2018-12-07,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***SIP OMR Registered Cancelation $*****
+2018-12-07,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***Open Mandate Ceasation from BankHDFC Bank Ltd$**9565***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***CAN Data Updation***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***CAN Change of ARS***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***CAN Change of Address***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***CAN Change of Contact***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***NCT Change of Default Bank Mandate***
+2023-03-18,Misc,Amma,15034009 / 63,INF179K01AS4,,,,***CAN Change of Permenant Address***
+2017-10-23,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,129.870,5000.00,38.50,SIP Purchase Appln : 45383050 - ARN-0005/E114014
+2017-10-24,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Address Updated from KRA Data***
+2017-10-24,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Change of Contacts***
+2017-10-25,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***SIPRegistered***
+2017-11-02,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Address Updated from KRA Data***
+2017-11-02,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Change of Contacts***
+2017-12-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,124.471,5000.00,40.17,SIP Purchase - Instalment 2/180 Appln : 45383050 - ARN-0005/E114014
+2018-01-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,121.773,5000.00,41.06,SIP Purchase - Instalment 3/180 Appln : 45383050 - ARN-0005/E114014
+2018-02-12,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,123.548,5000.00,40.47,SIP Purchase - Instalment 4/180 Appln : 45383050 - ARN-0005/E114014
+2018-03-12,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,126.614,5000.00,39.49,SIP Purchase - Instalment 5/180 Appln : 45383050 - ARN-0005/E114014
+2018-04-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,125.565,5000.00,39.82,SIP Purchase - Instalment 6/180 Appln : 45383050 - ARN-0005/E114014
+2018-05-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,124.131,5000.00,40.28,SIP Purchase - Instalment 7/180 Appln : 45383050 - ARN-0005/E114014
+2018-06-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,123.640,5000.00,40.44,SIP Purchase - Instalment 8/180 Appln : 45383050 - ARN-0005/E114014
+2018-07-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,124.069,5000.00,40.30,SIP Purchase - Instalment 9/180 Appln : 45383050 - ARN-0005/E114014
+2018-08-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,118.850,5000.00,42.07,SIP Purchase - Instalment 10/180 Appln : 45383050 - ARN-0005/E114014
+2018-09-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,117.564,5000.00,42.53,SIP Purchase - Instalment 11/180 Appln : 45383050 - ARN-0005/E114014
+2018-10-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,128.535,5000.00,38.90,SIP Purchase - Instalment 12/180 Appln : 45383050 - ARN-0005/E114014
+2018-11-12,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,126.936,5000.00,39.39,SIP Purchase - Instalment 13/180 Appln : 45383050 - ARN-0005/E114014
+2018-12-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,128.932,5000.00,38.78,SIP Purchase - Instalment 14/180 Appln : 45383050 - ARN-0005/E114014
+2019-01-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,123.885,5000.00,40.36,SIP Purchase - Instalment 15/180 Appln : 45383050 - ARN-0005/E114014
+2019-02-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,126.646,5000.00,39.48,SIP Purchase - Instalment 16/180 Appln : 45383050 - ARN-0005/E114014
+2019-03-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,121.330,5000.00,41.21,SIP Purchase - Instalment 17/180 Appln : 45383050 - ARN-0005/E114014
+2019-04-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,118.652,5000.00,42.14,SIP Purchase - Instalment 18/180 Appln : 45383050 - ARN-0005/E114014
+2019-05-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,121.536,5000.00,41.14,SIP Purchase - Instalment 19/180 Appln : 45383050 - ARN-0005/E114014
+2019-06-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,115.527,5000.00,43.28,SIP Purchase - Instalment 20/180 Appln : 45383050 - ARN-0005/E114014
+2019-07-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,119.048,5000.00,42.00,SIP Purchase - Instalment 21/180 Appln : 45383050 - ARN-0005/E114014
+2019-08-13,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,125.881,5000.00,39.72,SIP Purchase - Instalment 22/180 Appln : 45383050 - ARN-0005/E114014
+2019-09-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,123.122,5000.00,40.61,SIP Purchase - Instalment 23/180 Appln : 45383050 - ARN-0005/E114014
+2019-10-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,120.890,5000.00,41.36,SIP Purchase - Instalment 24/180 Appln : 45383050 - ARN-0005/E114014
+2019-11-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,114.758,5000.00,43.57,SIP Purchase - Instalment 25/180 Appln : 45383050 - ARN-0005/E114014
+2019-12-07,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Address Updated from KRA Data***
+2019-12-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,115.554,5000.00,43.27,SIP Purchase - Instalment 26/180 Appln : 45383050 - ARN-0005/E114014
+2020-01-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,111.732,5000.00,44.75,SIP Purchase - Instalment 27/180 Appln : 45383050 - ARN-0005/E114014
+2020-01-17,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Registration of Nominee***
+2020-02-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,113.276,5000.00,44.14,SIP Purchase - Instalment 28/180 Appln : 45383050 - ARN-0005/E114014
+2020-03-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,130.174,5000.00,38.41,SIP Purchase - Instalment 29/180 Appln : 45383050 - ARN-0005/E114014
+2020-04-13,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,148.500,5000.00,33.67,SIP Purchase - Instalment 30/180 Appln : 45383050 - ARN-0005/E114014
+2020-05-11,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,146.028,5000.00,34.24,SIP Purchase - Instalment 31/180 Appln : 45383050 - ARN-0005/E114014
+2020-06-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,133.156,5000.00,37.55,SIP Purchase - Instalment 32/180 Appln : 45383050 - ARN-0005/E114014
+2020-07-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,126.801,4999.75,39.43,SIP Purchase - Instalment 33/180 Appln : 45383050 - ARN-0005/E114014
+2020-07-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,121.589,4999.75,41.12,SIP Purchase - Instalment 34/180 Appln : 45383050 - ARN-0005/E114014
+2020-08-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,119.783,4999.75,41.74,SIP Purchase - Instalment 35/180 Appln : 45383050 - ARN-0005/E114014
+2020-09-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-09-19,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***DOB updation***
+2020-10-12,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,117.503,4999.75,42.55,SIP Purchase - Instalment 36/180 Appln : 45383050 - ARN-0005/E114014
+2020-10-12,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,109.812,4999.75,45.53,SIP Purchase - Instalment 37/180 Appln : 45383050 - ARN-0005/E114014
+2020-11-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-12-03,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Cancelled wef 09-JAN-2021<$> Investor initiated cancellation***
+2020-12-10,Systematic Investment,Amma,10391853 / 47,INF109K01BL4,102.244,4999.75,48.90,SIP Purchase - Instalment 38/180 Appln : 45383050 - ARN-0005/E114014
+2020-12-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,0.25,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,10391853 / 47,INF109K01BL4,-102.244,-4999.75,48.90,SIP Purchase (Reversal) Appln : 45383050 - Instalment No 38
+2020-12-10,Stamp Duty,Amma,10391853 / 47,INF109K01BL4,,-0.25,,*** Stamp Duty ***
+2023-03-04,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194641400_AMBPG2684H***
+2023-03-17,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***CAN Data Updation***
+2023-03-17,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***NCT Change of Default Bank Mandate***
+2023-03-23,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Address Updated from KRA Data***
+2025-03-25,Misc,Amma,10391853 / 47,INF109K01BL4,,,,***Address Updated from KRA Data***
+2021-05-11,Misc,Amma,4641557,INF174K01KT2,,,,***SIPRegistered***
+2021-06-11,Systematic Investment,Amma,4641557,INF174K01KT2,55.422,8499.58,153.362,Systematic Purchase (Continuous Offer) - Instalment 1/60 - via Internet
+2021-06-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-07-13,Systematic Investment,Amma,4641557,INF174K01KT2,52.474,8499.58,161.978,Systematic Purchase (Continuous Offer) - Instalment 2/60 - via Internet
+2021-07-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-08-12,Systematic Investment,Amma,4641557,INF174K01KT2,51.413,8499.58,165.321,Systematic Purchase (Continuous Offer) - Instalment 3/60 - via Internet
+2021-08-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-09-23,Systematic Investment,Amma,4641557,INF174K01KT2,47.734,8499.58,178.061,Systematic Purchase (Continuous Offer) - Instalment 4/60 - via Internet
+2021-09-23,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-10-12,Systematic Investment,Amma,4641557,INF174K01KT2,45.433,8499.58,187.079,Systematic Purchase (Continuous Offer) - Instalment 5/60 - via Internet
+2021-10-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-11-12,Systematic Investment,Amma,4641557,INF174K01KT2,44.497,8499.58,191.013,Systematic Purchase (Continuous Offer) - Instalment 6/60 - via Internet
+2021-11-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2021-12-13,Systematic Investment,Amma,4641557,INF174K01KT2,45.029,8499.58,188.759,Systematic Purchase (Continuous Offer) - via Internet
+2021-12-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-01-12,Systematic Investment,Amma,4641557,INF174K01KT2,43.548,8499.58,195.176,Systematic Purchase (Continuous Offer)
+2022-01-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-02-11,Systematic Investment,Amma,4641557,INF174K01KT2,46.362,8499.58,183.331,Systematic Purchase (Continuous Offer)
+2022-02-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-03-11,Systematic Investment,Amma,4641557,INF174K01KT2,48.494,8499.58,175.270,Systematic Purchase (Continuous Offer)
+2022-03-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-04-12,Systematic Investment,Amma,4641557,INF174K01KT2,45.201,8499.58,188.038,Systematic Purchase (Continuous Offer)
+2022-04-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-05-12,Systematic Investment,Amma,4641557,INF174K01KT2,50.898,8499.58,166.994,Systematic Purchase (Continuous Offer)
+2022-05-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-06-13,Systematic Investment,Amma,4641557,INF174K01KT2,51.205,8499.58,165.990,Systematic Purchase (Continuous Offer)
+2022-06-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-07-12,Systematic Investment,Amma,4641557,INF174K01KT2,49.460,8499.58,171.847,Systematic Purchase (Continuous Offer)
+2022-07-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-08-12,Systematic Investment,Amma,4641557,INF174K01KT2,46.072,8499.58,184.485,Systematic Purchase (Continuous Offer)
+2022-08-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-09-13,Systematic Investment,Amma,4641557,INF174K01KT2,43.521,8499.58,195.300,Systematic Purchase (Continuous Offer) - Instalment 16/60
+2022-09-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-10-12,Systematic Investment,Amma,4641557,INF174K01KT2,45.404,8499.58,187.199,Systematic Purchase (Continuous Offer) - Instalment 17/60
+2022-10-12,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-11-11,Systematic Investment,Amma,4641557,INF174K01KT2,45.364,8499.58,187.362,Systematic Purchase (Continuous Offer) - Instalment 18/60
+2022-11-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2022-12-13,Systematic Investment,Amma,4641557,INF174K01KT2,44.922,8499.58,189.209,Systematic Purchase (Continuous Offer) - Instalment 19/60
+2022-12-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-01-11,Systematic Investment,Amma,4641557,INF174K01KT2,46.123,8499.58,184.279,Systematic Purchase (Continuous Offer) - Instalment 20/60
+2023-01-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-02-13,Systematic Investment,Amma,4641557,INF174K01KT2,46.325,8499.58,183.479,Systematic Purchase (Continuous Offer) - Instalment 21/60
+2023-02-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-03-13,Systematic Investment,Amma,4641557,INF174K01KT2,46.715,8499.58,181.947,Systematic Purchase (Continuous Offer) - Instalment 22/60 - via Internet
+2023-03-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-04-11,Systematic Investment,Amma,4641557,INF174K01KT2,46.324,8499.58,183.481,Systematic Purchase (Continuous Offer) - Instalment 23/60
+2023-04-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-05-11,Systematic Investment,Amma,4641557,INF174K01KT2,44.367,8499.58,191.576,Systematic Purchase (Continuous Offer) - Instalment 24/60 - via Internet
+2023-05-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-06-13,Systematic Investment,Amma,4641557,INF174K01KT2,41.453,8499.58,205.042,Systematic Purchase (Continuous Offer) - Instalment 25/60 - via Internet
+2023-06-13,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-07-11,Systematic Investment,Amma,4641557,INF174K01KT2,40.051,8499.58,212.217,Systematic Purchase (Continuous Offer) - Instalment 26/60 - via Internet
+2023-07-11,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-08-14,Systematic Investment,Amma,4641557,INF174K01KT2,38.666,8499.58,219.820,Systematic Purchase (Continuous Offer) - Instalment 27/60 - via Internet
+2023-08-14,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-08-27,Misc,Amma,4641557,INF174K01KT2,,,,***Cancelled***
+2023-09-25,Purchase,Amma,4641557,INF174K01KT2,37.437,8499.58,227.039,Purchase (Continuous Offer)
+2023-09-25,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-10-03,Purchase,Amma,4641557,INF174K01KT2,37.151,8499.58,228.786,Purchase (Continuous Offer)
+2023-10-03,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-10-04,Misc,Amma,4641557,INF174K01KT2,,,,"***Open Mandate Ceasation from BankHDFC Bank Ltd,**9565***"
+2023-10-27,Purchase,Amma,4641557,INF174K01KT2,38.286,8499.58,222.002,Purchase (Continuous Offer)
+2023-10-27,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,4641557,INF174K01KT2,35.823,8499.58,237.267,Purchase (Continuous Offer)
+2023-11-28,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,4641557,INF174K01KT2,33.592,8499.58,253.021,Purchase (Continuous Offer)
+2024-01-02,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,4641557,INF174K01KT2,33.395,8499.58,254.513,Purchase (Continuous Offer)
+2024-01-30,Stamp Duty,Amma,4641557,INF174K01KT2,,0.42,,*** Stamp Duty ***
+2025-03-25,Misc,Amma,4641557,INF174K01KT2,,,,***Address Updated from KRA Data***
+2017-10-25,Systematic Investment,Amma,4641557,INF174K01187,43.337,5000.00,115.375,Systematic Purchase (Continuous Offer)
+2017-10-26,Misc,Amma,4641557,INF174K01187,,,,***Registration of Nominee***
+2017-10-26,Misc,Amma,4641557,INF174K01187,,,,***Address Updated from KRA Data***
+2017-10-26,Misc,Amma,4641557,INF174K01187,,,,***SIPRegistered***
+2017-10-26,Misc,Amma,4641557,INF174K01187,,,,***Additional Investor Payout Open Mandate  Registration***
+2017-11-02,Misc,Amma,4641557,INF174K01187,,,,***Address Updated from KRA Data***
+2017-11-07,Misc,Amma,4641557,INF174K01187,,,,***Open Mandate Acceptance from BankHDFC Bank Ltd$**9565***
+2017-12-11,Systematic Investment,Amma,4641557,INF174K01187,42.920,5000.00,116.496,Systematic Purchase (Continuous Offer) - Instalment 2/62
+2018-01-10,Systematic Investment,Amma,4641557,INF174K01187,41.536,5000.00,120.378,Systematic Purchase (Continuous Offer) - Instalment 3/62
+2018-02-12,Systematic Investment,Amma,4641557,INF174K01187,43.163,5000.00,115.839,Systematic Purchase (Continuous Offer) - Instalment 4/62
+2018-03-12,Systematic Investment,Amma,4641557,INF174K01187,44.209,5000.00,113.099,Systematic Purchase (Continuous Offer) - Instalment 5/62
+2018-04-10,Systematic Investment,Amma,4641557,INF174K01187,43.307,5000.00,115.456,Systematic Purchase (Continuous Offer) - Instalment 6/62
+2018-05-10,Systematic Investment,Amma,4641557,INF174K01187,43.739,5000.00,114.314,Systematic Purchase (Continuous Offer) - Instalment 7/62
+2018-06-11,Systematic Investment,Amma,4641557,INF174K01187,43.670,5000.00,114.494,Systematic Purchase (Continuous Offer) - Instalment 8/62
+2018-07-10,Systematic Investment,Amma,4641557,INF174K01187,43.869,5000.00,113.975,Systematic Purchase (Continuous Offer) - Instalment 9/62
+2018-08-10,Systematic Investment,Amma,4641557,INF174K01187,42.265,5000.00,118.302,Systematic Purchase (Continuous Offer) - Instalment 10/62
+2018-09-10,Systematic Investment,Amma,4641557,INF174K01187,42.561,5000.00,117.478,Systematic Purchase (Continuous Offer) - Instalment 11/62
+2018-10-10,Systematic Investment,Amma,4641557,INF174K01187,47.250,5000.00,105.819,Systematic Purchase (Continuous Offer) - Instalment 12/62
+2018-11-12,Systematic Investment,Amma,4641557,INF174K01187,46.156,5000.00,108.328,Systematic Purchase (Continuous Offer) - Instalment 13/62
+2018-12-10,Systematic Investment,Amma,4641557,INF174K01187,46.173,5000.00,108.288,Systematic Purchase (Continuous Offer) - Instalment 14/62
+2019-01-10,Systematic Investment,Amma,4641557,INF174K01187,44.193,5000.00,113.141,Systematic Purchase (Continuous Offer) - Instalment 15/62
+2019-02-11,Systematic Investment,Amma,4641557,INF174K01187,45.285,5000.00,110.412,Systematic Purchase (Continuous Offer) - Instalment 16/62
+2019-03-11,Systematic Investment,Amma,4641557,INF174K01187,42.951,5000.00,116.413,Systematic Purchase (Continuous Offer) - Instalment 17/62
+2019-04-10,Systematic Investment,Amma,4641557,INF174K01187,41.970,5000.00,119.132,Systematic Purchase (Continuous Offer) - Instalment 18/62
+2019-05-10,Systematic Investment,Amma,4641557,INF174K01187,43.265,5000.00,115.568,Systematic Purchase (Continuous Offer) - Instalment 19/62
+2019-06-10,Systematic Investment,Amma,4641557,INF174K01187,40.816,5000.00,122.501,Systematic Purchase (Continuous Offer) - Instalment 20/62
+2019-07-10,Systematic Investment,Amma,4641557,INF174K01187,42.554,5000.00,117.499,Systematic Purchase (Continuous Offer) - Instalment 21/62
+2019-08-13,Systematic Investment,Amma,4641557,INF174K01187,44.274,5000.00,112.932,Systematic Purchase (Continuous Offer) - Instalment 22/62
+2019-09-11,Systematic Investment,Amma,4641557,INF174K01187,43.794,5000.00,114.170,Systematic Purchase (Continuous Offer) - Instalment 23/62
+2019-10-10,Systematic Investment,Amma,4641557,INF174K01187,43.149,5000.00,115.877,Systematic Purchase (Continuous Offer) - Instalment 24/62
+2019-11-11,Systematic Investment,Amma,4641557,INF174K01187,40.099,5000.00,124.691,Systematic Purchase (Continuous Offer) - Instalment 25/62
+2019-12-07,Misc,Amma,4641557,INF174K01187,,,,***Address Updated from KRA Data***
+2019-12-10,Systematic Investment,Amma,4641557,INF174K01187,40.184,5000.00,124.429,Systematic Purchase (Continuous Offer) - Instalment 26/62
+2020-01-10,Systematic Investment,Amma,4641557,INF174K01187,38.368,5000.00,130.317,Systematic Purchase (Continuous Offer) - Instalment 27/62
+2020-01-17,Misc,Amma,4641557,INF174K01187,,,,***Registration of NomineeNOM***
+2020-02-10,Systematic Investment,Amma,4641557,INF174K01187,37.387,5000.00,133.736,Systematic Purchase (Continuous Offer) - Instalment 28/62
+2020-03-11,Systematic Investment,Amma,4641557,INF174K01187,42.693,5000.00,117.114,Systematic Purchase (Continuous Offer) - Instalment 29/62
+2020-04-13,Systematic Investment,Amma,4641557,INF174K01187,50.648,5000.00,98.720,Systematic Purchase (Continuous Offer) - Instalment 30/62
+2020-05-11,Systematic Investment,Amma,4641557,INF174K01187,48.674,5000.00,102.724,Systematic Purchase (Continuous Offer) - Instalment 31/62
+2020-06-10,Systematic Investment,Amma,4641557,INF174K01187,44.980,5000.00,111.161,Systematic Purchase (Continuous Offer) - Instalment 32/62
+2020-07-10,Systematic Investment,Amma,4641557,INF174K01187,42.534,4999.75,117.547,Systematic Purchase (Continuous Offer) - Instalment 33/62
+2020-07-10,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,4641557,INF174K01187,40.676,4999.75,122.917,Systematic Purchase (Continuous Offer) - Instalment 34/62
+2020-08-10,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,4641557,INF174K01187,40.658,4999.75,122.972,Systematic Purchase (Continuous Offer) - Instalment 35/62
+2020-09-10,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,4641557,INF174K01187,38.923,4999.75,128.453,Systematic Purchase (Continuous Offer) - Instalment 36/62
+2020-10-12,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,4641557,INF174K01187,37.450,4999.75,133.505,Systematic Purchase (Continuous Offer) - Instalment 37/62
+2020-11-10,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,4641557,INF174K01187,34.353,4999.75,145.539,Systematic Purchase (Continuous Offer) - Instalment 38/62
+2020-12-10,Stamp Duty,Amma,4641557,INF174K01187,,0.25,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,4641557,INF174K01187,-34.353,-4999.75,145.539,Systematic Purchase (Continuous Offer)ER04: Insufficient Balance - Instalment No 38
+2020-12-10,Stamp Duty,Amma,4641557,INF174K01187,,-0.25,,*** Stamp Duty ***
+2020-12-16,Misc,Amma,4641557,INF174K01187,,,,***SIPCancelled As Per Investor Cancellation Request***
+2023-03-21,Misc,Amma,4641557,INF174K01187,,,,***CAN Data Updation***
+2023-03-21,Misc,Amma,4641557,INF174K01187,,,,***NCT Change of Default Bank Mandate***
+2021-05-11,Misc,Amma,4641557,INF174K01LT0,,,,***SIPRegistered***
+2021-06-11,Systematic Investment,Amma,4641557,INF174K01LT0,63.880,4499.78,70.441,Systematic Purchase (Continuous Offer) - Instalment 1/117 - via Internet
+2021-06-11,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-07-13,Systematic Investment,Amma,4641557,INF174K01LT0,61.590,4499.78,73.060,Systematic Purchase (Continuous Offer) - Instalment 2/117 - via Internet
+2021-07-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-08-12,Systematic Investment,Amma,4641557,INF174K01LT0,60.800,4499.78,74.009,Systematic Purchase (Continuous Offer) - Instalment 3/117 - via Internet
+2021-08-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-09-23,Systematic Investment,Amma,4641557,INF174K01LT0,57.321,4499.78,78.502,Systematic Purchase (Continuous Offer) - Instalment 4/117 - via Internet
+2021-09-23,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-10-12,Systematic Investment,Amma,4641557,INF174K01LT0,55.012,4499.78,81.796,Systematic Purchase (Continuous Offer) - Instalment 5/117 - via Internet
+2021-10-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-11-12,Systematic Investment,Amma,4641557,INF174K01LT0,54.770,4499.78,82.158,Systematic Purchase (Continuous Offer) - Instalment 6/117 - via Internet
+2021-11-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2021-12-13,Systematic Investment,Amma,4641557,INF174K01LT0,55.396,4499.78,81.230,Systematic Purchase (Continuous Offer) - via Internet
+2021-12-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-01-12,Systematic Investment,Amma,4641557,INF174K01LT0,53.701,4499.78,83.794,Systematic Purchase (Continuous Offer)
+2022-01-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-02-11,Systematic Investment,Amma,4641557,INF174K01LT0,57.253,4499.78,78.594,Systematic Purchase (Continuous Offer)
+2022-02-11,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-03-11,Systematic Investment,Amma,4641557,INF174K01LT0,59.002,4499.78,76.265,Systematic Purchase (Continuous Offer)
+2022-03-11,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-04-12,Systematic Investment,Amma,4641557,INF174K01LT0,54.670,4499.78,82.308,Systematic Purchase (Continuous Offer)
+2022-04-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-05-12,Systematic Investment,Amma,4641557,INF174K01LT0,61.283,4499.78,73.426,Systematic Purchase (Continuous Offer)
+2022-05-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-06-13,Systematic Investment,Amma,4641557,INF174K01LT0,61.607,4499.78,73.040,Systematic Purchase (Continuous Offer)
+2022-06-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-07-12,Systematic Investment,Amma,4641557,INF174K01LT0,59.020,4499.78,76.242,Systematic Purchase (Continuous Offer)
+2022-07-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-08-12,Systematic Investment,Amma,4641557,INF174K01LT0,53.376,4499.78,84.303,Systematic Purchase (Continuous Offer)
+2022-08-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-09-13,Systematic Investment,Amma,4641557,INF174K01LT0,50.685,4499.78,88.779,Systematic Purchase (Continuous Offer) - Instalment 16/117
+2022-09-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-10-12,Systematic Investment,Amma,4641557,INF174K01LT0,53.217,4499.78,84.555,Systematic Purchase (Continuous Offer) - Instalment 17/117
+2022-10-12,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-11-11,Systematic Investment,Amma,4641557,INF174K01LT0,51.985,4499.78,86.560,Systematic Purchase (Continuous Offer) - Instalment 18/117
+2022-11-11,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2022-12-13,Systematic Investment,Amma,4641557,INF174K01LT0,51.250,4499.78,87.801,Systematic Purchase (Continuous Offer) - Instalment 19/117
+2022-12-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2023-01-11,Systematic Investment,Amma,4641557,INF174K01LT0,52.555,4499.78,85.620,Systematic Purchase (Continuous Offer) - Instalment 20/117
+2023-01-11,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2023-02-13,Systematic Investment,Amma,4641557,INF174K01LT0,52.884,4499.78,85.087,Systematic Purchase (Continuous Offer) - Instalment 21/117
+2023-02-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2023-03-04,Misc,Amma,4641557,INF174K01LT0,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194715200_AMBPG2684H***
+2023-03-13,Systematic Investment,Amma,4641557,INF174K01LT0,53.414,4499.78,84.243,Systematic Purchase (Continuous Offer) - Instalment 22/117 - via Internet
+2023-03-13,Stamp Duty,Amma,4641557,INF174K01LT0,,0.22,,*** Stamp Duty ***
+2023-03-17,Misc,Amma,4641557,INF174K01LT0,,,,***Cancelled***
+2020-01-12,Misc,Amma,4641557,INF174K01LS2,,,,***SIPRegistered***
+2020-02-03,Systematic Investment,Amma,4641557,INF174K01LS2,140.619,5600.00,39.824,Systematic Purchase (Continuous Offer) - Instalment 1/74
+2020-03-02,Systematic Investment,Amma,4641557,INF174K01LS2,147.913,5600.00,37.860,Systematic Purchase (Continuous Offer) - Instalment 2/74
+2020-04-03,Systematic Investment,Amma,4641557,INF174K01LS2,204.753,5600.00,27.350,Systematic Purchase (Continuous Offer) - Instalment 3/74
+2020-05-04,Systematic Investment,Amma,4641557,INF174K01LS2,180.105,5600.00,31.093,Systematic Purchase (Continuous Offer) - Instalment 4/74
+2020-06-02,Systematic Investment,Amma,4641557,INF174K01LS2,168.522,5600.00,33.230,Systematic Purchase (Continuous Offer) - Instalment 5/74
+2020-07-02,Systematic Investment,Amma,4641557,INF174K01LS2,158.650,5599.72,35.296,Systematic Purchase (Continuous Offer) - Instalment 6/74
+2020-07-02,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-08-03,Systematic Investment,Amma,4641557,INF174K01LS2,154.496,5599.72,36.245,Systematic Purchase (Continuous Offer) - Instalment 7/74
+2020-08-03,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-09-02,Systematic Investment,Amma,4641557,INF174K01LS2,147.439,5599.72,37.980,Systematic Purchase (Continuous Offer) - Instalment 8/74
+2020-09-02,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-10-05,Systematic Investment,Amma,4641557,INF174K01LS2,146.712,5599.72,38.168,Systematic Purchase (Continuous Offer) - Instalment 9/74
+2020-10-05,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-11-02,Systematic Investment,Amma,4641557,INF174K01LS2,146.165,5599.72,38.311,Systematic Purchase (Continuous Offer) - Instalment 10/74 - via myCAMS Online
+2020-11-02,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-12-02,Systematic Investment,Amma,4641557,INF174K01LS2,129.560,5599.72,43.221,Systematic Purchase (Continuous Offer) - Instalment 11/74 - via myCAMS Online
+2020-12-02,Stamp Duty,Amma,4641557,INF174K01LS2,,0.28,,*** Stamp Duty ***
+2020-12-02,Reversal,Amma,4641557,INF174K01LS2,-129.560,-5599.72,43.221,Systematic Purchase (Continuous Offer)Reversal: Other edits through New Edit - via myCAMS Online - Instalment No 11
+2020-12-02,Stamp Duty,Amma,4641557,INF174K01LS2,,-0.28,,*** Stamp Duty ***
+2020-12-16,Misc,Amma,4641557,INF174K01LS2,,,,***SIPCancelled As Per Investor Cancellation Request***
+2020-01-13,Misc,Amma,79925703934 / 0,INF769K01BI1,,,,***Updation of KYC***
+2020-02-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,102.326,6400.00,62.545,Systematic Investment (1/62)
+2020-03-11,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,115.116,6400.00,55.596,Systematic Investment ISIP (2/62)
+2020-04-13,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,134.389,6400.00,47.623,Systematic Investment (3/62)
+2020-05-11,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,130.370,6400.00,49.091,Systematic Investment (4/62)
+2020-06-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,119.548,6400.00,53.535,Systematic Investment (5/62)
+2020-07-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,111.009,6399.68,57.650,Systematic Investment (6/62)
+2020-07-10,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,105.118,6399.68,60.881,Systematic Investment (7/62)
+2020-08-10,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,103.186,6399.68,62.021,Systematic Investment (8/62)
+2020-09-10,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,99.830,6399.68,64.106,Systematic Investment (9/62)
+2020-10-12,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,93.342,6399.68,68.562,Systematic Investment (10/62)
+2020-11-10,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,79925703934 / 0,INF769K01BI1,86.492,6399.68,73.992,Systematic Investment (11/62)
+2020-12-10,Stamp Duty,Amma,79925703934 / 0,INF769K01BI1,,0.32,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,79925703934 / 0,INF769K01BI1,-86.492,-6399.68,73.992,Systematic Investment Rejection (11/62)
+2023-03-26,Misc,Amma,79925703934 / 0,INF769K01BI1,,,,***Updation of KYC***
+2026-01-02,Redemption,Amma,79925703934 / 0,INF769K01BI1,-1114.234,-200205.79,179.682,"Redemption Directly credited to your Bank account (HDFC BANK-DCB) less TDS, STT"
+2026-01-02,STT Paid,Amma,79925703934 / 0,INF769K01BI1,,2.00,,*** STT Paid ***
+2020-01-13,Misc,Amma,79925703934 / 0,INF769K01DM9,,,,***Updation of KYC***
+2020-02-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,790.397,16000.00,20.243,Systematic Investment (1/50)
+2020-03-11,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,901.866,16000.00,17.741,Systematic Investment ISIP (2/50)
+2020-04-13,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,1042.074,16000.00,15.354,Systematic Investment (3/50)
+2020-05-11,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,1017.165,16000.00,15.730,Systematic Investment (4/50)
+2020-06-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,925.926,16000.00,17.280,Systematic Investment (5/50)
+2020-07-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,859.479,15999.20,18.615,Systematic Investment (6/50)
+2020-07-10,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-08-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,814.582,15999.20,19.641,Systematic Investment (7/50)
+2020-08-10,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-09-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,792.236,15999.20,20.195,Systematic Investment (8/50)
+2020-09-10,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-10-12,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,760.454,15999.20,21.039,Systematic Investment (9/50)
+2020-10-12,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-11-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,710.192,15999.20,22.528,Systematic Investment (10/50)
+2020-11-10,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-12-10,Systematic Investment,Amma,79925703934 / 0,INF769K01DM9,662.164,15999.20,24.162,Systematic Investment (11/50)
+2020-12-10,Stamp Duty,Amma,79925703934 / 0,INF769K01DM9,,0.80,,*** Stamp Duty ***
+2020-12-10,Reversal,Amma,79925703934 / 0,INF769K01DM9,-662.164,-15999.20,24.162,Systematic Investment Rejection (11/50)
+2023-03-26,Misc,Amma,79925703934 / 0,INF769K01DM9,,,,***Updation of KYC***
+2021-06-10,Systematic Investment,Amma,9106204444 / 0,INF663L01FF1,432.198,10999.45,25.45,Systematic Investment ISIP (1/3)
+2021-06-10,Stamp Duty,Amma,9106204444 / 0,INF663L01FF1,,0.55,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,9106204444 / 0,INF663L01FF1,415.858,10999.45,26.45,Systematic Investment ISIP (2/3)
+2021-07-12,Stamp Duty,Amma,9106204444 / 0,INF663L01FF1,,0.55,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,9106204444 / 0,INF663L01FF1,393.963,10999.45,27.92,Systematic Investment ISIP (3/3)
+2021-08-10,Stamp Duty,Amma,9106204444 / 0,INF663L01FF1,,0.55,,*** Stamp Duty ***
+2023-03-24,Misc,Amma,9106204444 / 0,INF663L01FF1,,,,******Address updated from CVL data******
+2023-12-21,Redemption,Amma,9106204444 / 0,INF663L01FF1,-1242.019,-42575.98,34.28,"Redemption less TDS, STT"
+2023-12-21,STT Paid,Amma,9106204444 / 0,INF663L01FF1,,0.43,,*** STT Paid ***
+2023-03-20,Purchase,Amma,9106204444 / 0,INF663L01DV3,537.723,24998.75,46.49,Purchase Trxn.Ref.No.230764942923/HDFC BANK
+2023-03-20,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-03-23,Purchase,Amma,9106204444 / 0,INF663L01DV3,539.580,24998.75,46.33,Purchase
+2023-03-23,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-03-24,Purchase,Amma,9106204444 / 0,INF663L01DV3,543.924,24998.75,45.96,Purchase
+2023-03-24,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-03-24,Misc,Amma,9106204444 / 0,INF663L01DV3,,,,******Address updated from CVL data******
+2023-05-29,Purchase,Amma,9106204444 / 0,INF663L01DV3,496.105,24998.75,50.39,Purchase
+2023-05-29,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,9106204444 / 0,INF663L01DV3,491.328,24998.75,50.88,Purchase
+2023-06-05,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,9106204444 / 0,INF663L01DV3,157.225,7999.60,50.88,Purchase
+2023-06-05,Stamp Duty,Amma,9106204444 / 0,INF663L01DV3,,0.40,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,404.633,15999.20,39.54,Systematic Investment ISIP (1/3)
+2021-06-10,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.80,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,391.274,15999.20,40.89,Systematic Investment ISIP (2/3)
+2021-07-12,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.80,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,368.900,15999.20,43.37,Systematic Investment ISIP (3/3)
+2021-08-10,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.80,,*** Stamp Duty ***
+2023-03-24,Misc,Amma,9106205012 / 0,INF663L01DV3,,,,******Address updated from CVL data******
+2023-04-10,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,53.065,2499.88,47.11,Systematic Investment ISIP (1/5)
+2023-04-10,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-05-08,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,51.039,2499.88,48.98,Systematic Investment ISIP (2/5)
+2023-05-08,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-06-07,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,49.036,2499.88,50.98,Systematic Investment ISIP (3/5)
+2023-06-07,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-07-07,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,47.472,2499.88,52.66,Systematic Investment ISIP (4/5)
+2023-07-07,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-08-07,Systematic Investment,Amma,9106205012 / 0,INF663L01DV3,46.132,2499.88,54.19,Systematic Investment ISIP (5/5)
+2023-08-07,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-09-22,Purchase,Amma,9106205012 / 0,INF663L01DV3,45.519,2499.88,54.92,Purchase
+2023-09-22,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,9106205012 / 0,INF663L01DV3,45.370,2499.88,55.10,Purchase
+2023-09-29,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,9106205012 / 0,INF663L01DV3,46.762,2499.88,53.46,Purchase
+2023-10-27,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,9106205012 / 0,INF663L01DV3,43.827,2499.88,57.04,Purchase
+2023-11-28,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,9106205012 / 0,INF663L01DV3,41.853,2499.88,59.73,Purchase
+2024-01-02,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,9106205012 / 0,INF663L01DV3,42.078,2499.88,59.41,Purchase
+2024-01-30,Stamp Duty,Amma,9106205012 / 0,INF663L01DV3,,0.12,,*** Stamp Duty ***
+2021-05-11,Systematic Investment,Amma,11002736,INF879O01027,471.409,19999.00,42.4239,Purchase Systematic - via Internet
+2021-05-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-05-11,Misc,Amma,11002736,INF879O01027,,,,***Registration of Nominee***
+2021-05-12,Misc,Amma,11002736,INF879O01027,,,,***Address Updated from KRA Data***
+2021-05-15,Misc,Amma,11002736,INF879O01027,,,,***SIPRegistered***
+2021-06-11,Systematic Investment,Amma,11002736,INF879O01027,449.865,19999.00,44.4556,Purchase Systematic - Instalment 2/61 - via Internet
+2021-06-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-07-13,Systematic Investment,Amma,11002736,INF879O01027,425.495,19999.00,47.0017,Purchase Systematic - Instalment 3/61 - via Internet
+2021-07-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-08-02,Purchase,Amma,11002736,INF879O01027,35.118,1699.92,48.4054,Purchase - via myCAMS Online
+2021-08-02,Stamp Duty,Amma,11002736,INF879O01027,,0.08,,*** Stamp Duty ***
+2021-08-12,Systematic Investment,Amma,11002736,INF879O01027,412.825,19999.00,48.4442,Purchase Systematic - Instalment 4/61 - via Internet
+2021-08-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-09-14,Systematic Investment,Amma,11002736,INF879O01027,385.803,19999.00,51.8374,Purchase Systematic - Instalment 5/61 - via Internet
+2021-09-14,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-10-12,Systematic Investment,Amma,11002736,INF879O01027,370.478,19999.00,53.9816,Purchase Systematic - Instalment 6/61 - via Internet
+2021-10-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-11-12,Systematic Investment,Amma,11002736,INF879O01027,366.590,19999.00,54.5542,Purchase Systematic - Instalment 7/61 - via Internet
+2021-11-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2021-12-13,Systematic Investment,Amma,11002736,INF879O01027,362.859,19999.00,55.1150,Purchase Systematic - via Internet
+2021-12-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-01-12,Systematic Investment,Amma,11002736,INF879O01027,365.381,19999.00,54.7346,Purchase Systematic
+2022-01-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-02-11,Systematic Investment,Amma,11002736,INF879O01027,381.155,19999.00,52.4694,Purchase Systematic
+2022-02-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-03-11,Systematic Investment,Amma,11002736,INF879O01027,400.045,19999.00,49.9919,Purchase Systematic
+2022-03-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-04-12,Systematic Investment,Amma,11002736,INF879O01027,380.421,19999.00,52.5707,Purchase Systematic - Instalment 12/61
+2022-04-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-05-12,Systematic Investment,Amma,11002736,INF879O01027,425.329,19999.00,47.0201,Purchase Systematic - Instalment 13/61
+2022-05-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-06-16,Systematic Investment,Amma,11002736,INF879O01027,434.252,19999.00,46.0539,Purchase Systematic - Instalment 14/61
+2022-06-16,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-07-12,Systematic Investment,Amma,11002736,INF879O01027,413.156,19999.00,48.4055,Purchase Systematic - Instalment 15/61
+2022-07-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-08-12,Systematic Investment,Amma,11002736,INF879O01027,385.602,19999.00,51.8644,Purchase Systematic - Instalment 16/61
+2022-08-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-09-13,Systematic Investment,Amma,11002736,INF879O01027,376.322,19999.00,53.1433,Purchase Systematic - Instalment 17/61
+2022-09-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-10-12,Systematic Investment,Amma,11002736,INF879O01027,396.259,19999.00,50.4695,Purchase Systematic - Instalment 18/61
+2022-10-12,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-11-11,Systematic Investment,Amma,11002736,INF879O01027,382.719,19999.00,52.2551,Purchase Systematic - Instalment 19/61
+2022-11-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2022-12-13,Systematic Investment,Amma,11002736,INF879O01027,381.625,19999.00,52.4048,Purchase Systematic - Instalment 20/61
+2022-12-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-01-11,Systematic Investment,Amma,11002736,INF879O01027,392.263,19999.00,50.9837,Purchase Systematic - Instalment 21/61
+2023-01-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-02-13,Systematic Investment,Amma,11002736,INF879O01027,381.114,19999.00,52.4751,Purchase Systematic - Instalment 22/61
+2023-02-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-03-04,Misc,Amma,11002736,INF879O01027,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301194773300_AMBPG2684H***
+2023-03-13,Systematic Investment,Amma,11002736,INF879O01027,385.345,19999.00,51.8989,Purchase Systematic - Instalment 23/61 - via Internet
+2023-03-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-03-17,Misc,Amma,11002736,INF879O01027,,,,***NCT Change of Default Bank Mandate***
+2023-03-23,Misc,Amma,11002736,INF879O01027,,,,***Address Updated from KRA Data***
+2023-04-11,Systematic Investment,Amma,11002736,INF879O01027,367.800,19999.00,54.3747,Purchase Systematic - Instalment 24/61
+2023-04-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-05-11,Systematic Investment,Amma,11002736,INF879O01027,352.789,19999.00,56.6883,Purchase Systematic - Instalment 25/61
+2023-05-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-06-13,Systematic Investment,Amma,11002736,INF879O01027,341.784,19999.00,58.5135,Purchase Systematic - Instalment 26/61
+2023-06-13,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-07-11,Systematic Investment,Amma,11002736,INF879O01027,334.091,19999.00,59.8609,Purchase Systematic - Instalment 27/61
+2023-07-11,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-08-14,Systematic Investment,Amma,11002736,INF879O01027,327.754,19999.00,61.0184,Purchase Systematic - Instalment 28/61 - via Internet
+2023-08-14,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-08-27,Misc,Amma,11002736,INF879O01027,,,,***SIPCancelledvia Online wef 06-Sep-2023***
+2023-09-25,Purchase,Amma,11002736,INF879O01027,318.781,19999.00,62.7359,Purchase
+2023-09-25,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-10-03,Purchase,Amma,11002736,INF879O01027,320.013,19999.00,62.4944,Purchase
+2023-10-03,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,11002736,INF879O01027,320.698,19999.00,62.3608,Purchase
+2023-10-27,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,11002736,INF879O01027,300.055,19999.00,66.6512,Purchase
+2023-11-28,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,11002736,INF879O01027,284.368,19999.00,70.3278,Purchase
+2024-01-02,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,11002736,INF879O01027,278.885,19999.00,71.7106,Purchase
+2024-01-30,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,11002736,INF879O01027,134.881,9999.50,74.1358,Purchase
+2024-02-28,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-03-28,Purchase,Amma,11002736,INF879O01027,133.565,9999.50,74.8659,Purchase
+2024-03-28,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,11002736,INF879O01027,128.591,9999.50,77.7623,Purchase
+2024-05-06,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,11002736,INF879O01027,128.579,9999.50,77.7696,Purchase
+2024-05-31,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,11002736,INF879O01027,122.037,9999.50,81.9385,Purchase
+2024-06-28,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-08-01,Purchase,Amma,11002736,INF879O01027,117.172,9999.50,85.3407,Purchase
+2024-08-01,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,11002736,INF879O01027,116.919,9999.50,85.5251,Purchase
+2024-08-28,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-10-04,Purchase,Amma,11002736,INF879O01027,114.906,9999.50,87.0233,Purchase
+2024-10-04,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,11002736,INF879O01027,343.442,29998.50,87.3465,Purchase
+2025-01-06,Stamp Duty,Amma,11002736,INF879O01027,,1.50,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,11002736,INF879O01027,116.716,9999.50,85.6737,Purchase
+2025-01-28,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-03-25,Misc,Amma,11002736,INF879O01027,,,,***Address Updated from KRA Data***
+2025-04-22,Purchase,Amma,11002736,INF879O01027,114.778,9999.50,87.1201,Purchase
+2025-04-22,Stamp Duty,Amma,11002736,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,11002736,INF879O01027,217.387,19999.00,91.9973,Purchase
+2025-06-10,Stamp Duty,Amma,11002736,INF879O01027,,1.00,,*** Stamp Duty ***
+2023-03-31,Purchase,Amma,13393503,INF879O01100,169.511,3499.83,20.6466,Purchase
+2023-03-31,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-04-01,Misc,Amma,13393503,INF879O01100,,,,***Registration of Nominee***
+2023-04-03,Misc,Amma,13393503,INF879O01100,,,,***NCT Change of Default Bank Mandate***
+2023-04-06,Misc,Amma,13393503,INF879O01100,,,,***Address Updated from KRA Data***
+2023-05-03,Purchase,Amma,13393503,INF879O01100,161.923,3499.83,21.6141,Purchase
+2023-05-03,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-05-30,Purchase,Amma,13393503,INF879O01100,157.417,3499.83,22.2328,Purchase
+2023-05-30,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-06-30,Purchase,Amma,13393503,INF879O01100,153.770,3499.83,22.7601,Purchase
+2023-06-30,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-07-31,Purchase,Amma,13393503,INF879O01100,149.994,3499.83,23.3331,Purchase
+2023-07-31,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-08-29,Purchase,Amma,13393503,INF879O01100,149.332,3499.83,23.4365,Purchase
+2023-08-29,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-10-03,Purchase,Amma,13393503,INF879O01100,144.510,3499.83,24.2186,Purchase
+2023-10-03,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,13393503,INF879O01100,145.259,3499.83,24.0938,Purchase
+2023-10-27,Stamp Duty,Amma,13393503,INF879O01100,,0.17,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,13393503,INF879O01100,496.725,12499.38,25.1636,Purchase
+2023-11-28,Stamp Duty,Amma,13393503,INF879O01100,,0.62,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,13393503,INF879O01100,465.395,12499.38,26.8576,Purchase
+2024-01-02,Stamp Duty,Amma,13393503,INF879O01100,,0.62,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,13393503,INF879O01100,462.209,12499.38,27.0427,Purchase
+2024-01-30,Stamp Duty,Amma,13393503,INF879O01100,,0.62,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,13393503,INF879O01100,356.714,9999.50,28.0323,Purchase
+2024-02-28,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-03-28,Purchase,Amma,13393503,INF879O01100,358.233,9999.50,27.9134,Purchase
+2024-03-28,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,13393503,INF879O01100,348.028,9999.50,28.7319,Purchase
+2024-05-06,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,13393503,INF879O01100,347.446,9999.50,28.7800,Purchase
+2024-05-31,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,13393503,INF879O01100,328.411,9999.50,30.4481,Purchase
+2024-06-28,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-08-01,Purchase,Amma,13393503,INF879O01100,310.055,9999.50,32.2507,Purchase
+2024-08-01,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,13393503,INF879O01100,307.792,9999.50,32.4878,Purchase
+2024-08-28,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-10-04,Purchase,Amma,13393503,INF879O01100,303.803,9999.50,32.9144,Purchase
+2024-10-04,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,13393503,INF879O01100,933.163,29998.50,32.1471,Purchase
+2025-01-06,Stamp Duty,Amma,13393503,INF879O01100,,1.50,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,13393503,INF879O01100,319.964,9999.50,31.2520,Purchase
+2025-01-28,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-03-25,Misc,Amma,13393503,INF879O01100,,,,***Address Updated from KRA Data***
+2025-04-22,Purchase,Amma,13393503,INF879O01100,305.378,9999.50,32.7447,Purchase
+2025-04-22,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,13393503,INF879O01100,289.889,9999.50,34.4942,Purchase
+2025-06-10,Stamp Duty,Amma,13393503,INF879O01100,,0.50,,*** Stamp Duty ***
+2023-03-20,Purchase,Amma,51025894385 / 0,INF966L01986,119.551,28998.55,242.5628,New Purchase
+2023-03-20,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-21,Misc,Amma,51025894385 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Amma,51025894385 / 0,INF966L01986,120.661,28998.55,240.3302,Additional Purchase
+2023-03-23,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-24,Purchase,Amma,51025894385 / 0,INF966L01986,120.919,28998.55,239.8178,Additional Purchase
+2023-03-24,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-28,Purchase,Amma,51025894385 / 0,INF966L01986,12.160,2999.85,246.6959,Additional Purchase
+2023-03-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-05-02,Purchase,Amma,51025894385 / 0,INF966L01986,11.589,2999.85,258.8616,Additional Purchase
+2023-05-02,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894385 / 0,INF966L01986,110.047,28998.55,263.5109,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894385 / 0,INF966L01986,11.363,2999.85,264.0063,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,51025894385 / 0,INF966L01986,3.780,999.95,264.5626,Additional Purchase
+2023-06-05,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.05,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,51025894385 / 0,INF966L01986,109.609,28998.55,264.5626,Additional Purchase
+2023-06-05,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-06-28,Purchase,Amma,51025894385 / 0,INF966L01986,10.839,2999.85,276.7729,Additional Purchase
+2023-06-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-07-28,Purchase,Amma,51025894385 / 0,INF966L01986,10.225,2999.85,293.3700,Additional Purchase
+2023-07-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894385 / 0,INF966L01986,10.264,2999.85,292.2778,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,51025894385 / 0,INF966L01986,9.910,2999.85,302.7138,Additional Purchase
+2023-09-29,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-10-06,Purchase,Amma,51025894385 / 0,INF966L01986,256.471,76254.19,297.3210,Additional Purchase
+2023-10-06,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,3.81,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,51025894385 / 0,INF966L01986,10.239,2999.85,292.9780,Additional Purchase
+2023-10-27,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,51025894385 / 0,INF966L01986,9.340,2999.85,321.1670,Additional Purchase
+2023-11-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,51025894385 / 0,INF966L01986,8.393,2999.85,357.4021,Additional Purchase
+2024-01-02,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,51025894385 / 0,INF966L01986,8.029,2999.85,373.6094,Additional Purchase
+2024-01-30,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2024-02-17,Misc,Amma,51025894385 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Amma,51025894385 / 0,INF966L01986,7.825,2999.85,383.3700,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.15,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51025894385 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Amma,51025894385 / 0,INF966L01986,16.787,6499.68,387.1921,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51025894385 / 0,INF966L01986,15.919,6499.68,408.2992,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51025894385 / 0,INF966L01986,15.350,6499.68,423.4341,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51025894385 / 0,INF966L01986,14.742,6499.68,440.8897,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51025894385 / 0,INF966L01986,14.259,6499.68,455.8394,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51025894385 / 0,INF966L01986,14.514,6499.68,447.8166,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51025894385 / 0,INF966L01986,14.651,6499.68,443.6417,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51025894385 / 0,INF966L01986,50.222,19499.03,388.2598,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.97,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51025894385 / 0,INF966L01986,17.805,6499.68,365.0472,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51025894385 / 0,INF966L01986,16.909,6499.68,384.3862,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51025894385 / 0,INF966L01986,15.790,6499.68,411.6302,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51025894385 / 0,INF966L01986,,0.32,,*** Stamp Duty ***
+2023-03-20,Purchase,Amma,51025894395 / 0,INF966L01887,176.086,23998.80,136.2904,New Purchase
+2023-03-20,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-21,Misc,Amma,51025894395 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Amma,51025894395 / 0,INF966L01887,177.257,23998.80,135.3902,Additional Purchase
+2023-03-23,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-24,Purchase,Amma,51025894395 / 0,INF966L01887,177.748,23998.80,135.0155,Additional Purchase
+2023-03-24,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-28,Purchase,Amma,51025894395 / 0,INF966L01887,21.551,2999.85,139.1977,Additional Purchase
+2023-03-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-05-02,Purchase,Amma,51025894395 / 0,INF966L01887,20.417,2999.85,146.9304,Additional Purchase
+2023-05-02,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894395 / 0,INF966L01887,163.021,23998.80,147.2131,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894395 / 0,INF966L01887,20.234,2999.85,148.2581,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,51025894395 / 0,INF966L01887,13.344,1999.90,149.8771,Additional Purchase
+2023-06-05,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2023-06-28,Purchase,Amma,51025894395 / 0,INF966L01887,19.122,2999.85,156.8776,Additional Purchase
+2023-06-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-07-28,Purchase,Amma,51025894395 / 0,INF966L01887,17.530,2999.85,171.1220,Additional Purchase
+2023-07-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894395 / 0,INF966L01887,428.574,73537.32,171.5860,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,3.68,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894395 / 0,INF966L01887,17.467,2999.85,171.7431,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,51025894395 / 0,INF966L01887,16.453,2999.85,182.3246,Additional Purchase
+2023-09-29,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,51025894395 / 0,INF966L01887,17.065,2999.85,175.7887,Additional Purchase
+2023-10-27,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,51025894395 / 0,INF966L01887,15.778,2999.85,190.1236,Additional Purchase
+2023-11-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,51025894395 / 0,INF966L01887,14.493,2999.85,206.9920,Additional Purchase
+2024-01-02,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,51025894395 / 0,INF966L01887,13.634,2999.85,220.0328,Additional Purchase
+2024-01-30,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-02-17,Misc,Amma,51025894395 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Amma,51025894395 / 0,INF966L01887,13.206,2999.85,227.1551,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51025894395 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-03-15,Purchase,Amma,51025894395 / 0,INF966L01887,567.317,127047.65,223.9447,Additional Purchase Trxn.Ref.No.247545480511/HDFC BANK
+2024-03-15,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,6.35,,*** Stamp Duty ***
+2024-03-27,Purchase,Amma,51025894395 / 0,INF966L01887,47.162,10999.45,233.2261,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51025894395 / 0,INF966L01887,43.647,10999.45,252.0095,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51025894395 / 0,INF966L01887,42.284,10999.45,260.1320,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51025894395 / 0,INF966L01887,40.611,10999.45,270.8515,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51025894395 / 0,INF966L01887,39.676,10999.45,277.2299,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51025894395 / 0,INF966L01887,40.213,10999.45,273.5284,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51025894395 / 0,INF966L01887,41.038,10999.45,268.0292,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51025894395 / 0,INF966L01887,134.630,32998.35,245.1046,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,1.65,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51025894395 / 0,INF966L01887,48.038,10999.45,228.9740,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51025894395 / 0,INF966L01887,46.369,10999.45,237.2151,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51025894395 / 0,INF966L01887,44.181,10999.45,248.9619,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51025894395 / 0,INF966L01887,,0.55,,*** Stamp Duty ***
+2026-01-02,Redemption,Amma,51025894395 / 0,INF966L01887,-2204.928,-521268.87,236.4132,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Amma,51025894395 / 0,INF966L01887,,5.21,,*** STT Paid ***
+2023-03-20,Purchase,Amma,51025894406 / 0,INF966L01911,397.727,24998.75,62.8541,New Purchase
+2023-03-20,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-21,Misc,Amma,51025894406 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Amma,51025894406 / 0,INF966L01911,402.121,24998.75,62.1672,Additional Purchase
+2023-03-23,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-24,Purchase,Amma,51025894406 / 0,INF966L01911,403.419,24998.75,61.9672,Additional Purchase
+2023-03-24,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-28,Purchase,Amma,51025894406 / 0,INF966L01911,54.729,3499.83,63.9487,Additional Purchase
+2023-03-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-05-02,Purchase,Amma,51025894406 / 0,INF966L01911,51.683,3499.83,67.7168,Additional Purchase
+2023-05-02,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894406 / 0,INF966L01911,364.126,24998.75,68.6542,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894406 / 0,INF966L01911,50.961,3499.83,68.6773,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-06-28,Purchase,Amma,51025894406 / 0,INF966L01911,48.768,3499.83,71.7653,Additional Purchase
+2023-06-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-07-28,Purchase,Amma,51025894406 / 0,INF966L01911,45.899,3499.83,76.2515,Additional Purchase
+2023-07-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894406 / 0,INF966L01911,1169.842,88182.59,75.3799,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,4.41,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894406 / 0,INF966L01911,46.219,3499.83,75.7235,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,51025894406 / 0,INF966L01911,44.675,3499.83,78.3397,Additional Purchase
+2023-09-29,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,51025894406 / 0,INF966L01911,46.428,3499.83,75.3813,Additional Purchase
+2023-10-27,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,51025894406 / 0,INF966L01911,42.939,3499.83,81.5076,Additional Purchase
+2023-11-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,51025894406 / 0,INF966L01911,38.228,3499.83,91.5511,Additional Purchase
+2024-01-02,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,51025894406 / 0,INF966L01911,35.756,3499.83,97.8819,Additional Purchase
+2024-01-30,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51025894406 / 0,INF966L01911,34.433,3499.83,101.6404,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,0.17,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51025894406 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-03-13,Purchase,Amma,51025894406 / 0,INF966L01911,1822.527,175991.20,96.5644,Additional Purchase
+2024-03-13,Stamp Duty,Amma,51025894406 / 0,INF966L01911,,8.80,,*** Stamp Duty ***
+2023-03-20,Purchase,Amma,51025894541 / 0,INF966L01614,62.961,26998.65,428.8138,New Purchase
+2023-03-20,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-21,Misc,Amma,51025894541 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Amma,51025894541 / 0,INF966L01614,63.210,26998.65,427.1292,Additional Purchase
+2023-03-23,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-24,Purchase,Amma,51025894541 / 0,INF966L01614,63.511,26998.65,425.1041,Additional Purchase
+2023-03-24,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-28,Purchase,Amma,51025894541 / 0,INF966L01614,18.227,7999.60,438.8769,Additional Purchase
+2023-03-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-05-02,Purchase,Amma,51025894541 / 0,INF966L01614,17.045,7999.60,469.3214,Additional Purchase
+2023-05-02,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894541 / 0,INF966L01614,57.150,26998.65,472.4192,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51025894541 / 0,INF966L01614,16.893,7999.60,473.5342,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,51025894541 / 0,INF966L01614,16.802,7999.60,476.1177,Additional Purchase
+2023-06-05,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-06-05,Purchase,Amma,51025894541 / 0,INF966L01614,56.706,26998.65,476.1177,Additional Purchase
+2023-06-05,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-06-28,Purchase,Amma,51025894541 / 0,INF966L01614,16.147,7999.60,495.4292,Additional Purchase
+2023-06-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-07-28,Purchase,Amma,51025894541 / 0,INF966L01614,15.179,7999.60,527.0258,Additional Purchase
+2023-07-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894541 / 0,INF966L01614,385.549,203496.83,527.8107,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,10.17,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51025894541 / 0,INF966L01614,15.103,7999.60,529.6712,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,51025894541 / 0,INF966L01614,14.697,7999.60,544.2989,Additional Purchase
+2023-09-29,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,51025894541 / 0,INF966L01614,15.297,7999.60,522.9494,Additional Purchase
+2023-10-27,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,51025894541 / 0,INF966L01614,14.243,7999.60,561.6560,Additional Purchase
+2023-11-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,51025894541 / 0,INF966L01614,12.985,7999.60,616.0855,Additional Purchase
+2024-01-02,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,51025894541 / 0,INF966L01614,12.304,7999.60,650.1594,Additional Purchase
+2024-01-30,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51025894541 / 0,INF966L01614,12.166,7999.60,657.5462,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,0.40,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51025894541 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2024-03-13,Purchase,Amma,51025894541 / 0,INF966L01614,335.625,210489.48,627.1568,Additional Purchase
+2024-03-13,Stamp Duty,Amma,51025894541 / 0,INF966L01614,,10.52,,*** Stamp Duty ***
+2026-01-02,Redemption,Amma,51025894541 / 0,INF966L01614,-1221.800,-822248.88,672.9883,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Amma,51025894541 / 0,INF966L01614,,8.22,,*** STT Paid ***
+2023-03-28,Purchase,Amma,51026416556 / 0,INF966L01689,54.566,7999.60,146.6052,New Purchase
+2023-03-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-05-02,Purchase,Amma,51026416556 / 0,INF966L01689,50.593,7999.60,158.1167,Additional Purchase
+2023-05-02,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-05-29,Purchase,Amma,51026416556 / 0,INF966L01689,49.449,7999.60,161.7742,Additional Purchase
+2023-05-29,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-06-28,Purchase,Amma,51026416556 / 0,INF966L01689,46.745,7999.60,171.1339,Additional Purchase
+2023-06-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-07-28,Purchase,Amma,51026416556 / 0,INF966L01689,43.122,7999.60,185.5103,Additional Purchase
+2023-07-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51026416556 / 0,INF966L01689,102.580,19505.02,190.1437,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.98,,*** Stamp Duty ***
+2023-08-28,Purchase,Amma,51026416556 / 0,INF966L01689,41.875,7999.60,191.0341,Additional Purchase
+2023-08-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-09-29,Purchase,Amma,51026416556 / 0,INF966L01689,40.684,7999.60,196.6282,Additional Purchase
+2023-09-29,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-10-27,Purchase,Amma,51026416556 / 0,INF966L01689,42.187,7999.60,189.6245,Additional Purchase
+2023-10-27,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-11-28,Purchase,Amma,51026416556 / 0,INF966L01689,96.595,19999.00,207.0389,Additional Purchase
+2023-11-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-01-02,Purchase,Amma,51026416556 / 0,INF966L01689,87.347,19999.00,228.9605,Additional Purchase
+2024-01-02,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-01-30,Purchase,Amma,51026416556 / 0,INF966L01689,80.314,19999.00,249.0110,Additional Purchase
+2024-01-30,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51026416556 / 0,INF966L01689,79.089,19999.00,252.8671,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51026416556 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Amma,51026416556 / 0,INF966L01689,81.094,19999.00,246.6141,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51026416556 / 0,INF966L01689,146.718,38907.05,265.1833,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.95,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51026416556 / 0,INF966L01689,74.062,19999.00,270.0318,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51026416556 / 0,INF966L01689,69.770,19999.00,286.6421,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51026416556 / 0,INF966L01689,67.398,19999.00,296.7307,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51026416556 / 0,INF966L01689,66.710,19999.00,299.7920,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51026416556 / 0,INF966L01689,67.501,19999.00,296.2753,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51026416556 / 0,INF966L01689,215.681,59997.00,278.1743,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,3.00,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51026416556 / 0,INF966L01689,79.950,19999.00,250.1423,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51026416556 / 0,INF966L01689,77.093,19999.00,259.4151,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51026416556 / 0,INF966L01689,71.847,19999.00,278.3564,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51026416556 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-02-15,Purchase,Amma,51056055031 / 0,INF966L01911,150.351,15499.23,103.0873,New Purchase
+2024-02-15,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.77,,*** Stamp Duty ***
+2024-02-21,Purchase,Amma,51056055031 / 0,INF966L01911,195.163,19999.00,102.4732,Additional Purchase Trxn.Ref.No.245143368176/HDFC BANK
+2024-02-21,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.00,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51056055031 / 0,INF966L01911,98.381,9999.50,101.6404,Additional Purchase
+2024-02-28,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.50,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51056055031 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-02-29,Purchase,Amma,51056055031 / 0,INF966L01911,1198.553,124993.75,104.2872,Additional Purchase
+2024-02-29,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,6.25,,*** Stamp Duty ***
+2024-03-15,Purchase,Amma,51056055031 / 0,INF966L01911,263.805,26121.69,99.0188,Additional Purchase Trxn.Ref.No.407571467371/HDFC BANK
+2024-03-15,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.31,,*** Stamp Duty ***
+2024-03-18,Purchase,Amma,51056055031 / 0,INF966L01911,25.135,2499.88,99.4567,Additional Purchase Trxn.Ref.No.247645575255/HDFC BANK
+2024-03-18,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.12,,*** Stamp Duty ***
+2024-03-27,Purchase,Amma,51056055031 / 0,INF966L01911,98.052,9999.50,101.9816,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51056055031 / 0,INF966L01911,440.775,47046.65,106.7361,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,2.35,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51056055031 / 0,INF966L01911,96.119,10599.47,110.2740,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.53,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51056055031 / 0,INF966L01911,91.335,10599.47,116.0501,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.53,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51056055031 / 0,INF966L01911,46.112,5599.72,121.4371,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.28,,*** Stamp Duty ***
+2024-08-16,Purchase,Amma,51056055031 / 0,INF966L01911,605.470,71296.44,117.7538,Additional Purchase
+2024-08-16,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,3.56,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51056055031 / 0,INF966L01911,147.050,17599.12,119.6816,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,0.88,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51056055031 / 0,INF966L01911,183.050,21598.92,117.9945,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51056055031 / 0,INF966L01911,618.484,64796.76,104.7671,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,3.24,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51056055031 / 0,INF966L01911,216.800,21598.92,99.6262,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51056055031 / 0,INF966L01911,205.239,21598.92,105.2379,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51056055031 / 0,INF966L01911,196.627,21598.92,109.8472,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51056055031 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51058264581 / 0,INF966L01887,22.010,4999.75,227.1551,New Purchase
+2024-02-28,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.25,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51058264581 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Amma,51058264581 / 0,INF966L01887,10.719,2499.88,233.2261,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51058264581 / 0,INF966L01887,9.920,2499.88,252.0095,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51058264581 / 0,INF966L01887,9.610,2499.88,260.1320,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51058264581 / 0,INF966L01887,9.230,2499.88,270.8515,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51058264581 / 0,INF966L01887,9.017,2499.88,277.2299,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51058264581 / 0,INF966L01887,9.139,2499.88,273.5284,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51058264581 / 0,INF966L01887,9.327,2499.88,268.0292,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51058264581 / 0,INF966L01887,30.598,7499.63,245.1046,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.37,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51058264581 / 0,INF966L01887,10.918,2499.88,228.9740,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51058264581 / 0,INF966L01887,10.538,2499.88,237.2151,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51058264581 / 0,INF966L01887,10.041,2499.88,248.9619,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51058264581 / 0,INF966L01887,,0.12,,*** Stamp Duty ***
+2026-01-02,Redemption,Amma,51058264581 / 0,INF966L01887,-88.972,-21033.95,236.4132,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Amma,51058264581 / 0,INF966L01887,,0.21,,*** STT Paid ***
+2024-02-28,Purchase,Amma,51058264591 / 0,INF966L01986,39.125,14999.25,383.3700,New Purchase
+2024-02-28,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51058264591 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Amma,51058264591 / 0,INF966L01986,38.739,14999.25,387.1921,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51058264591 / 0,INF966L01986,36.736,14999.25,408.2992,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51058264591 / 0,INF966L01986,35.423,14999.25,423.4341,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51058264591 / 0,INF966L01986,34.020,14999.25,440.8897,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51058264591 / 0,INF966L01986,32.905,14999.25,455.8394,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51058264591 / 0,INF966L01986,33.494,14999.25,447.8166,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51058264591 / 0,INF966L01986,33.809,14999.25,443.6417,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51058264591 / 0,INF966L01986,115.896,44997.75,388.2598,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,2.25,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51058264591 / 0,INF966L01986,41.089,14999.25,365.0472,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51058264591 / 0,INF966L01986,39.021,14999.25,384.3862,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51058264591 / 0,INF966L01986,36.439,14999.25,411.6302,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51058264591 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51058356031 / 0,INF966L01689,19.772,4999.75,252.8671,New Purchase
+2024-02-28,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.25,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51058356031 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Amma,51058356031 / 0,INF966L01689,18.246,4499.78,246.6141,Additional Purchase
+2024-03-27,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-05-06,Purchase,Amma,51058356031 / 0,INF966L01689,16.969,4499.78,265.1833,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-05-31,Purchase,Amma,51058356031 / 0,INF966L01689,16.664,4499.78,270.0318,Additional Purchase
+2024-05-31,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-06-28,Purchase,Amma,51058356031 / 0,INF966L01689,15.698,4499.78,286.6421,Additional Purchase
+2024-06-28,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-07-31,Purchase,Amma,51058356031 / 0,INF966L01689,15.165,4499.78,296.7307,Additional Purchase
+2024-07-31,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-08-28,Purchase,Amma,51058356031 / 0,INF966L01689,15.010,4499.78,299.7920,Additional Purchase
+2024-08-28,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-10-03,Purchase,Amma,51058356031 / 0,INF966L01689,15.188,4499.78,296.2753,Additional Purchase
+2024-10-03,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2025-01-06,Purchase,Amma,51058356031 / 0,INF966L01689,48.528,13499.33,278.1743,Additional Purchase
+2025-01-06,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.67,,*** Stamp Duty ***
+2025-01-28,Purchase,Amma,51058356031 / 0,INF966L01689,17.989,4499.78,250.1423,Additional Purchase
+2025-01-28,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2025-04-21,Purchase,Amma,51058356031 / 0,INF966L01689,17.346,4499.78,259.4151,Additional Purchase
+2025-04-21,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2025-06-10,Purchase,Amma,51058356031 / 0,INF966L01689,16.166,4499.78,278.3564,Additional Purchase
+2025-06-10,Stamp Duty,Amma,51058356031 / 0,INF966L01689,,0.22,,*** Stamp Duty ***
+2024-02-28,Purchase,Amma,51058356253 / 0,INF966L01887,477.271,108414.58,227.1551,New Purchase
+2024-02-28,Stamp Duty,Amma,51058356253 / 0,INF966L01887,,5.42,,*** Stamp Duty ***
+2024-02-29,Misc,Amma,51058356253 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-05-06,Purchase,Amma,51058356253 / 0,INF966L01887,757.604,190923.45,252.0095,Additional Purchase
+2024-05-06,Stamp Duty,Amma,51058356253 / 0,INF966L01887,,9.55,,*** Stamp Duty ***
+2026-01-02,Redemption,Amma,51058356253 / 0,INF966L01887,-1234.875,-291937.83,236.4132,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Amma,51058356253 / 0,INF966L01887,,2.92,,*** STT Paid ***
+2020-01-12,Misc,Amma,23186768,INF200K01RY0,,,,***SIPRegistered***
+2020-02-03,Systematic Investment,Amma,23186768,INF200K01RY0,38.536,6000.00,155.6996,Purchase - Systematic-Normal - Instalment 1/26
+2020-02-08,Misc,Amma,23186768,INF200K01RY0,,,,***SIPCancelledvia Online wef 08-Feb-2020***
+2021-10-18,Switch Out,Amma,23186768,INF200K01RY0,-38.536,-8770.07,227.5835,"Switch Out - To SBI Focused Equity Fund Direct Gr , less STT"
+2021-10-18,STT Paid,Amma,23186768,INF200K01RY0,,0.09,,*** STT Paid ***
+2023-03-18,Misc,Amma,23186768,INF200K01RY0,,,,***CAN Data Updation***
+2023-03-18,Misc,Amma,23186768,INF200K01RY0,,,,***NCT Change of Default Bank Mandate***
+2023-03-23,Misc,Amma,23186768,INF200K01RY0,,,,***Address Updated from KRA Data***
+2025-03-26,Misc,Amma,23186768,INF200K01RY0,,,,***Address Updated from KRA Data***
+2019-11-04,Purchase,Amma,23186768,INF200K01RJ1,31.871,5100.00,160.0199,Purchase
+2019-11-05,Purchase,Amma,23186768,INF200K01RJ1,7.328,1170.00,159.6626,Purchase
+2019-11-05,Misc,Amma,23186768,INF200K01RJ1,,,,***Change / Regn of Nominee***
+2019-11-05,Misc,Amma,23186768,INF200K01RJ1,,,,***Address Updated from KRA Data***
+2019-11-11,Purchase,Amma,23186768,INF200K01RJ1,13.594,2170.00,159.6337,Purchase
+2019-12-07,Misc,Amma,23186768,INF200K01RJ1,,,,***Address Updated from KRA Data***
+2019-12-09,Purchase,Amma,23186768,INF200K01RJ1,174.453,28000.00,160.5014,Purchase
+2019-12-24,Purchase,Amma,23186768,INF200K01RJ1,36.802,6000.00,163.0329,Purchase
+2020-01-06,Purchase,Amma,23186768,INF200K01RJ1,11.008,1775.00,161.2521,Purchase
+2020-01-11,Misc,Amma,23186768,INF200K01RJ1,,,,***SIPRegistered***
+2020-01-13,Purchase,Amma,23186768,INF200K01RJ1,27.238,4500.00,165.2089,Purchase
+2020-02-03,Systematic Investment,Amma,23186768,INF200K01RJ1,29.922,5000.00,167.1020,Purchase - Systematic-Normal - Instalment 1/36
+2020-02-10,Purchase,Amma,23186768,INF200K01RJ1,6.987,1200.00,171.7489,Purchase
+2020-03-04,Purchase,Amma,23186768,INF200K01RJ1,20.232,3300.00,163.1105,Purchase
+2020-03-17,Purchase,Amma,23186768,INF200K01RJ1,7.188,1000.00,139.1164,Purchase
+2020-06-05,Purchase,Amma,23186768,INF200K01RJ1,7.242,1050.00,144.9776,Purchase
+2020-08-03,Purchase,Amma,23186768,INF200K01RJ1,6.663,999.95,150.0746,Purchase
+2020-08-03,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.05,,*** Stamp Duty ***
+2020-08-13,Purchase,Amma,23186768,INF200K01RJ1,12.789,1999.90,156.3794,Purchase
+2020-08-13,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.10,,*** Stamp Duty ***
+2020-08-20,Purchase,Amma,23186768,INF200K01RJ1,18.986,2999.85,158.0025,Purchase
+2020-08-20,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.15,,*** Stamp Duty ***
+2021-07-27,Purchase,Amma,23186768,INF200K01RJ1,4.303,999.95,232.3972,Purchase
+2021-07-27,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.05,,*** Stamp Duty ***
+2021-10-21,Switch In,Amma,23186768,INF200K01RJ1,32.810,8769.63,267.2856,Switch In - From SBI Equity Hybrid Fund Direct Gr
+2021-10-21,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.44,,*** Stamp Duty ***
+2021-12-13,Purchase,Amma,23186768,INF200K01RJ1,72.621,19999.00,275.3877,Purchase
+2021-12-13,Stamp Duty,Amma,23186768,INF200K01RJ1,,1.00,,*** Stamp Duty ***
+2022-03-24,Purchase,Amma,23186768,INF200K01RJ1,59.947,14999.25,250.2091,Purchase
+2022-03-24,Stamp Duty,Amma,23186768,INF200K01RJ1,,0.75,,*** Stamp Duty ***
+2023-03-04,Misc,Amma,23186768,INF200K01RJ1,,,,***Change / Regn of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301195033900_AMBPG2684H***
+2024-04-29,Redemption,Amma,23186768,INF200K01RJ1,-581.984,-196746.87,338.0657,"Redemption(DC-HDFC Bank) , less STT"
+2024-04-29,STT Paid,Amma,23186768,INF200K01RJ1,,1.97,,*** STT Paid ***

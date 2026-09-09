@@ -1,0 +1,408 @@
+{
+  "current_states": [
+    {
+      "position": {
+        "key": {
+          "folio": "11002746",
+          "investor": "Appanna",
+          "isin": "INF879O01027"
+        },
+        "units": "18547.768"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "13394210",
+          "investor": "Appanna",
+          "isin": "INF879O01100"
+        },
+        "units": "6931.986"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "3537092 / 39",
+          "investor": "Appanna",
+          "isin": "INF179K01608"
+        },
+        "units": "460.830"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025826356 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01986"
+        },
+        "units": "1112.514"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025826366 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01887"
+        },
+        "units": "248.381"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025826376 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01911"
+        },
+        "units": "4659.108"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025826386 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01614"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51026416621 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01689"
+        },
+        "units": "1832.970"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51042397805 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01614"
+        },
+        "units": "17.832"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51056055041 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01911"
+        },
+        "units": "4876.501"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058264612 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01986"
+        },
+        "units": "516.696"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058264622 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01887"
+        },
+        "units": "49.677"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058356011 / 0",
+          "investor": "Appanna",
+          "isin": "INF966L01689"
+        },
+        "units": "209.076"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "79924443021 / 0",
+          "investor": "Appanna",
+          "isin": "INF769K01BI1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "9106204455 / 0",
+          "investor": "Appanna",
+          "isin": "INF663L01DV3"
+        },
+        "units": "3014.477"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "9106204455 / 0",
+          "investor": "Appanna",
+          "isin": "INF663L01FF1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91075431654 / 0",
+          "investor": "Appanna",
+          "isin": "INF846K01CQ8"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91075431654 / 0",
+          "investor": "Appanna",
+          "isin": "INF846K01EH3"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91075431654 / 0",
+          "investor": "Appanna",
+          "isin": "INF846K01J46"
+        },
+        "units": "0.000"
+      }
+    }
+  ],
+  "investor": "Appanna",
+  "total_market_value": "5738773.4371058",
+  "transaction_through_date": "2026-01-02",
+  "valuation_as_of_date": "2026-09-08",
+  "valuations": [
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "11002746",
+            "investor": "Appanna",
+            "isin": "INF879O01027"
+          },
+          "units": "18547.768"
+        }
+      },
+      "market_value": "1679109.0344952",
+      "nav": "90.5289",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "13394210",
+            "investor": "Appanna",
+            "isin": "INF879O01100"
+          },
+          "units": "6931.986"
+        }
+      },
+      "market_value": "219795.9460950",
+      "nav": "31.7075",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "3537092 / 39",
+            "investor": "Appanna",
+            "isin": "INF179K01608"
+          },
+          "units": "460.830"
+        }
+      },
+      "market_value": "950405.192910",
+      "nav": "2062.377",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025826356 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01986"
+          },
+          "units": "1112.514"
+        }
+      },
+      "market_value": "514917.8710338",
+      "nav": "462.8417",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025826366 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01887"
+          },
+          "units": "248.381"
+        }
+      },
+      "market_value": "62080.6948734",
+      "nav": "249.9414",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025826376 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01911"
+          },
+          "units": "4659.108"
+        }
+      },
+      "market_value": "564102.4329216",
+      "nav": "121.0752",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51026416621 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01689"
+          },
+          "units": "1832.970"
+        }
+      },
+      "market_value": "591384.8583750",
+      "nav": "322.6375",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51042397805 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01614"
+          },
+          "units": "17.832"
+        }
+      },
+      "market_value": "13007.2100256",
+      "nav": "729.4308",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51056055041 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01911"
+          },
+          "units": "4876.501"
+        }
+      },
+      "market_value": "590423.3338752",
+      "nav": "121.0752",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058264612 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01986"
+          },
+          "units": "516.696"
+        }
+      },
+      "market_value": "239148.4550232",
+      "nav": "462.8417",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058264622 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01887"
+          },
+          "units": "49.677"
+        }
+      },
+      "market_value": "12416.3389278",
+      "nav": "249.9414",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058356011 / 0",
+            "investor": "Appanna",
+            "isin": "INF966L01689"
+          },
+          "units": "209.076"
+        }
+      },
+      "market_value": "67455.7579500",
+      "nav": "322.6375",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "9106204455 / 0",
+            "investor": "Appanna",
+            "isin": "INF663L01DV3"
+          },
+          "units": "3014.477"
+        }
+      },
+      "market_value": "234526.3106",
+      "nav": "77.8",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    }
+  ]
+}

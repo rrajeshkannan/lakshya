@@ -1,0 +1,686 @@
+{
+  "current_states": [
+    {
+      "position": {
+        "key": {
+          "folio": "10391853 / 47",
+          "investor": "Amma",
+          "isin": "INF109K01BL4"
+        },
+        "units": "4569.681"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "11002736",
+          "investor": "Amma",
+          "isin": "INF879O01027"
+        },
+        "units": "14497.421"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "12799161 / 64",
+          "investor": "Amma",
+          "isin": "INF179K01608"
+        },
+        "units": "303.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "13393503",
+          "investor": "Amma",
+          "isin": "INF879O01100"
+        },
+        "units": "7164.921"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "15034009 / 63",
+          "investor": "Amma",
+          "isin": "INF179K01426"
+        },
+        "units": "855.417"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "15034009 / 63",
+          "investor": "Amma",
+          "isin": "INF179K01AS4"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "23186768",
+          "investor": "Amma",
+          "isin": "INF200K01RJ1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "23186768",
+          "investor": "Amma",
+          "isin": "INF200K01RY0"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "4641557",
+          "investor": "Amma",
+          "isin": "INF174K01187"
+        },
+        "units": "1589.680"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "4641557",
+          "investor": "Amma",
+          "isin": "INF174K01KT2"
+        },
+        "units": "1468.161"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "4641557",
+          "investor": "Amma",
+          "isin": "INF174K01LS2"
+        },
+        "units": "1595.374"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "4641557",
+          "investor": "Amma",
+          "isin": "INF174K01LT0"
+        },
+        "units": "1234.671"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025894385 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01986"
+        },
+        "units": "1168.162"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025894395 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01887"
+        },
+        "units": "273.218"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025894406 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01911"
+        },
+        "units": "5100.480"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51025894541 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01614"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51026416556 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01689"
+        },
+        "units": "1832.970"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51056055031 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01911"
+        },
+        "units": "4876.501"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058264581 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01887"
+        },
+        "units": "62.095"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058264591 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01986"
+        },
+        "units": "516.696"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058356031 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01689"
+        },
+        "units": "232.741"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "51058356253 / 0",
+          "investor": "Amma",
+          "isin": "INF966L01887"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "5902067 / 82",
+          "investor": "Amma",
+          "isin": "INF740K01PL6"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "79925703934 / 0",
+          "investor": "Amma",
+          "isin": "INF769K01BI1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "79925703934 / 0",
+          "investor": "Amma",
+          "isin": "INF769K01DM9"
+        },
+        "units": "8614.371"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "9106204444 / 0",
+          "investor": "Amma",
+          "isin": "INF663L01DV3"
+        },
+        "units": "2765.885"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "9106204444 / 0",
+          "investor": "Amma",
+          "isin": "INF663L01FF1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "9106205012 / 0",
+          "investor": "Amma",
+          "isin": "INF663L01DV3"
+        },
+        "units": "1676.960"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91069892872 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01CQ8"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91069892872 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01EH3"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91069892872 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01EI1"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91069892872 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01J46"
+        },
+        "units": "0.000"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91069892872 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01K35"
+        },
+        "units": "8495.218"
+      }
+    },
+    {
+      "position": {
+        "key": {
+          "folio": "91070076461 / 0",
+          "investor": "Amma",
+          "isin": "INF846K01DP8"
+        },
+        "units": "0.000"
+      }
+    }
+  ],
+  "investor": "Amma",
+  "total_market_value": "9494357.8800909",
+  "transaction_through_date": "2026-01-02",
+  "valuation_as_of_date": "2026-09-08",
+  "valuations": [
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "10391853 / 47",
+            "investor": "Amma",
+            "isin": "INF109K01BL4"
+          },
+          "units": "4569.681"
+        }
+      },
+      "market_value": "491789.06922",
+      "nav": "107.62",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "11002736",
+            "investor": "Amma",
+            "isin": "INF879O01027"
+          },
+          "units": "14497.421"
+        }
+      },
+      "market_value": "1312435.5759669",
+      "nav": "90.5289",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "12799161 / 64",
+            "investor": "Amma",
+            "isin": "INF179K01608"
+          },
+          "units": "303.000"
+        }
+      },
+      "market_value": "624900.231000",
+      "nav": "2062.377",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "13393503",
+            "investor": "Amma",
+            "isin": "INF879O01100"
+          },
+          "units": "7164.921"
+        }
+      },
+      "market_value": "227181.7326075",
+      "nav": "31.7075",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "15034009 / 63",
+            "investor": "Amma",
+            "isin": "INF179K01426"
+          },
+          "units": "855.417"
+        }
+      },
+      "market_value": "679200.242583",
+      "nav": "793.999",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "4641557",
+            "investor": "Amma",
+            "isin": "INF174K01187"
+          },
+          "units": "1589.680"
+        }
+      },
+      "market_value": "559665.920160",
+      "nav": "352.062",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "4641557",
+            "investor": "Amma",
+            "isin": "INF174K01KT2"
+          },
+          "units": "1468.161"
+        }
+      },
+      "market_value": "482161.690332",
+      "nav": "328.412",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "4641557",
+            "investor": "Amma",
+            "isin": "INF174K01LS2"
+          },
+          "units": "1595.374"
+        }
+      },
+      "market_value": "154362.006744",
+      "nav": "96.756",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "4641557",
+            "investor": "Amma",
+            "isin": "INF174K01LT0"
+          },
+          "units": "1234.671"
+        }
+      },
+      "market_value": "212116.4778",
+      "nav": "171.8",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025894385 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01986"
+          },
+          "units": "1168.162"
+        }
+      },
+      "market_value": "540674.0859554",
+      "nav": "462.8417",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025894395 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01887"
+          },
+          "units": "273.218"
+        }
+      },
+      "market_value": "68288.4894252",
+      "nav": "249.9414",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51025894406 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01911"
+          },
+          "units": "5100.480"
+        }
+      },
+      "market_value": "617541.6360960",
+      "nav": "121.0752",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51026416556 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01689"
+          },
+          "units": "1832.970"
+        }
+      },
+      "market_value": "591384.8583750",
+      "nav": "322.6375",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51056055031 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01911"
+          },
+          "units": "4876.501"
+        }
+      },
+      "market_value": "590423.3338752",
+      "nav": "121.0752",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058264581 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01887"
+          },
+          "units": "62.095"
+        }
+      },
+      "market_value": "15520.1112330",
+      "nav": "249.9414",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058264591 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01986"
+          },
+          "units": "516.696"
+        }
+      },
+      "market_value": "239148.4550232",
+      "nav": "462.8417",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "51058356031 / 0",
+            "investor": "Amma",
+            "isin": "INF966L01689"
+          },
+          "units": "232.741"
+        }
+      },
+      "market_value": "75090.9743875",
+      "nav": "322.6375",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "79925703934 / 0",
+            "investor": "Amma",
+            "isin": "INF769K01DM9"
+          },
+          "units": "8614.371"
+        }
+      },
+      "market_value": "497367.938427",
+      "nav": "57.737",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "9106204444 / 0",
+            "investor": "Amma",
+            "isin": "INF663L01DV3"
+          },
+          "units": "2765.885"
+        }
+      },
+      "market_value": "215185.8530",
+      "nav": "77.8",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "9106205012 / 0",
+            "investor": "Amma",
+            "isin": "INF663L01DV3"
+          },
+          "units": "1676.960"
+        }
+      },
+      "market_value": "130467.4880",
+      "nav": "77.8",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    },
+    {
+      "current_state": {
+        "position": {
+          "key": {
+            "folio": "91069892872 / 0",
+            "investor": "Amma",
+            "isin": "INF846K01K35"
+          },
+          "units": "8495.218"
+        }
+      },
+      "market_value": "1169451.70988",
+      "nav": "137.66",
+      "nav_observation_date": "2026-09-04",
+      "valuation_as_of_date": "2026-09-08"
+    }
+  ]
+}

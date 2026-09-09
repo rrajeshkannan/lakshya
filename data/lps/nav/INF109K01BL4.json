@@ -1,10 +1,14 @@
 {
-  "artifact_version": 3,
+  "artifact_version": 1,
   "isin": "INF109K01BL4",
   "scheme_code": 108466,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-08T01:00:07+05:30",
+  "retrieved_at": "2026-09-09T00:10:34+05:30",
   "observations": [
+    {
+      "date": "2026-09-07",
+      "nav": 107.03
+    },
     {
       "date": "2026-09-04",
       "nav": 107.62

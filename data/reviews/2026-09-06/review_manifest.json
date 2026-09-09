@@ -1,5 +1,5 @@
 {
-  "archive_schema_version": 1,
+  "archive_schema_version": 2,
   "as_of": "2026-09-06",
   "final_contract_version": "1",
   "purposes": [
@@ -63,5 +63,6 @@
       "summary_file": "Stitch_summary.csv",
       "summary_sha256": "ab9cb8d78cda608037b90fec4be526ed925992bf8823af778d52a02a7066b464"
     }
-  ]
+  ],
+  "working_revision": 1
 }

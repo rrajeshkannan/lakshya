@@ -1,0 +1,865 @@
+transaction_date,event_type,investor,folio,isin,units,amount,price,source_description
+2020-03-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,151.012,5000.00,33.11,Systematic Investment (1/10)
+2020-04-03,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,208.073,5000.00,24.03,Systematic Investment (2/10)
+2020-05-04,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,185.943,5000.00,26.89,Systematic Investment (3/10)
+2020-06-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,175.131,5000.00,28.55,Systematic Investment (4/10)
+2020-07-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,166.215,4999.75,30.08,Systematic Investment (5/10)
+2020-07-02,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-08-03,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,162.911,4999.75,30.69,Systematic Investment (6/10)
+2020-08-03,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-09-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,152.757,4999.75,32.73,Systematic Investment (7/10)
+2020-09-02,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-10-05,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,153.414,4999.75,32.59,Systematic Investment (8/10)
+2020-10-05,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-11-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,149.873,4999.75,33.36,Systematic Investment (9/10)
+2020-11-02,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-12-02,Systematic Investment,Appanna,91075431654 / 0,INF846K01CQ8,130.270,4999.75,38.38,Systematic Investment (10/10)
+2020-12-02,Stamp Duty,Appanna,91075431654 / 0,INF846K01CQ8,,0.25,,*** Stamp Duty ***
+2020-12-02,Reversal,Appanna,91075431654 / 0,INF846K01CQ8,-130.270,-4999.75,38.38,Systematic Investment Rejection (10/10)
+2024-03-13,Redemption,Appanna,91075431654 / 0,INF846K01CQ8,-1505.329,-79510.68,52.82,"Redemption less TDS, STT"
+2024-03-13,STT Paid,Appanna,91075431654 / 0,INF846K01CQ8,,0.80,,*** STT Paid ***
+2021-05-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,88.677,5499.73,62.02,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,82.690,5499.73,66.51,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,79.799,5499.73,68.92,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,77.439,5499.73,71.02,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,71.295,5499.73,77.14,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,69.319,5499.73,79.34,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,67.806,5499.73,81.11,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,69.882,5499.73,78.70,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,68.490,5499.73,80.30,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,74.001,5499.73,74.32,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,75.974,5499.73,72.39,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,72.441,5499.73,75.92,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,82.184,5499.73,66.92,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,82.319,5499.73,66.81,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,78.467,5499.73,70.09,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,71.314,5499.73,77.12,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,68.712,5499.73,80.04,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,71.592,5499.73,76.82,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,71.258,5499.73,77.18,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,70.618,5499.73,77.88,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,74.100,5499.73,74.22,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,73.664,5499.73,74.66,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01EH3,75.473,5499.73,72.87,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01EH3,,0.27,,*** Stamp Duty ***
+2023-12-21,Redemption,Appanna,91075431654 / 0,INF846K01EH3,-1494.277,-143419.28,95.98,"Redemption less TDS, STT"
+2023-12-21,STT Paid,Appanna,91075431654 / 0,INF846K01EH3,,1.43,,*** STT Paid ***
+2024-03-13,Redemption,Appanna,91075431654 / 0,INF846K01EH3,-223.237,-22048.90,98.77,"Redemption less TDS, STT"
+2024-03-13,STT Paid,Appanna,91075431654 / 0,INF846K01EH3,,0.22,,*** STT Paid ***
+2021-05-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,371.623,6499.68,17.49,Systematic Investment Existing Folio with SIP (1/23)
+2021-05-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-06-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (2/23)
+2021-06-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,326.946,6499.68,19.88,Systematic Investment (3/23)
+2021-07-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,321.766,6499.68,20.20,Systematic Investment (4/23)
+2021-08-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,299.524,6499.68,21.70,Systematic Investment (5/23)
+2021-09-13,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,287.215,6499.68,22.63,Systematic Investment (6/23)
+2021-10-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,284.699,6499.68,22.83,Systematic Investment (7/23)
+2021-11-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,285.952,6499.68,22.73,Systematic Investment (8/23)
+2021-12-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,283.705,6499.68,22.91,Systematic Investment (9/23)
+2022-01-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,302.874,6499.68,21.46,Systematic Investment (10/23)
+2022-02-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,314.298,6499.68,20.68,Systematic Investment (11/23)
+2022-03-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,295.843,6499.68,21.97,Systematic Investment (12/23)
+2022-04-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (13/23)
+2022-05-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,345.912,6499.68,18.79,Systematic Investment (14/23)
+2022-06-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,332.294,6499.68,19.56,Systematic Investment (15/23)
+2022-07-11,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,295.574,6499.68,21.99,Systematic Investment (16/23)
+2022-08-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,290.553,6499.68,22.37,Systematic Investment (17/23)
+2022-09-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,308.042,6499.68,21.10,Systematic Investment (18/23)
+2022-10-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,304.720,6499.68,21.33,Systematic Investment (19/23)
+2022-11-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,302.451,6499.68,21.49,Systematic Investment (20/23)
+2022-12-12,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,318.144,6499.68,20.43,Systematic Investment (21/23)
+2023-01-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,315.518,6499.68,20.60,Systematic Investment (22/23)
+2023-02-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Appanna,91075431654 / 0,INF846K01J46,325.309,6499.68,19.98,Systematic Investment (23/23)
+2023-03-10,Stamp Duty,Appanna,91075431654 / 0,INF846K01J46,,0.32,,*** Stamp Duty ***
+2026-01-02,Redemption,Appanna,91075431654 / 0,INF846K01J46,-7204.786,-268519.68,37.27,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Appanna,91075431654 / 0,INF846K01J46,,2.69,,*** STT Paid ***
+2007-01-29,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.873,2000.00,155.365,SIP Purchase
+2007-02-06,Misc,Appanna,3537092 / 39,INF179K01608,,,,***SIPRegistered***
+2007-03-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,14.187,2000.00,140.972,SIP Purchase - Instalment 2/37
+2007-04-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,13.113,2000.00,152.526,SIP Purchase - Instalment 3/37
+2007-05-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.812,2000.00,156.108,SIP Purchase - Instalment 4/37
+2007-06-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.230,2000.00,163.535,SIP Purchase - Instalment 5/37
+2007-07-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.391,2000.00,175.578,SIP Purchase - Instalment 6/37
+2007-08-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.159,2000.00,164.489,SIP Purchase - Instalment 7/37
+2007-09-17,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.473,2000.00,174.318,SIP Purchase - Instalment 8/37
+2007-10-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,9.989,2000.00,200.215,SIP Purchase - Instalment 9/37
+2007-11-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,9.280,2000.00,215.523,SIP Purchase - Instalment 10/37
+2007-12-17,Systematic Investment,Appanna,3537092 / 39,INF179K01608,9.325,2000.00,214.477,SIP Purchase - Instalment 11/37
+2008-01-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.903,2000.00,224.654,SIP Purchase - Instalment 12/37
+2008-02-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,10.359,2000.00,193.064,SIP Purchase - Instalment 13/37
+2008-03-17,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.348,2000.00,161.965,SIP Purchase - Instalment 14/37
+2008-04-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.567,2000.00,172.910,SIP Purchase - Instalment 15/37
+2008-05-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.066,2000.00,180.735,SIP Purchase - Instalment 16/37
+2008-06-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.943,2000.00,167.468,SIP Purchase - Instalment 17/37
+2008-07-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,14.301,2000.00,139.846,SIP Purchase - Instalment 18/37
+2008-08-18,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.477,2000.00,160.293,SIP Purchase - Instalment 19/37
+2008-09-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,12.775,2000.00,156.555,SIP Purchase - Instalment 20/37
+2008-10-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,16.034,2000.00,124.733,SIP Purchase - Instalment 21/37
+2008-11-17,Systematic Investment,Appanna,3537092 / 39,INF179K01608,18.663,2000.00,107.163,SIP Purchase - Instalment 22/37
+2008-12-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,17.828,2000.00,112.183,SIP Purchase - Instalment 23/37
+2009-01-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,18.602,2000.00,107.515,SIP Purchase - Instalment 24/37
+2009-02-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,18.688,2000.00,107.020,SIP Purchase - Instalment 25/37
+2009-02-20,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Change of Phone - OTP Update***
+2009-02-20,Misc,Appanna,3537092 / 39,INF179K01608,,,,***KYC Failed - Updated from KRA Data***
+2009-03-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,19.727,2000.00,101.382,SIP Purchase - Instalment 26/37
+2009-04-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,15.417,2000.00,129.726,SIP Purchase - Instalment 27/37
+2009-05-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,14.359,2000.00,139.290,SIP Purchase - Instalment 28/37
+2009-06-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.512,2000.00,173.726,SIP Purchase - Instalment 29/37
+2009-07-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,11.352,2000.00,176.181,SIP Purchase - Instalment 30/37
+2009-08-17,Systematic Investment,Appanna,3537092 / 39,INF179K01608,10.927,2000.00,183.034,SIP Purchase - Instalment 31/37
+2009-09-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,9.754,2000.00,205.051,SIP Purchase - Instalment 32/37
+2009-10-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.860,2000.00,225.736,SIP Purchase - Instalment 33/37
+2009-11-16,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.607,2000.00,232.377,SIP Purchase - Instalment 34/37
+2009-12-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.740,2000.00,228.837,SIP Purchase - Instalment 35/37
+2010-01-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.294,2000.00,241.147,SIP Purchase - Instalment 36/37
+2010-02-15,Systematic Investment,Appanna,3537092 / 39,INF179K01608,8.895,2000.00,224.835,SIP Purchase - Instalment 37/37
+2011-10-24,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Change of Bank Mandate***
+2011-10-24,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Change of Address***
+2015-05-15,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Address Updated from KRA Data***
+2016-12-26,Misc,Appanna,3537092 / 39,INF179K01608,,,,***HPIN Generation***
+2017-10-04,Misc,Appanna,3537092 / 39,INF179K01608,,,,***HPIN Generation***
+2019-09-27,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Lien Marked - 460.830 - In favour of HDFC Bank Ltd.***
+2019-10-26,Misc,Appanna,3537092 / 39,INF179K01608,,,,***IFSC code updated***
+2019-10-26,Misc,Appanna,3537092 / 39,INF179K01608,,,,***IFSC code updated***
+2020-01-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Additional Bank Mandate Unregistered***
+2020-03-17,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Address Updated from KRA Data***
+2020-11-28,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Lien Removed - 460.830***
+2022-10-27,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Address Updated from KRA Data***
+2023-03-04,Misc,Appanna,3537092 / 39,INF179K01608,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301174040700_AGZPR7821D***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***CAN Data Updation***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***CAN Change of ARS***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***CAN Change of Address***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***CAN Change of Contact***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***NCT Change of Default Bank Mandate***
+2023-03-18,Misc,Appanna,3537092 / 39,INF179K01608,,,,***CAN Change of Permenant Address***
+2019-12-09,Misc,Appanna,79924443021 / 0,INF769K01BI1,,,,***Updation of KYC***
+2020-01-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,200.758,12500.00,62.264,Systematic Investment (1/36)
+2020-02-03,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,205.470,12500.00,60.836,Systematic Investment (2/36)
+2020-03-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,210.949,12500.00,59.256,Systematic Investment ISIP (3/36)
+2020-03-17,Misc,Appanna,79924443021 / 0,INF769K01BI1,,,,***Updation of KYC***
+2020-04-03,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,292.193,12500.00,42.780,Systematic Investment (4/36)
+2020-05-04,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,252.204,12500.00,49.563,Systematic Investment (5/36)
+2020-06-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,238.997,12500.00,52.302,Systematic Investment (6/36)
+2020-07-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,222.156,12499.38,56.264,Systematic Investment (7/36)
+2020-07-02,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-08-03,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,213.891,12499.38,58.438,Systematic Investment (8/36)
+2020-08-03,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-09-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,198.013,12499.38,63.124,Systematic Investment (9/36)
+2020-09-02,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-10-05,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,198.107,12499.38,63.094,Systematic Investment (10/36)
+2020-10-05,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-11-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,193.657,12499.38,64.544,Systematic Investment (11/36)
+2020-11-02,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-12-02,Systematic Investment,Appanna,79924443021 / 0,INF769K01BI1,173.160,12499.38,72.184,Systematic Investment (12/36)
+2020-12-02,Stamp Duty,Appanna,79924443021 / 0,INF769K01BI1,,0.62,,*** Stamp Duty ***
+2020-12-02,Reversal,Appanna,79924443021 / 0,INF769K01BI1,-173.160,-12499.38,72.184,Systematic Investment Rejection (12/36)
+2026-01-02,Redemption,Appanna,79924443021 / 0,INF769K01BI1,-2426.395,-435975.15,179.682,"Redemption Directly credited to your Bank account (HDFC BANK-DCB) less TDS, STT"
+2026-01-02,STT Paid,Appanna,79924443021 / 0,INF769K01BI1,,4.36,,*** STT Paid ***
+2021-06-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,235.745,5999.70,25.45,Systematic Investment ISIP (1/22)
+2021-06-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-07-12,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,226.832,5999.70,26.45,Systematic Investment ISIP (2/22)
+2021-07-12,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-08-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,214.889,5999.70,27.92,Systematic Investment ISIP (3/22)
+2021-08-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-09-13,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,204.768,5999.70,29.30,Systematic Investment ISIP (4/22)
+2021-09-13,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-10-11,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,198.534,5999.70,30.22,Systematic Investment ISIP (5/22)
+2021-10-11,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-11-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,193.664,5999.70,30.98,Systematic Investment ISIP (6/22)
+2021-11-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2021-12-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,199.326,5999.70,30.10,Systematic Investment ISIP (7/22)
+2021-12-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-01-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,192.916,5999.70,31.10,Systematic Investment ISIP (8/22)
+2022-01-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-02-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,206.388,5999.70,29.07,Systematic Investment ISIP (9/22)
+2022-02-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-03-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,215.739,5999.70,27.81,Systematic Investment ISIP (10/22)
+2022-03-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-04-11,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,206.601,5999.70,29.04,Systematic Investment ISIP (11/22)
+2022-04-11,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-05-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,235.745,5999.70,25.45,Systematic Investment ISIP (12/22)
+2022-05-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-06-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,237.518,5999.70,25.26,Systematic Investment ISIP (13/22)
+2022-06-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-07-11,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,230.492,5999.70,26.03,Systematic Investment ISIP (14/22)
+2022-07-11,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-08-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,212.153,5999.70,28.28,Systematic Investment ISIP (15/22)
+2022-08-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-09-12,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,202.830,5999.70,29.58,Systematic Investment ISIP (16/22)
+2022-09-12,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-10-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,215.894,5999.70,27.79,Systematic Investment ISIP (17/22)
+2022-10-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-11-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,206.958,5999.70,28.99,Systematic Investment ISIP (18/22)
+2022-11-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2022-12-12,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,202.556,5999.70,29.62,Systematic Investment ISIP (19/22)
+2022-12-12,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2023-01-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,211.555,5999.70,28.36,Systematic Investment ISIP (20/22)
+2023-01-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2023-02-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,213.285,5999.70,28.13,Systematic Investment ISIP (21/22)
+2023-02-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2023-03-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01FF1,218.250,5999.70,27.49,Systematic Investment ISIP (22/22)
+2023-03-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01FF1,,0.30,,*** Stamp Duty ***
+2023-12-21,Redemption,Appanna,9106204455 / 0,INF663L01FF1,-4039.548,-138474.33,34.28,"Redemption less TDS, STT"
+2023-12-21,STT Paid,Appanna,9106204455 / 0,INF663L01FF1,,1.38,,*** STT Paid ***
+2024-03-13,Redemption,Appanna,9106204455 / 0,INF663L01FF1,-643.090,-22179.95,34.49,"Redemption less TDS, STT"
+2024-03-13,STT Paid,Appanna,9106204455 / 0,INF663L01FF1,,0.22,,*** STT Paid ***
+2023-03-21,Purchase,Appanna,9106204455 / 0,INF663L01DV3,533.819,24998.75,46.83,Purchase Trxn.Ref.No.230796950099/HDFC BANK
+2023-03-21,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-03-23,Purchase,Appanna,9106204455 / 0,INF663L01DV3,539.580,24998.75,46.33,Purchase
+2023-03-23,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,9106204455 / 0,INF663L01DV3,543.924,24998.75,45.96,Purchase
+2023-03-24,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-04-10,Systematic Investment,Appanna,9106204455 / 0,INF663L01DV3,42.452,1999.90,47.11,Systematic Investment ISIP (1/5)
+2023-04-10,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-05-08,Systematic Investment,Appanna,9106204455 / 0,INF663L01DV3,40.831,1999.90,48.98,Systematic Investment ISIP (2/5)
+2023-05-08,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,9106204455 / 0,INF663L01DV3,496.105,24998.75,50.39,Purchase
+2023-05-29,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-06-05,Purchase,Appanna,9106204455 / 0,INF663L01DV3,491.328,24998.75,50.88,Purchase
+2023-06-05,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,1.25,,*** Stamp Duty ***
+2023-06-07,Systematic Investment,Appanna,9106204455 / 0,INF663L01DV3,39.229,1999.90,50.98,Systematic Investment ISIP (3/5)
+2023-06-07,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-07-07,Systematic Investment,Appanna,9106204455 / 0,INF663L01DV3,37.978,1999.90,52.66,Systematic Investment ISIP (4/5)
+2023-07-07,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-08-07,Systematic Investment,Appanna,9106204455 / 0,INF663L01DV3,36.905,1999.90,54.19,Systematic Investment ISIP (5/5)
+2023-08-07,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-09-22,Purchase,Appanna,9106204455 / 0,INF663L01DV3,36.415,1999.90,54.92,Purchase
+2023-09-22,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,9106204455 / 0,INF663L01DV3,36.296,1999.90,55.10,Purchase
+2023-09-29,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,9106204455 / 0,INF663L01DV3,37.409,1999.90,53.46,Purchase
+2023-10-27,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2023-11-28,Purchase,Appanna,9106204455 / 0,INF663L01DV3,35.061,1999.90,57.04,Purchase
+2023-11-28,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,9106204455 / 0,INF663L01DV3,33.482,1999.90,59.73,Purchase
+2024-01-02,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,9106204455 / 0,INF663L01DV3,33.663,1999.90,59.41,Purchase
+2024-01-30,Stamp Duty,Appanna,9106204455 / 0,INF663L01DV3,,0.10,,*** Stamp Duty ***
+2021-05-11,Systematic Investment,Appanna,11002746,INF879O01027,235.704,9999.50,42.4239,Purchase Systematic - via Internet
+2021-05-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-05-11,Misc,Appanna,11002746,INF879O01027,,,,***Registration of Nominee***
+2021-05-12,Misc,Appanna,11002746,INF879O01027,,,,***Address Updated from KRA Data***
+2021-05-15,Misc,Appanna,11002746,INF879O01027,,,,***SIPRegistered***
+2021-06-11,Systematic Investment,Appanna,11002746,INF879O01027,224.932,9999.50,44.4556,Purchase Systematic - Instalment 2/61 - via Internet
+2021-06-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-07-13,Systematic Investment,Appanna,11002746,INF879O01027,212.748,9999.50,47.0017,Purchase Systematic - Instalment 3/61 - via Internet
+2021-07-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-08-12,Systematic Investment,Appanna,11002746,INF879O01027,206.413,9999.50,48.4442,Purchase Systematic - Instalment 4/61 - via Internet
+2021-08-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-09-14,Systematic Investment,Appanna,11002746,INF879O01027,192.901,9999.50,51.8374,Purchase Systematic - Instalment 5/61 - via Internet
+2021-09-14,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-10-12,Systematic Investment,Appanna,11002746,INF879O01027,185.239,9999.50,53.9816,Purchase Systematic - Instalment 6/61 - via Internet
+2021-10-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-11-12,Systematic Investment,Appanna,11002746,INF879O01027,183.295,9999.50,54.5542,Purchase Systematic - Instalment 7/61 - via Internet
+2021-11-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2021-12-13,Systematic Investment,Appanna,11002746,INF879O01027,181.430,9999.50,55.1150,Purchase Systematic - via Internet
+2021-12-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-01-12,Systematic Investment,Appanna,11002746,INF879O01027,182.691,9999.50,54.7346,Purchase Systematic
+2022-01-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-02-11,Systematic Investment,Appanna,11002746,INF879O01027,190.578,9999.50,52.4694,Purchase Systematic
+2022-02-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-03-11,Systematic Investment,Appanna,11002746,INF879O01027,200.022,9999.50,49.9919,Purchase Systematic
+2022-03-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-04-12,Systematic Investment,Appanna,11002746,INF879O01027,190.211,9999.50,52.5707,Purchase Systematic - Instalment 12/61
+2022-04-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-05-12,Systematic Investment,Appanna,11002746,INF879O01027,212.664,9999.50,47.0201,Purchase Systematic - Instalment 13/61
+2022-05-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-06-13,Systematic Investment,Appanna,11002746,INF879O01027,212.671,9999.50,47.0186,Purchase Systematic - Instalment 14/61
+2022-06-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-07-12,Systematic Investment,Appanna,11002746,INF879O01027,206.578,9999.50,48.4055,Purchase Systematic - Instalment 15/61
+2022-07-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-08-12,Systematic Investment,Appanna,11002746,INF879O01027,192.801,9999.50,51.8644,Purchase Systematic - Instalment 16/61
+2022-08-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-09-13,Systematic Investment,Appanna,11002746,INF879O01027,188.161,9999.50,53.1433,Purchase Systematic - Instalment 17/61
+2022-09-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-10-12,Systematic Investment,Appanna,11002746,INF879O01027,198.130,9999.50,50.4695,Purchase Systematic - Instalment 18/61
+2022-10-12,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-11-02,Misc,Appanna,11002746,INF879O01027,,,,***Address Updated from KRA Data***
+2022-11-11,Systematic Investment,Appanna,11002746,INF879O01027,191.359,9999.50,52.2551,Purchase Systematic - Instalment 19/61
+2022-11-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2022-12-13,Systematic Investment,Appanna,11002746,INF879O01027,190.813,9999.50,52.4048,Purchase Systematic - Instalment 20/61
+2022-12-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-01-11,Systematic Investment,Appanna,11002746,INF879O01027,196.131,9999.50,50.9837,Purchase Systematic - Instalment 21/61
+2023-01-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-02-13,Systematic Investment,Appanna,11002746,INF879O01027,190.557,9999.50,52.4751,Purchase Systematic - Instalment 22/61
+2023-02-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-03-04,Misc,Appanna,11002746,INF879O01027,,,,***Registration of NomineeNominee addition through - CAMSONLINE￾ 11_0403202301151675200_AGZPR7821D***
+2023-03-13,Systematic Investment,Appanna,11002746,INF879O01027,192.673,9999.50,51.8989,Purchase Systematic - Instalment 23/61 - via Internet
+2023-03-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-03-17,Misc,Appanna,11002746,INF879O01027,,,,***NCT Change of Default Bank Mandate***
+2023-03-20,Purchase,Appanna,11002746,INF879O01027,570.240,29998.50,52.6068,Purchase - via Internet
+2023-03-20,Stamp Duty,Appanna,11002746,INF879O01027,,1.50,,*** Stamp Duty ***
+2023-03-20,Purchase,Appanna,11002746,INF879O01027,570.240,29998.50,52.6068,Purchase - via Internet
+2023-03-20,Stamp Duty,Appanna,11002746,INF879O01027,,1.50,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,11002746,INF879O01027,1141.710,59997.00,52.5501,Purchase
+2023-03-24,Stamp Duty,Appanna,11002746,INF879O01027,,3.00,,*** Stamp Duty ***
+2023-03-27,Purchase,Appanna,11002746,INF879O01027,1144.210,59997.00,52.4353,Purchase
+2023-03-27,Stamp Duty,Appanna,11002746,INF879O01027,,3.00,,*** Stamp Duty ***
+2023-04-11,Systematic Investment,Appanna,11002746,INF879O01027,183.900,9999.50,54.3747,Purchase Systematic - Instalment 24/61
+2023-04-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-05-11,Systematic Investment,Appanna,11002746,INF879O01027,176.394,9999.50,56.6883,Purchase Systematic - Instalment 25/61
+2023-05-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,11002746,INF879O01027,205.765,11999.40,58.3159,Purchase
+2023-05-29,Stamp Duty,Appanna,11002746,INF879O01027,,0.60,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,11002746,INF879O01027,1028.827,59997.00,58.3159,Purchase
+2023-05-29,Stamp Duty,Appanna,11002746,INF879O01027,,3.00,,*** Stamp Duty ***
+2023-06-05,Purchase,Appanna,11002746,INF879O01027,1027.087,59997.00,58.4147,Purchase
+2023-06-05,Stamp Duty,Appanna,11002746,INF879O01027,,3.00,,*** Stamp Duty ***
+2023-06-05,Purchase,Appanna,11002746,INF879O01027,1027.087,59997.00,58.4147,Purchase
+2023-06-05,Stamp Duty,Appanna,11002746,INF879O01027,,3.00,,*** Stamp Duty ***
+2023-06-13,Systematic Investment,Appanna,11002746,INF879O01027,170.892,9999.50,58.5135,Purchase Systematic - Instalment 26/61
+2023-06-13,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-06-14,Purchase,Appanna,11002746,INF879O01027,631.574,36998.15,58.5809,Purchase
+2023-06-14,Stamp Duty,Appanna,11002746,INF879O01027,,1.85,,*** Stamp Duty ***
+2023-06-26,Purchase,Appanna,11002746,INF879O01027,3188.540,187990.60,58.9582,Purchase
+2023-06-26,Stamp Duty,Appanna,11002746,INF879O01027,,9.40,,*** Stamp Duty ***
+2023-07-11,Systematic Investment,Appanna,11002746,INF879O01027,167.046,9999.50,59.8609,Purchase Systematic - Instalment 27/61
+2023-07-11,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-08-14,Systematic Investment,Appanna,11002746,INF879O01027,163.877,9999.50,61.0184,Purchase Systematic - Instalment 28/61 - via Internet
+2023-08-14,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-08-27,Misc,Appanna,11002746,INF879O01027,,,,***SIPCancelledvia Online wef 06-Sep-2023***
+2023-09-25,Purchase,Appanna,11002746,INF879O01027,159.390,9999.50,62.7359,Purchase
+2023-09-25,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-10-03,Purchase,Appanna,11002746,INF879O01027,160.006,9999.50,62.4944,Purchase
+2023-10-03,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,11002746,INF879O01027,160.349,9999.50,62.3608,Purchase
+2023-10-27,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-11-28,Purchase,Appanna,11002746,INF879O01027,150.027,9999.50,66.6512,Purchase
+2023-11-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,11002746,INF879O01027,142.184,9999.50,70.3278,Purchase
+2024-01-02,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,11002746,INF879O01027,139.442,9999.50,71.7106,Purchase
+2024-01-30,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,11002746,INF879O01027,134.881,9999.50,74.1358,Purchase
+2024-02-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-03-28,Purchase,Appanna,11002746,INF879O01027,133.565,9999.50,74.8659,Purchase
+2024-03-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,11002746,INF879O01027,128.591,9999.50,77.7623,Purchase
+2024-05-06,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,11002746,INF879O01027,128.579,9999.50,77.7696,Purchase
+2024-05-31,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,11002746,INF879O01027,122.037,9999.50,81.9385,Purchase
+2024-06-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-08-01,Purchase,Appanna,11002746,INF879O01027,117.172,9999.50,85.3407,Purchase
+2024-08-01,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,11002746,INF879O01027,116.919,9999.50,85.5251,Purchase
+2024-08-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2024-10-04,Purchase,Appanna,11002746,INF879O01027,114.906,9999.50,87.0233,Purchase
+2024-10-04,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,11002746,INF879O01027,343.442,29998.50,87.3465,Purchase
+2025-01-06,Stamp Duty,Appanna,11002746,INF879O01027,,1.50,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,11002746,INF879O01027,116.716,9999.50,85.6737,Purchase
+2025-01-28,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-04-22,Purchase,Appanna,11002746,INF879O01027,114.778,9999.50,87.1201,Purchase
+2025-04-22,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,11002746,INF879O01027,108.693,9999.50,91.9973,Purchase
+2025-06-10,Stamp Duty,Appanna,11002746,INF879O01027,,0.50,,*** Stamp Duty ***
+2023-03-31,Purchase,Appanna,13394210,INF879O01100,145.295,2999.85,20.6466,Purchase
+2023-03-31,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-04-01,Misc,Appanna,13394210,INF879O01100,,,,***Registration of Nominee***
+2023-04-03,Misc,Appanna,13394210,INF879O01100,,,,***NCT Change of Default Bank Mandate***
+2023-04-06,Misc,Appanna,13394210,INF879O01100,,,,***Address Updated from KRA Data***
+2023-05-03,Purchase,Appanna,13394210,INF879O01100,138.791,2999.85,21.6141,Purchase
+2023-05-03,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-05-30,Purchase,Appanna,13394210,INF879O01100,134.929,2999.85,22.2328,Purchase
+2023-05-30,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-06-30,Purchase,Appanna,13394210,INF879O01100,131.803,2999.85,22.7601,Purchase
+2023-06-30,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-07-31,Purchase,Appanna,13394210,INF879O01100,128.566,2999.85,23.3331,Purchase
+2023-07-31,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-08-29,Purchase,Appanna,13394210,INF879O01100,127.999,2999.85,23.4365,Purchase
+2023-08-29,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-10-03,Purchase,Appanna,13394210,INF879O01100,123.866,2999.85,24.2186,Purchase
+2023-10-03,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,13394210,INF879O01100,124.507,2999.85,24.0938,Purchase
+2023-10-27,Stamp Duty,Appanna,13394210,INF879O01100,,0.15,,*** Stamp Duty ***
+2023-11-28,Purchase,Appanna,13394210,INF879O01100,476.855,11999.40,25.1636,Purchase
+2023-11-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.60,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,13394210,INF879O01100,446.779,11999.40,26.8576,Purchase
+2024-01-02,Stamp Duty,Appanna,13394210,INF879O01100,,0.60,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,13394210,INF879O01100,443.720,11999.40,27.0427,Purchase
+2024-01-30,Stamp Duty,Appanna,13394210,INF879O01100,,0.60,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,13394210,INF879O01100,356.714,9999.50,28.0323,Purchase
+2024-02-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-03-28,Purchase,Appanna,13394210,INF879O01100,358.233,9999.50,27.9134,Purchase
+2024-03-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,13394210,INF879O01100,348.028,9999.50,28.7319,Purchase
+2024-05-06,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,13394210,INF879O01100,347.446,9999.50,28.7800,Purchase
+2024-05-31,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,13394210,INF879O01100,328.411,9999.50,30.4481,Purchase
+2024-06-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-08-01,Purchase,Appanna,13394210,INF879O01100,310.055,9999.50,32.2507,Purchase
+2024-08-01,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,13394210,INF879O01100,307.792,9999.50,32.4878,Purchase
+2024-08-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2024-10-04,Purchase,Appanna,13394210,INF879O01100,303.803,9999.50,32.9144,Purchase
+2024-10-04,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,13394210,INF879O01100,933.163,29998.50,32.1471,Purchase
+2025-01-06,Stamp Duty,Appanna,13394210,INF879O01100,,1.50,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,13394210,INF879O01100,319.964,9999.50,31.2520,Purchase
+2025-01-28,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-04-22,Purchase,Appanna,13394210,INF879O01100,305.378,9999.50,32.7447,Purchase
+2025-04-22,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,13394210,INF879O01100,289.889,9999.50,34.4942,Purchase
+2025-06-10,Stamp Duty,Appanna,13394210,INF879O01100,,0.50,,*** Stamp Duty ***
+2023-03-20,Purchase,Appanna,51025826356 / 0,INF966L01986,119.551,28998.55,242.5628,New Purchase
+2023-03-20,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-21,Misc,Appanna,51025826356 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Appanna,51025826356 / 0,INF966L01986,120.661,28998.55,240.3302,Additional Purchase
+2023-03-23,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,51025826356 / 0,INF966L01986,120.919,28998.55,239.8178,Additional Purchase
+2023-03-24,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-03-28,Purchase,Appanna,51025826356 / 0,INF966L01986,10.133,2499.88,246.6959,Additional Purchase
+2023-03-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-05-02,Purchase,Appanna,51025826356 / 0,INF966L01986,9.657,2499.88,258.8616,Additional Purchase
+2023-05-02,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826356 / 0,INF966L01986,110.047,28998.55,263.5109,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826356 / 0,INF966L01986,9.469,2499.88,264.0063,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-06-05,Purchase,Appanna,51025826356 / 0,INF966L01986,109.609,28998.55,264.5626,Additional Purchase
+2023-06-05,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,1.45,,*** Stamp Duty ***
+2023-06-28,Purchase,Appanna,51025826356 / 0,INF966L01986,9.032,2499.88,276.7729,Additional Purchase
+2023-06-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-07-28,Purchase,Appanna,51025826356 / 0,INF966L01986,8.521,2499.88,293.3700,Additional Purchase
+2023-07-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826356 / 0,INF966L01986,8.553,2499.88,292.2778,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,51025826356 / 0,INF966L01986,8.258,2499.88,302.7138,Additional Purchase
+2023-09-29,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-10-06,Purchase,Appanna,51025826356 / 0,INF966L01986,256.471,76254.19,297.3210,Additional Purchase
+2023-10-06,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,3.81,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51025826356 / 0,INF966L01986,8.533,2499.88,292.9780,Additional Purchase
+2023-10-27,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51025826356 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2023-11-28,Purchase,Appanna,51025826356 / 0,INF966L01986,7.784,2499.88,321.1670,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51025826356 / 0,INF966L01986,6.995,2499.88,357.4021,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51025826356 / 0,INF966L01986,6.691,2499.88,373.6094,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51025826356 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51025826356 / 0,INF966L01986,6.521,2499.88,383.3700,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.12,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51025826356 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51025826356 / 0,INF966L01986,14.204,5499.73,387.1921,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51025826356 / 0,INF966L01986,13.470,5499.73,408.2992,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51025826356 / 0,INF966L01986,12.988,5499.73,423.4341,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51025826356 / 0,INF966L01986,12.474,5499.73,440.8897,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51025826356 / 0,INF966L01986,12.065,5499.73,455.8394,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51025826356 / 0,INF966L01986,12.281,5499.73,447.8166,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51025826356 / 0,INF966L01986,12.397,5499.73,443.6417,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51025826356 / 0,INF966L01986,42.495,16499.18,388.2598,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.82,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51025826356 / 0,INF966L01986,15.066,5499.73,365.0472,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51025826356 / 0,INF966L01986,14.308,5499.73,384.3862,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51025826356 / 0,INF966L01986,13.361,5499.73,411.6302,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51025826356 / 0,INF966L01986,,0.27,,*** Stamp Duty ***
+2023-03-20,Purchase,Appanna,51025826366 / 0,INF966L01887,176.086,23998.80,136.2904,New Purchase
+2023-03-20,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-21,Misc,Appanna,51025826366 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Appanna,51025826366 / 0,INF966L01887,177.257,23998.80,135.3902,Additional Purchase
+2023-03-23,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,51025826366 / 0,INF966L01887,177.748,23998.80,135.0155,Additional Purchase
+2023-03-24,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-03-28,Purchase,Appanna,51025826366 / 0,INF966L01887,21.551,2999.85,139.1977,Additional Purchase
+2023-03-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-05-02,Purchase,Appanna,51025826366 / 0,INF966L01887,20.417,2999.85,146.9304,Additional Purchase
+2023-05-02,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826366 / 0,INF966L01887,163.021,23998.80,147.2131,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,1.20,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826366 / 0,INF966L01887,20.234,2999.85,148.2581,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-06-28,Purchase,Appanna,51025826366 / 0,INF966L01887,19.122,2999.85,156.8776,Additional Purchase
+2023-06-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-07-28,Purchase,Appanna,51025826366 / 0,INF966L01887,17.530,2999.85,171.1220,Additional Purchase
+2023-07-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826366 / 0,INF966L01887,428.574,73537.32,171.5860,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,3.68,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826366 / 0,INF966L01887,17.467,2999.85,171.7431,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,51025826366 / 0,INF966L01887,16.453,2999.85,182.3246,Additional Purchase
+2023-09-29,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51025826366 / 0,INF966L01887,17.065,2999.85,175.7887,Additional Purchase
+2023-10-27,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51025826366 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2023-11-28,Purchase,Appanna,51025826366 / 0,INF966L01887,15.778,2999.85,190.1236,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51025826366 / 0,INF966L01887,14.493,2999.85,206.9920,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51025826366 / 0,INF966L01887,13.634,2999.85,220.0328,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51025826366 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51025826366 / 0,INF966L01887,13.206,2999.85,227.1551,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.15,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51025826366 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-03-15,Purchase,Appanna,51025826366 / 0,INF966L01887,567.317,127047.65,223.9447,Additional Purchase Trxn.Ref.No.247545480721/HDFC BANK
+2024-03-15,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,6.35,,*** Stamp Duty ***
+2024-03-27,Purchase,Appanna,51025826366 / 0,INF966L01887,42.875,9999.50,233.2261,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51025826366 / 0,INF966L01887,39.679,9999.50,252.0095,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51025826366 / 0,INF966L01887,38.440,9999.50,260.1320,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51025826366 / 0,INF966L01887,36.919,9999.50,270.8515,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51025826366 / 0,INF966L01887,36.069,9999.50,277.2299,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51025826366 / 0,INF966L01887,36.557,9999.50,273.5284,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51025826366 / 0,INF966L01887,37.308,9999.50,268.0292,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51025826366 / 0,INF966L01887,122.391,29998.50,245.1046,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,1.50,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51025826366 / 0,INF966L01887,43.671,9999.50,228.9740,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51025826366 / 0,INF966L01887,42.154,9999.50,237.2151,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51025826366 / 0,INF966L01887,40.165,9999.50,248.9619,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51025826366 / 0,INF966L01887,,0.50,,*** Stamp Duty ***
+2026-01-02,Redemption,Appanna,51025826366 / 0,INF966L01887,-2164.800,-511782.18,236.4132,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Appanna,51025826366 / 0,INF966L01887,,5.12,,*** STT Paid ***
+2023-03-20,Purchase,Appanna,51025826376 / 0,INF966L01911,397.727,24998.75,62.8541,New Purchase
+2023-03-20,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-21,Misc,Appanna,51025826376 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Appanna,51025826376 / 0,INF966L01911,402.121,24998.75,62.1672,Additional Purchase
+2023-03-23,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,51025826376 / 0,INF966L01911,403.419,24998.75,61.9672,Additional Purchase
+2023-03-24,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,1.25,,*** Stamp Duty ***
+2023-03-28,Purchase,Appanna,51025826376 / 0,INF966L01911,46.910,2999.85,63.9487,Additional Purchase
+2023-03-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-05-02,Purchase,Appanna,51025826376 / 0,INF966L01911,44.300,2999.85,67.7168,Additional Purchase
+2023-05-02,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826376 / 0,INF966L01911,43.680,2999.85,68.6773,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-06-28,Purchase,Appanna,51025826376 / 0,INF966L01911,41.801,2999.85,71.7653,Additional Purchase
+2023-06-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-07-28,Purchase,Appanna,51025826376 / 0,INF966L01911,39.342,2999.85,76.2515,Additional Purchase
+2023-07-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826376 / 0,INF966L01911,1169.842,88182.59,75.3799,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,4.41,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826376 / 0,INF966L01911,39.616,2999.85,75.7235,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,51025826376 / 0,INF966L01911,38.293,2999.85,78.3397,Additional Purchase
+2023-09-29,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51025826376 / 0,INF966L01911,39.796,2999.85,75.3813,Additional Purchase
+2023-10-27,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51025826376 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2023-11-28,Purchase,Appanna,51025826376 / 0,INF966L01911,36.805,2999.85,81.5076,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51025826376 / 0,INF966L01911,32.767,2999.85,91.5511,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51025826376 / 0,INF966L01911,30.648,2999.85,97.8819,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51025826376 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51025826376 / 0,INF966L01911,29.514,2999.85,101.6404,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,0.15,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51025826376 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-03-13,Purchase,Appanna,51025826376 / 0,INF966L01911,1822.527,175991.20,96.5644,Additional Purchase
+2024-03-13,Stamp Duty,Appanna,51025826376 / 0,INF966L01911,,8.80,,*** Stamp Duty ***
+2023-03-20,Purchase,Appanna,51025826386 / 0,INF966L01614,62.961,26998.65,428.8138,New Purchase
+2023-03-20,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-21,Misc,Appanna,51025826386 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2023-03-23,Purchase,Appanna,51025826386 / 0,INF966L01614,63.210,26998.65,427.1292,Additional Purchase
+2023-03-23,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-24,Purchase,Appanna,51025826386 / 0,INF966L01614,63.511,26998.65,425.1041,Additional Purchase
+2023-03-24,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-03-28,Purchase,Appanna,51025826386 / 0,INF966L01614,15.949,6999.65,438.8769,Additional Purchase
+2023-03-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-05-02,Purchase,Appanna,51025826386 / 0,INF966L01614,14.914,6999.65,469.3214,Additional Purchase
+2023-05-02,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826386 / 0,INF966L01614,57.150,26998.65,472.4192,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51025826386 / 0,INF966L01614,14.782,6999.65,473.5342,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-06-05,Purchase,Appanna,51025826386 / 0,INF966L01614,56.706,26998.65,476.1177,Additional Purchase
+2023-06-05,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,1.35,,*** Stamp Duty ***
+2023-06-28,Purchase,Appanna,51025826386 / 0,INF966L01614,14.128,6999.65,495.4292,Additional Purchase
+2023-06-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-07-28,Purchase,Appanna,51025826386 / 0,INF966L01614,13.281,6999.65,527.0258,Additional Purchase
+2023-07-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826386 / 0,INF966L01614,385.549,203496.83,527.8107,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,10.17,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51025826386 / 0,INF966L01614,13.215,6999.65,529.6712,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,51025826386 / 0,INF966L01614,12.860,6999.65,544.2989,Additional Purchase
+2023-09-29,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51025826386 / 0,INF966L01614,13.385,6999.65,522.9494,Additional Purchase
+2023-10-27,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51025826386 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2023-11-28,Purchase,Appanna,51025826386 / 0,INF966L01614,12.463,6999.65,561.6560,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51025826386 / 0,INF966L01614,11.361,6999.65,616.0855,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51025826386 / 0,INF966L01614,10.766,6999.65,650.1594,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51025826386 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51025826386 / 0,INF966L01614,10.645,6999.65,657.5462,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,0.35,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51025826386 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2024-03-13,Purchase,Appanna,51025826386 / 0,INF966L01614,335.625,210489.48,627.1568,Additional Purchase
+2024-03-13,Stamp Duty,Appanna,51025826386 / 0,INF966L01614,,10.52,,*** Stamp Duty ***
+2026-01-02,Redemption,Appanna,51025826386 / 0,INF966L01614,-1182.461,-795774.46,672.9883,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Appanna,51025826386 / 0,INF966L01614,,7.96,,*** STT Paid ***
+2023-03-28,Purchase,Appanna,51026416621 / 0,INF966L01689,54.566,7999.60,146.6052,New Purchase
+2023-03-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-05-02,Purchase,Appanna,51026416621 / 0,INF966L01689,50.593,7999.60,158.1167,Additional Purchase
+2023-05-02,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-05-29,Purchase,Appanna,51026416621 / 0,INF966L01689,49.449,7999.60,161.7742,Additional Purchase
+2023-05-29,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-06-28,Purchase,Appanna,51026416621 / 0,INF966L01689,46.745,7999.60,171.1339,Additional Purchase
+2023-06-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-07-28,Purchase,Appanna,51026416621 / 0,INF966L01689,43.122,7999.60,185.5103,Additional Purchase
+2023-07-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51026416621 / 0,INF966L01689,102.580,19505.02,190.1437,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.98,,*** Stamp Duty ***
+2023-08-28,Purchase,Appanna,51026416621 / 0,INF966L01689,41.875,7999.60,191.0341,Additional Purchase
+2023-08-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-09-29,Purchase,Appanna,51026416621 / 0,INF966L01689,40.684,7999.60,196.6282,Additional Purchase
+2023-09-29,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51026416621 / 0,INF966L01689,42.187,7999.60,189.6245,Additional Purchase
+2023-10-27,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,0.40,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51026416621 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2023-11-28,Purchase,Appanna,51026416621 / 0,INF966L01689,96.595,19999.00,207.0389,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51026416621 / 0,INF966L01689,87.347,19999.00,228.9605,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51026416621 / 0,INF966L01689,80.314,19999.00,249.0110,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51026416621 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51026416621 / 0,INF966L01689,79.089,19999.00,252.8671,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51026416621 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51026416621 / 0,INF966L01689,81.094,19999.00,246.6141,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51026416621 / 0,INF966L01689,146.718,38907.05,265.1833,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.95,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51026416621 / 0,INF966L01689,74.062,19999.00,270.0318,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51026416621 / 0,INF966L01689,69.770,19999.00,286.6421,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51026416621 / 0,INF966L01689,67.398,19999.00,296.7307,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51026416621 / 0,INF966L01689,66.710,19999.00,299.7920,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51026416621 / 0,INF966L01689,67.501,19999.00,296.2753,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51026416621 / 0,INF966L01689,215.681,59997.00,278.1743,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,3.00,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51026416621 / 0,INF966L01689,79.950,19999.00,250.1423,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51026416621 / 0,INF966L01689,77.093,19999.00,259.4151,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51026416621 / 0,INF966L01689,71.847,19999.00,278.3564,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51026416621 / 0,INF966L01689,,1.00,,*** Stamp Duty ***
+2023-10-27,Purchase,Appanna,51042397805 / 0,INF966L01614,128.803,67357.63,522.9494,New Purchase
+2023-10-27,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,3.37,,*** Stamp Duty ***
+2023-10-28,Misc,Appanna,51042397805 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2023-11-07,Purchase,Appanna,51042397805 / 0,INF966L01614,113.610,61246.94,539.0961,Additional Purchase Trxn.Ref.No.331111888734/
+2023-11-07,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,3.06,,*** Stamp Duty ***
+2023-11-28,Purchase,Appanna,51042397805 / 0,INF966L01614,3.561,1999.90,561.6560,Additional Purchase
+2023-11-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-01-02,Purchase,Appanna,51042397805 / 0,INF966L01614,3.246,1999.90,616.0855,Additional Purchase
+2024-01-02,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-01-30,Purchase,Appanna,51042397805 / 0,INF966L01614,3.076,1999.90,650.1594,Additional Purchase
+2024-01-30,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51042397805 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2024-02-28,Purchase,Appanna,51042397805 / 0,INF966L01614,112.534,73996.30,657.5462,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,3.70,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,51042397805 / 0,INF966L01614,3.041,1999.90,657.5462,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51042397805 / 0,INF966L01614,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51042397805 / 0,INF966L01614,3.013,1999.90,663.7049,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51042397805 / 0,INF966L01614,2.824,1999.90,708.1734,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51042397805 / 0,INF966L01614,2.771,1999.90,721.6275,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51042397805 / 0,INF966L01614,2.630,1999.90,760.4019,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51042397805 / 0,INF966L01614,2.553,1999.90,783.2390,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51042397805 / 0,INF966L01614,2.574,1999.90,776.8115,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51042397805 / 0,INF966L01614,56.639,43997.80,776.8115,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,2.20,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51042397805 / 0,INF966L01614,2.669,1999.90,749.3496,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51042397805 / 0,INF966L01614,8.766,5999.70,684.3959,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.30,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51042397805 / 0,INF966L01614,3.135,1999.90,637.8430,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51042397805 / 0,INF966L01614,3.056,1999.90,654.3831,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51042397805 / 0,INF966L01614,2.876,1999.90,695.3380,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51042397805 / 0,INF966L01614,,0.10,,*** Stamp Duty ***
+2026-01-02,Redemption,Appanna,51042397805 / 0,INF966L01614,-443.545,-298497.61,672.9883,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Appanna,51042397805 / 0,INF966L01614,,2.99,,*** STT Paid ***
+2024-02-15,Purchase,Appanna,51056055041 / 0,INF966L01911,150.351,15499.23,103.0873,New Purchase
+2024-02-15,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.77,,*** Stamp Duty ***
+2024-02-17,Misc,Appanna,51056055041 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-02-21,Purchase,Appanna,51056055041 / 0,INF966L01911,195.163,19999.00,102.4732,Additional Purchase Trxn.Ref.No.245143353675/HDFC BANK
+2024-02-21,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.00,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,51056055041 / 0,INF966L01911,98.381,9999.50,101.6404,Additional Purchase
+2024-02-28,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.50,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51056055041 / 0,INF966L01911,,,,******Address Updated from CVL Data******
+2024-02-29,Purchase,Appanna,51056055041 / 0,INF966L01911,1198.553,124993.75,104.2872,Additional Purchase
+2024-02-29,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,6.25,,*** Stamp Duty ***
+2024-03-15,Purchase,Appanna,51056055041 / 0,INF966L01911,263.805,26121.69,99.0188,Additional Purchase Trxn.Ref.No.247545480809/HDFC BANK
+2024-03-15,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.31,,*** Stamp Duty ***
+2024-03-18,Purchase,Appanna,51056055041 / 0,INF966L01911,25.135,2499.88,99.4567,Additional Purchase Trxn.Ref.No.247645575272/HDFC BANK
+2024-03-18,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.12,,*** Stamp Duty ***
+2024-03-27,Purchase,Appanna,51056055041 / 0,INF966L01911,98.052,9999.50,101.9816,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.50,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51056055041 / 0,INF966L01911,440.775,47046.65,106.7361,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,2.35,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51056055041 / 0,INF966L01911,96.119,10599.47,110.2740,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.53,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51056055041 / 0,INF966L01911,91.335,10599.47,116.0501,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.53,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51056055041 / 0,INF966L01911,46.112,5599.72,121.4371,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.28,,*** Stamp Duty ***
+2024-08-16,Purchase,Appanna,51056055041 / 0,INF966L01911,605.470,71296.44,117.7538,Additional Purchase
+2024-08-16,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,3.56,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51056055041 / 0,INF966L01911,147.050,17599.12,119.6816,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,0.88,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51056055041 / 0,INF966L01911,183.050,21598.92,117.9945,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51056055041 / 0,INF966L01911,618.484,64796.76,104.7671,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,3.24,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51056055041 / 0,INF966L01911,216.800,21598.92,99.6262,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51056055041 / 0,INF966L01911,205.239,21598.92,105.2379,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51056055041 / 0,INF966L01911,196.627,21598.92,109.8472,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51056055041 / 0,INF966L01911,,1.08,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,51058264612 / 0,INF966L01986,39.125,14999.25,383.3700,New Purchase
+2024-02-28,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51058264612 / 0,INF966L01986,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51058264612 / 0,INF966L01986,38.739,14999.25,387.1921,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51058264612 / 0,INF966L01986,36.736,14999.25,408.2992,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51058264612 / 0,INF966L01986,35.423,14999.25,423.4341,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51058264612 / 0,INF966L01986,34.020,14999.25,440.8897,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51058264612 / 0,INF966L01986,32.905,14999.25,455.8394,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51058264612 / 0,INF966L01986,33.494,14999.25,447.8166,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51058264612 / 0,INF966L01986,33.809,14999.25,443.6417,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51058264612 / 0,INF966L01986,115.896,44997.75,388.2598,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,2.25,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51058264612 / 0,INF966L01986,41.089,14999.25,365.0472,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51058264612 / 0,INF966L01986,39.021,14999.25,384.3862,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51058264612 / 0,INF966L01986,36.439,14999.25,411.6302,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51058264612 / 0,INF966L01986,,0.75,,*** Stamp Duty ***
+2024-02-28,Purchase,Appanna,51058264622 / 0,INF966L01887,22.010,4999.75,227.1551,New Purchase
+2024-02-28,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.25,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51058264622 / 0,INF966L01887,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51058264622 / 0,INF966L01887,8.575,1999.90,233.2261,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51058264622 / 0,INF966L01887,7.936,1999.90,252.0095,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51058264622 / 0,INF966L01887,7.688,1999.90,260.1320,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51058264622 / 0,INF966L01887,7.384,1999.90,270.8515,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51058264622 / 0,INF966L01887,7.214,1999.90,277.2299,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51058264622 / 0,INF966L01887,7.311,1999.90,273.5284,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51058264622 / 0,INF966L01887,7.462,1999.90,268.0292,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51058264622 / 0,INF966L01887,24.478,5999.70,245.1046,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.30,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51058264622 / 0,INF966L01887,8.734,1999.90,228.9740,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51058264622 / 0,INF966L01887,8.431,1999.90,237.2151,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51058264622 / 0,INF966L01887,8.033,1999.90,248.9619,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51058264622 / 0,INF966L01887,,0.10,,*** Stamp Duty ***
+2026-01-02,Redemption,Appanna,51058264622 / 0,INF966L01887,-75.579,-17867.69,236.4132,"Redemption less TDS, STT"
+2026-01-02,STT Paid,Appanna,51058264622 / 0,INF966L01887,,0.18,,*** STT Paid ***
+2024-02-28,Purchase,Appanna,51058356011 / 0,INF966L01689,19.772,4999.75,252.8671,New Purchase
+2024-02-28,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.25,,*** Stamp Duty ***
+2024-02-29,Misc,Appanna,51058356011 / 0,INF966L01689,,,,******Address Updated from CVL Data******
+2024-03-27,Purchase,Appanna,51058356011 / 0,INF966L01689,16.219,3999.80,246.6141,Additional Purchase
+2024-03-27,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-05-06,Purchase,Appanna,51058356011 / 0,INF966L01689,15.083,3999.80,265.1833,Additional Purchase
+2024-05-06,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-05-31,Purchase,Appanna,51058356011 / 0,INF966L01689,14.812,3999.80,270.0318,Additional Purchase
+2024-05-31,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-06-28,Purchase,Appanna,51058356011 / 0,INF966L01689,13.954,3999.80,286.6421,Additional Purchase
+2024-06-28,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-07-31,Purchase,Appanna,51058356011 / 0,INF966L01689,13.480,3999.80,296.7307,Additional Purchase
+2024-07-31,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-08-28,Purchase,Appanna,51058356011 / 0,INF966L01689,13.342,3999.80,299.7920,Additional Purchase
+2024-08-28,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2024-10-03,Purchase,Appanna,51058356011 / 0,INF966L01689,13.500,3999.80,296.2753,Additional Purchase
+2024-10-03,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2025-01-06,Purchase,Appanna,51058356011 / 0,INF966L01689,43.136,11999.40,278.1743,Additional Purchase
+2025-01-06,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.60,,*** Stamp Duty ***
+2025-01-28,Purchase,Appanna,51058356011 / 0,INF966L01689,15.990,3999.80,250.1423,Additional Purchase
+2025-01-28,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2025-04-21,Purchase,Appanna,51058356011 / 0,INF966L01689,15.419,3999.80,259.4151,Additional Purchase
+2025-04-21,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
+2025-06-10,Purchase,Appanna,51058356011 / 0,INF966L01689,14.369,3999.80,278.3564,Additional Purchase
+2025-06-10,Stamp Duty,Appanna,51058356011 / 0,INF966L01689,,0.20,,*** Stamp Duty ***
