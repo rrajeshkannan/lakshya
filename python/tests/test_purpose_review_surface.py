@@ -51,3 +51,35 @@ def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: P
 
     staged = _read(staging / "purposes_staged.csv")
     assert staged[0]["value"] == "2357150.00"
+
+
+def test_review_surface_allows_open_purpose_without_achievability_return(tmp_path: Path):
+    data = tmp_path / "data"
+    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    staging.mkdir(parents=True)
+    (staging / "purposes_staged.csv").write_text(
+        "name,due,value,desired,monthly_plan\n"
+        "Open,NA,341588,,\n",
+        encoding="utf-8",
+    )
+    review = data / "reviews" / "2026-09-06"
+    (review / "Open_summary.csv").write_text(
+        "purpose,purpose_horizon_years,primary_winner,contract_version\n"
+        'Open,7,"X|X=1.0000",1\n',
+        encoding="utf-8",
+    )
+    output = tmp_path / "output"
+    output.mkdir()
+    (output / "achievability_Open.csv").write_text(
+        "composition,status,required_annual_return,comparison_horizon_years,observed_upper_return\n"
+        "X|X=1.0000,not_applicable,,,\n",
+        encoding="utf-8",
+    )
+
+    result = refresh_review_surface("2026-09-06", data_dir=data)
+    rows = {row["purpose"]: row for row in _read(result)}
+    assert rows["Open"]["selected_composition"] == "X|X=1.0000"
+    assert rows["Open"]["selected_formation"] == "X:100%"
+    assert rows["Open"]["observed_terrain"] == ""
+    assert rows["Open"]["required_annual_return"] == ""
+    assert rows["Open"]["achievability_status"] == "not_applicable"
