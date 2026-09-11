@@ -150,7 +150,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    configured = _load_purposes(pd.Timestamp(args.as_of))
+    configured = _load_purposes(pd.Timestamp(args.as_of).date())
     if args.purposes is None:
         selected_purposes = [purpose.name for purpose in configured]
     else:
