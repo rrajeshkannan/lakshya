@@ -22,7 +22,7 @@ import json
 import logging
 import os
 import shutil
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -90,6 +90,27 @@ def _number(value: str, field: str) -> float | None:
     return result
 
 
+def _parse_due(raw: str, name: str) -> date:
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        try:
+            return datetime.strptime(raw, "%d-%b-%Y").date()
+        except ValueError as exc:
+            raise ValueError(f"Invalid Purpose due date for {name}: {raw!r}") from exc
+
+
+def _floor_years(start: date, due: date) -> int:
+    years = due.year - start.year
+    try:
+        anniversary = start.replace(year=start.year + years)
+    except ValueError:
+        anniversary = start.replace(year=start.year + years, day=28)
+    if anniversary > due:
+        years -= 1
+    return years
+
+
 def _load_staged_rows(path: Path) -> dict[str, dict[str, str]]:
     rows = _read_csv(path)
     if not rows or set(rows[0]) != set(PURPOSE_FIELDS):
@@ -117,11 +138,8 @@ def _purpose(row: dict[str, str], as_of: date) -> Purpose:
         raise ValueError(f"Negative monthly plan: {row['name']}")
     due_raw = row.get("due", "").strip()
     if due_raw and due_raw.upper() != "NA":
-        due = date.fromisoformat(due_raw)
-        years = due.year - as_of.year
-        anniversary = date(as_of.year + years, due.month, due.day)
-        if anniversary > due:
-            years -= 1
+        due = _parse_due(due_raw, row["name"])
+        years = _floor_years(as_of, due)
         if years <= 0:
             raise ValueError(f"Purpose due date is not beyond as-of date: {row['name']}")
         return Purpose(
