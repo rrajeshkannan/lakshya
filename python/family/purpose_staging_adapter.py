@@ -38,6 +38,5 @@ def load_intent_rows(source: Path, positions_path: Path) -> dict[str, dict[str, 
             "value": f"{capital[name]:g}",
             "desired": row["desired"].strip(),
             "monthly_plan": row["monthly_plan"].strip(),
-            "analytical_horizon_years": "" if row["due"].strip().upper() not in ("", "NA") else "7",
         }
     return result
