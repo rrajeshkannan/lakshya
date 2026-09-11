@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from family.review_surface import refresh_review_surface
 from family.staging import initialize_staging, run_turn
@@ -17,13 +18,13 @@ def main() -> None:
 
     p = sub.add_parser("turn")
     p.add_argument("--as-of", required=True)
-    p.add_argument("--input", required=True)
+    p.add_argument("--input", required=True, type=Path)
 
     args = parser.parse_args()
     if args.command == "init":
         directory = initialize_staging(args.as_of)
     else:
-        directory = run_turn(args.as_of, __import__("pathlib").Path(args.input))
+        directory = run_turn(args.as_of, args.input)
 
     refresh_review_surface(args.as_of)
     snapshot = snapshot_current_staging(directory)
