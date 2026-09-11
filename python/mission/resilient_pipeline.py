@@ -744,7 +744,7 @@ def run(
 
     funds = load_admissible_funds()
     histories = _load_fund_histories(funds)
-    purposes = _load_purposes(valuation_date)
+    purposes = _load_purposes(valuation_date.date())
     if purpose_names is not None:
         requested = set(purpose_names)
         known = {purpose.name for purpose in purposes}
