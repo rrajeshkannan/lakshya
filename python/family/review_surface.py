@@ -94,10 +94,17 @@ def _format_formation(identity: str) -> str:
         return identity
 
 
-def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float]]:
+def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | None]]:
+    """Recover selected FINAL formation and optional achievability terrain.
+
+    Some open-ended Purposes have no target/due-date achievability calculation,
+    so their checkpoint can legitimately have no observed upper return. The
+    selected formation remains valid evidence; absence of an achievability
+    return must not make the review surface fail.
+    """
     review_dir = data_dir / "reviews" / as_of
     output_dir = data_dir.parent / "output"
-    result: dict[str, tuple[str, float]] = {}
+    result: dict[str, tuple[str, float | None]] = {}
     for summary in sorted(review_dir.glob("*_summary.csv")):
         rows = _read_csv(summary)
         if len(rows) != 1:
@@ -113,8 +120,6 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float]]:
         if len(matches) != 1:
             raise ValueError(f"Cannot recover selected achievability evidence for {purpose}")
         upper = _number(matches[0].get("observed_upper_return", ""))
-        if upper is None:
-            raise ValueError(f"Selected achievability evidence has no observed upper return: {purpose}")
         result[purpose] = (winner, upper)
     return result
 
