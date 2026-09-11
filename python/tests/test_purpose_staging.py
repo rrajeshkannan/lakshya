@@ -82,7 +82,7 @@ def test_staging_seed_contains_only_purpose_state_and_derives_horizon(tmp_path: 
 
     run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,\n"), data_dir=data)
     results = {row["purpose"]: row for row in _read(directory / "achievability_latest.csv")}
-    assert results["A"]["horizon_years"] == "9"
+    assert results["A"]["horizon_years"] == "10"
 
 
 def test_turn_rejects_legacy_horizon_column(tmp_path: Path):
