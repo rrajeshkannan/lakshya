@@ -8,12 +8,22 @@ from family.review_surface import refresh_review_surface
 from family.staging import initialize_staging, run_turn
 from family.staging_history import snapshot_current_staging, write_turn_template
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "data"
+
+
+def _directory(as_of: str) -> Path:
+    return DATA_DIR / "reviews" / as_of / "purpose_staging"
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("init")
+    p.add_argument("--as-of", required=True)
+
+    p = sub.add_parser("snapshot")
     p.add_argument("--as-of", required=True)
 
     p = sub.add_parser("template")
@@ -30,7 +40,12 @@ def main() -> None:
         print(snapshot_current_staging(directory))
         return
 
-    directory = Path(__file__).resolve().parents[1] / "data" / "reviews" / args.as_of / "purpose_staging"
+    directory = _directory(args.as_of)
+    if args.command == "snapshot":
+        refresh_review_surface(args.as_of)
+        print(snapshot_current_staging(directory))
+        return
+
     if args.command == "template":
         print(write_turn_template(directory))
         return
