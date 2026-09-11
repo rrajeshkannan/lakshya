@@ -18,8 +18,8 @@ def _fixture(tmp_path: Path) -> Path:
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,desired,monthly_plan\n"
-        "A,2036-01-01,2000,10\n"
-        "B,2036-01-01,1000,10\n",
+        "A,2036-01-01,1800,10\n"
+        "B,2036-01-01,2000,10\n",
         encoding="utf-8",
     )
     positions = data / "lps" / "positions.csv"
