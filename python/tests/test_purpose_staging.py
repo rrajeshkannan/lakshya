@@ -8,7 +8,7 @@ import pytest
 
 from family.staging import commit_staging, initialize_staging, run_turn
 
-TURN_HEADER = "purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct\n"
+TURN_HEADER = "purpose,value,monthly_plan,desired,due,capital_acquire_pct,sip_acquire_pct\n"
 POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
@@ -73,10 +73,35 @@ def test_initialize_isolates_staged_state_from_authoritative_source(tmp_path: Pa
     assert (directory / "staging.log").is_file()
 
 
+def test_staging_seed_contains_only_purpose_state_and_derives_horizon(tmp_path: Path):
+    data = _fixture(tmp_path)
+    directory = initialize_staging("2026-09-06", data_dir=data)
+    rows = _read(directory / "purposes_staged.csv")
+    assert set(rows[0]) == {"name", "due", "value", "desired", "monthly_plan"}
+    assert "analytical_horizon_years" not in rows[0]
+
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,\n"), data_dir=data)
+    results = {row["purpose"]: row for row in _read(directory / "achievability_latest.csv")}
+    assert results["A"]["horizon_years"] == "9"
+
+
+def test_turn_rejects_legacy_horizon_column(tmp_path: Path):
+    data = _fixture(tmp_path)
+    initialize_staging("2026-09-06", data_dir=data)
+    legacy = tmp_path / "legacy_turn.csv"
+    legacy.write_text(
+        "purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct\n"
+        "A,,,,,,100,\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="unexpected column layout"):
+        run_turn("2026-09-06", legacy, data_dir=data)
+
+
 def test_turn_releases_capital_and_sip_and_records_ledger(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     state = json.loads((staging / "staging_state.json").read_text(encoding="utf-8"))
     assert state["pool_capital"] == pytest.approx(20.0)
@@ -88,8 +113,8 @@ def test_turn_releases_capital_and_sip_and_records_ledger(tmp_path: Path):
 def test_acquisition_percentage_updates_recipient_and_leaves_unallocated_pool(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,60,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,60,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     rows = _read(staging / "purposes_staged.csv")
     b = next(row for row in rows if row["name"] == "B")
@@ -101,8 +126,8 @@ def test_acquisition_percentage_updates_recipient_and_leaves_unallocated_pool(tm
 def test_acquisition_percentages_share_same_pool_base(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n"), data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,60,\nB,,,,,,40,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,60,\nB,,,,,40,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     rows = {row["name"]: row for row in _read(staging / "purposes_staged.csv")}
     assert float(rows["A"]["value"]) == pytest.approx(60.0)
@@ -114,11 +139,11 @@ def test_acquisition_percentages_share_same_pool_base(tmp_path: Path):
 def test_acquisition_percentages_cannot_exceed_100(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,\n"), data_dir=data)
     with pytest.raises(ValueError, match="cannot exceed 100"):
         run_turn(
             "2026-09-06",
-            _turn(tmp_path, "A,,,,,,70,\nB,,,,,,40,\n"),
+            _turn(tmp_path, "A,,,,,70,\nB,,,,,40,\n"),
             data_dir=data,
         )
 
@@ -126,14 +151,14 @@ def test_acquisition_percentages_cannot_exceed_100(tmp_path: Path):
 def test_achievability_is_recomputed_after_each_turn(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,\n"), data_dir=data)
     staging = data / "reviews" / "2026-09-06" / "purpose_staging"
     initial = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
     assert set(initial) == {"A", "B"}
     assert initial["A"]["status"] == "within_observed_terrain"
     assert initial["B"]["status"] == "within_observed_terrain"
 
-    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,50,10,,,,\n"), data_dir=data)
     latest = {row["purpose"]: row for row in _read(staging / "achievability_latest.csv")}
     assert set(latest) == {"A", "B"}
     assert float(latest["A"]["required_annual_return"]) > float(initial["A"]["required_annual_return"])
@@ -145,7 +170,7 @@ def test_achievability_is_recomputed_after_each_turn(tmp_path: Path):
 def test_commit_blocks_with_nonempty_pool(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,\n"), data_dir=data)
     with pytest.raises(ValueError, match="common-pool balances remain"):
         commit_staging("2026-09-06", data_dir=data)
 
@@ -153,8 +178,8 @@ def test_commit_blocks_with_nonempty_pool(tmp_path: Path):
 def test_commit_preserves_authoritative_backup_and_marks_workspace(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,,\n"), data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,100,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,100,\n"), data_dir=data)
     source = data / "purpose" / "purposes.csv"
     original = source.read_text(encoding="utf-8")
     commit_staging("2026-09-06", data_dir=data)
