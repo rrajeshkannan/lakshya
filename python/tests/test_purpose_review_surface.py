@@ -44,7 +44,8 @@ def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: P
     assert rows["A"]["horizon_years"] == "9"
     assert rows["A"]["selected_composition"] == "X|X=1.0000"
     assert rows["A"]["selected_formation"] == "X:100%"
-    assert rows["A"]["observed_upper_return"] == "10.00%"
+    assert rows["A"]["observed_terrain"] == "observed terrain demonstrated by selected FINAL formation"
+    assert "observed_upper_return" not in rows["A"]
     assert rows["A"]["achievability_status"] == "within_observed_terrain"
     assert rows["B"]["achievability_status"] == "not_applicable"
 
