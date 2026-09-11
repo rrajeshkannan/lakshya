@@ -6,7 +6,7 @@ from pathlib import Path
 
 from family.staging import commit_staging, initialize_staging, run_turn
 
-TURN_HEADER = "purpose,value,monthly_plan,desired,due,analytical_horizon_years,capital_acquire_pct,sip_acquire_pct\n"
+TURN_HEADER = "purpose,value,monthly_plan,desired,due,capital_acquire_pct,sip_acquire_pct\n"
 POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
@@ -70,15 +70,15 @@ def test_working_revision_tracks_turns_without_resetting_cumulative_pool(tmp_pat
     initialize_staging("2026-09-06", data_dir=data)
     assert _state(data)["working_revision"] == 0
 
-    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n", "one"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,\n", "one"), data_dir=data)
     assert _state(data)["working_revision"] == 1
     assert _state(data)["pool_capital"] == 100.0
 
-    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,60,\n", "two"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,60,\n", "two"), data_dir=data)
     assert _state(data)["working_revision"] == 2
     assert _state(data)["pool_capital"] == 40.0
 
-    run_turn("2026-09-06", _turn(tmp_path, "C,,,,,,100,\n", "three"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "C,,,,,100,\n", "three"), data_dir=data)
     assert _state(data)["working_revision"] == 3
     assert _state(data)["pool_capital"] == 0.0
 
@@ -92,8 +92,8 @@ def test_working_revision_tracks_turns_without_resetting_cumulative_pool(tmp_pat
 def test_commit_records_final_working_revision(tmp_path: Path):
     data = _fixture(tmp_path)
     initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,,\n", "one"), data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,,100,\n", "two"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,0,10,,,,\n", "one"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "B,,,,,100,\n", "two"), data_dir=data)
 
     commit_staging("2026-09-06", data_dir=data)
     state = _state(data)

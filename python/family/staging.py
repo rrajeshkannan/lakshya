@@ -22,7 +22,7 @@ import json
 import logging
 import os
 import shutil
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -34,12 +34,12 @@ from .purpose_staging_adapter import load_intent_rows
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 EPSILON = 1e-8
 INTENT_FIELDS = ["name", "due", "desired", "monthly_plan"]
-PURPOSE_FIELDS = ["name", "due", "value", "desired", "monthly_plan", "analytical_horizon_years"]
+PURPOSE_FIELDS = ["name", "due", "value", "desired", "monthly_plan"]
 TURN_FIELDS = [
-    "purpose", "value", "monthly_plan", "desired", "due", "analytical_horizon_years",
+    "purpose", "value", "monthly_plan", "desired", "due",
     "capital_acquire_pct", "sip_acquire_pct",
 ]
 LEDGER_FIELDS = ["turn", "kind", "purpose", "amount", "pool_after"]
@@ -90,15 +90,25 @@ def _number(value: str, field: str) -> float | None:
     return result
 
 
-def _integer(value: str, field: str) -> int | None:
-    text = str(value).strip()
-    if not text:
-        return None
+def _parse_due(raw: str, name: str) -> date:
     try:
-        result = int(text)
-    except ValueError as exc:
-        raise ValueError(f"Invalid {field}: {value!r}") from exc
-    return result
+        return date.fromisoformat(raw)
+    except ValueError:
+        try:
+            return datetime.strptime(raw, "%d-%b-%Y").date()
+        except ValueError as exc:
+            raise ValueError(f"Invalid Purpose due date for {name}: {raw!r}") from exc
+
+
+def _floor_years(start: date, due: date) -> int:
+    years = due.year - start.year
+    try:
+        anniversary = start.replace(year=start.year + years)
+    except ValueError:
+        anniversary = start.replace(year=start.year + years, day=28)
+    if anniversary > due:
+        years -= 1
+    return years
 
 
 def _load_staged_rows(path: Path) -> dict[str, dict[str, str]]:
@@ -128,11 +138,8 @@ def _purpose(row: dict[str, str], as_of: date) -> Purpose:
         raise ValueError(f"Negative monthly plan: {row['name']}")
     due_raw = row.get("due", "").strip()
     if due_raw and due_raw.upper() != "NA":
-        due = date.fromisoformat(due_raw)
-        years = due.year - as_of.year
-        anniversary = date(as_of.year + years, due.month, due.day)
-        if anniversary > due:
-            years -= 1
+        due = _parse_due(due_raw, row["name"])
+        years = _floor_years(as_of, due)
         if years <= 0:
             raise ValueError(f"Purpose due date is not beyond as-of date: {row['name']}")
         return Purpose(
@@ -185,7 +192,13 @@ def _state(directory: Path) -> dict[str, Any]:
     path = directory / "staging_state.json"
     if not path.is_file():
         raise FileNotFoundError(f"Staging state missing; initialize first: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    state = json.loads(path.read_text(encoding="utf-8"))
+    if state.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError(
+            f"Unsupported Purpose Staging schema {state.get('schema_version')!r}; "
+            f"expected {SCHEMA_VERSION}. Reinitialize the staging workspace."
+        )
+    return state
 
 
 def _logger(path: Path) -> logging.Logger:
@@ -230,7 +243,7 @@ def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]],
     for change in rows:
         name = change["purpose"].strip()
         current = updated[name]
-        for field in ("value", "monthly_plan", "desired", "due", "analytical_horizon_years"):
+        for field in ("value", "monthly_plan", "desired", "due"):
             proposed = change.get(field, "").strip()
             if not proposed:
                 continue
@@ -241,12 +254,6 @@ def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]],
                     raise ValueError(f"Negative {field} for {name}")
                 current[field] = f"{number:g}"
                 logger.info("TURN=%s LEVER purpose=%s field=%s value=%s", turn, name, field, number)
-            elif field == "analytical_horizon_years":
-                horizon = _integer(proposed, field)
-                if horizon is None or horizon <= 0:
-                    raise ValueError(f"{field} must be positive for {name}")
-                current[field] = str(horizon)
-                logger.info("TURN=%s LEVER purpose=%s field=%s value=%s", turn, name, field, horizon)
             else:
                 current[field] = proposed
                 logger.info("TURN=%s LEVER purpose=%s field=%s value=%s", turn, name, field, proposed)
@@ -332,8 +339,8 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
     if state.get("status") != "STAGING":
         raise ValueError("Staging workspace is already committed")
     rows = _read_csv(turn_path)
-    if not rows or not set(TURN_FIELDS).issubset(rows[0]):
-        raise ValueError(f"Turn input is missing required columns: {turn_path}")
+    if not rows or set(rows[0]) != set(TURN_FIELDS):
+        raise ValueError(f"Turn input has an unexpected column layout: {turn_path}")
     staged_path = directory / "purposes_staged.csv"
     before = _load_staged_rows(staged_path)
     logger = _logger(directory / "staging.log")
