@@ -102,6 +102,19 @@ def test_snapshot_preserves_each_completed_turn_as_immutable_state(tmp_path: Pat
     assert state["turn"] == 2
 
 
+def test_achievability_money_fields_are_fixed_point(tmp_path: Path):
+    data = _fixture(tmp_path)
+    directory = initialize_staging("2026-09-06", data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,\n"), data_dir=data)
+    rows = _read(directory / "achievability_latest.csv")
+    row = next(r for r in rows if r["purpose"] == "A")
+    assert row["value"] == "80.00"
+    assert row["monthly_plan"] == "5.00"
+    assert row["desired"] == "1800.00"
+    assert "e" not in row["value"].lower()
+    assert "e" not in row["desired"].lower()
+
+
 def test_snapshot_captures_review_surface_when_present(tmp_path: Path):
     data = _fixture(tmp_path)
     directory = initialize_staging("2026-09-06", data_dir=data)
