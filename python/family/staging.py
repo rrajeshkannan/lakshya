@@ -448,7 +448,7 @@ def main() -> None:
     p.add_argument("--input", required=True, type=Path)
     p = sub.add_parser("commit")
     p.add_argument("--as-of", required=True)
-    p = parser.parse_args()
+    args = parser.parse_args()
     if args.command == "init":
         print(initialize_staging(args.as_of))
     elif args.command == "turn":
