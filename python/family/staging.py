@@ -387,9 +387,9 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
             status = (AchievabilityStatus.WITHIN_OBSERVED_TERRAIN.value if required <= upper else AchievabilityStatus.BEYOND_OBSERVED_TERRAIN.value)
         results.append({
             "purpose": name,
-            "value": row["value"],
-            "monthly_plan": row["monthly_plan"],
-            "desired": row["desired"],
+            "value": f"{(_number(row['value'], 'value') or 0.0):.2f}",
+            "monthly_plan": "" if not row["monthly_plan"].strip() else f"{(_number(row['monthly_plan'], 'monthly_plan') or 0.0):.2f}",
+            "desired": "" if not row["desired"].strip() else f"{(_number(row['desired'], 'desired') or 0.0):.2f}",
             "due": row["due"],
             "horizon_years": purpose.horizon_years or purpose.trajectory_horizon_years or "",
             "required_annual_return": "" if required is None else f"{required:.10f}",
