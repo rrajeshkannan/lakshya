@@ -213,6 +213,24 @@ def _logger(path: Path) -> logging.Logger:
     return logger
 
 
+class _DeferredLogger:
+    """Collect turn events until all prospective validation succeeds."""
+
+    def __init__(self) -> None:
+        self.messages: list[tuple[str, tuple[Any, ...]]] = []
+
+    def info(self, message: str, *args: Any) -> None:
+        self.messages.append((message, args))
+
+
+def _flush_deferred_log(path: Path, deferred: _DeferredLogger, *, turn: int, turn_path: Path, pool_capital: float, pool_sip: float) -> None:
+    logger = _logger(path)
+    logger.info("TURN_START turn=%s input=%s", turn, turn_path)
+    for message, args in deferred.messages:
+        logger.info(message, *args)
+    logger.info("TURN_COMPLETE turn=%s pool_capital=%.2f pool_monthly_sip=%.2f", turn, pool_capital, pool_sip)
+
+
 def _acquisition_percentages(rows: list[dict[str, str]]) -> tuple[float, float]:
     capital = 0.0
     sip = 0.0
@@ -232,7 +250,7 @@ def _acquisition_percentages(rows: list[dict[str, str]]) -> tuple[float, float]:
     return capital, sip
 
 
-def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]], turn: int, logger: logging.Logger) -> dict[str, dict[str, str]]:
+def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]], turn: int, logger: Any) -> dict[str, dict[str, str]]:
     names = [row["purpose"].strip() for row in rows]
     if len(names) != len(set(names)):
         raise ValueError("Turn input contains duplicate Purposes")
@@ -260,7 +278,7 @@ def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]],
     return updated
 
 
-def _release_deltas(before: dict[str, dict[str, str]], after: dict[str, dict[str, str]], turn: int, logger: logging.Logger, pool_capital: float, pool_sip: float, ledger: list[dict[str, Any]]) -> tuple[float, float]:
+def _release_deltas(before: dict[str, dict[str, str]], after: dict[str, dict[str, str]], turn: int, logger: Any, pool_capital: float, pool_sip: float, ledger: list[dict[str, Any]]) -> tuple[float, float]:
     for name in sorted(before):
         old_value = _number(before[name]["value"], "value") or 0.0
         new_value = _number(after[name]["value"], "value") or 0.0
@@ -283,7 +301,7 @@ def _release_deltas(before: dict[str, dict[str, str]], after: dict[str, dict[str
     return pool_capital, pool_sip
 
 
-def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, str]], turn: int, pool_capital: float, pool_sip: float, ledger: list[dict[str, Any]], logger: logging.Logger) -> tuple[float, float]:
+def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, str]], turn: int, pool_capital: float, pool_sip: float, ledger: list[dict[str, Any]], logger: Any) -> tuple[float, float]:
     capital_pct, sip_pct = _acquisition_percentages(rows)
     base_capital = pool_capital
     base_sip = pool_sip
@@ -310,7 +328,7 @@ def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, 
     return pool_capital, pool_sip
 
 
-def _observed_upper_returns(data_dir: Path, as_of: str) -> dict[str, float]:
+def _observed_upper_returns(data_dir: Path, as_of: str, required_purposes: set[str] | None = None) -> dict[str, float]:
     review_dir = data_dir / "reviews" / as_of
     output_dir = data_dir.parent / "output"
     result: dict[str, float] = {}
@@ -321,6 +339,8 @@ def _observed_upper_returns(data_dir: Path, as_of: str) -> dict[str, float]:
         purpose = rows[0].get("purpose", "")
         winner = rows[0].get("primary_winner", "")
         if not purpose or not winner:
+            continue
+        if required_purposes is not None and purpose not in required_purposes:
             continue
         checkpoint = output_dir / f"achievability_{purpose}.csv"
         if not checkpoint.is_file():
@@ -333,7 +353,7 @@ def _observed_upper_returns(data_dir: Path, as_of: str) -> dict[str, float]:
 
 
 def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
-    date.fromisoformat(as_of)
+    as_of_date = date.fromisoformat(as_of)
     directory = _directory(data_dir, as_of)
     state = _state(directory)
     if state.get("status") != "STAGING":
@@ -343,21 +363,21 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
         raise ValueError(f"Turn input has an unexpected column layout: {turn_path}")
     staged_path = directory / "purposes_staged.csv"
     before = _load_staged_rows(staged_path)
-    logger = _logger(directory / "staging.log")
     turn = int(state["turn"]) + 1
-    logger.info("TURN_START turn=%s input=%s", turn, turn_path)
-    after = _apply_levers(before, rows, turn, logger)
+    deferred = _DeferredLogger()
+    after = _apply_levers(before, rows, turn, deferred)
     ledger = _read_csv(directory / "reconciliation_ledger.csv")
-    pool_capital, pool_sip = _release_deltas(before, after, turn, logger, float(state["pool_capital"]), float(state["pool_monthly_sip"]), ledger)
-    pool_capital, pool_sip = _apply_acquisitions(after, rows, turn, pool_capital, pool_sip, ledger, logger)
-    _write_csv(staged_path, PURPOSE_FIELDS, list(after.values()))
-    _write_csv(directory / "reconciliation_ledger.csv", LEDGER_FIELDS, ledger)
+    pool_capital, pool_sip = _release_deltas(before, after, turn, deferred, float(state["pool_capital"]), float(state["pool_monthly_sip"]), ledger)
+    pool_capital, pool_sip = _apply_acquisitions(after, rows, turn, pool_capital, pool_sip, ledger, deferred)
 
-    observed = _observed_upper_returns(data_dir, as_of)
+    purposes = {name: _purpose(row, as_of_date) for name, row in after.items()}
+    required_by_purpose = {name: required_annual_return(purpose) for name, purpose in purposes.items()}
+    required_purposes = {name for name, required in required_by_purpose.items() if required is not None}
+    observed = _observed_upper_returns(data_dir, as_of, required_purposes=required_purposes)
     results: list[dict[str, Any]] = []
     for name, row in after.items():
-        purpose = _purpose(row, date.fromisoformat(as_of))
-        required = required_annual_return(purpose)
+        purpose = purposes[name]
+        required = required_by_purpose[name]
         upper = observed.get(name)
         if required is None:
             status = AchievabilityStatus.NOT_APPLICABLE.value
@@ -376,10 +396,13 @@ def run_turn(as_of: str, turn_path: Path, *, data_dir: Path = DATA_DIR) -> Path:
             "observed_upper_return": "" if upper is None else f"{upper:.10f}",
             "status": status,
         })
+
+    _write_csv(staged_path, PURPOSE_FIELDS, list(after.values()))
+    _write_csv(directory / "reconciliation_ledger.csv", LEDGER_FIELDS, ledger)
     _write_csv(directory / "achievability_latest.csv", RESULT_FIELDS, results)
     state.update({"turn": turn, "working_revision": turn, "pool_capital": pool_capital, "pool_monthly_sip": pool_sip, "last_turn_input_sha256": sha256_file(turn_path)})
     _atomic_write(directory / "staging_state.json", json.dumps(state, indent=2, sort_keys=True) + "\n")
-    logger.info("TURN_COMPLETE turn=%s pool_capital=%.2f pool_monthly_sip=%.2f", turn, pool_capital, pool_sip)
+    _flush_deferred_log(directory / "staging.log", deferred, turn=turn, turn_path=turn_path, pool_capital=pool_capital, pool_sip=pool_sip)
     return directory
 
 
@@ -425,7 +448,7 @@ def main() -> None:
     p.add_argument("--input", required=True, type=Path)
     p = sub.add_parser("commit")
     p.add_argument("--as-of", required=True)
-    args = parser.parse_args()
+    p = parser.parse_args()
     if args.command == "init":
         print(initialize_staging(args.as_of))
     elif args.command == "turn":
