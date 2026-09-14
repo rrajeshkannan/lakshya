@@ -31,7 +31,7 @@ from types import SimpleNamespace
 import pandas as pd
 
 from fund_analysis.admissible_funds import load_admissible_funds
-from lakshya_core.nav_history import cutoff_nav_history
+from .pipeline_inputs import load_fund_histories
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition_fingerprint_store import (
@@ -142,27 +142,6 @@ def _input_hash(path: Path) -> str:
     return sha256_file(path)
 
 
-def _load_fund_histories(funds, as_of: pd.Timestamp) -> dict[str, pd.DataFrame]:
-    histories: dict[str, pd.DataFrame] = {}
-    _log(f"Loading NAV histories for {len(funds)} admitted funds through {as_of.date()}")
-    _detail(f"NAV_LOAD_START funds={len(funds)} as_of={as_of.date()}")
-    for index, fund in enumerate(funds, start=1):
-        path = NAV_DIR / f"{fund.isin}.json"
-        _log(f"  NAV {index}/{len(funds)}: {fund.isin}")
-        _detail(f"NAV_LOAD_START index={index} total={len(funds)} isin={fund.isin} path={path} as_of={as_of.date()}")
-        if not path.exists():
-            _detail(f"NAV_LOAD_FAILED isin={fund.isin} reason=missing_file path={path}")
-            raise FileNotFoundError(f"Missing NAV evidence for {fund.isin}: {path}")
-        with path.open("r", encoding="utf-8") as handle:
-            payload = json.load(handle)
-        observations = payload.get("observations")
-        if not isinstance(observations, list):
-            _detail(f"NAV_LOAD_FAILED isin={fund.isin} reason=invalid_observations")
-            raise ValueError(f"Invalid NAV evidence observations: {path}")
-        histories[fund.isin] = cutoff_nav_history(pd.DataFrame(observations), as_of)
-        _detail(f"NAV_READY isin={fund.isin} rows={len(histories[fund.isin])} as_of={as_of.date()}")
-    _detail(f"NAV_LOAD_COMPLETE funds={len(histories)} as_of={as_of.date()}")
-    return histories
 
 
 def _floor_years(start: pd.Timestamp, due: pd.Timestamp) -> int:
@@ -719,7 +698,13 @@ def run(
     _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
 
     funds = load_admissible_funds()
-    histories = _load_fund_histories(funds, valuation_date)
+    histories = load_fund_histories(
+        funds,
+        nav_dir=NAV_DIR,
+        as_of=valuation_date,
+        log=_log,
+        detail=_detail,
+    )
     purposes = _load_purposes(valuation_date.date())
     if purpose_names is not None:
         requested = set(purpose_names)
