@@ -64,6 +64,7 @@ from .durable_stage_output import (
 from .models import Purpose
 from .purpose_loader import load_purposes
 from .observation_horizon import nearest_supported_horizon
+from .trajectory_stage import TrajectoryCheckpointDeps, TrajectoryStage
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -400,23 +401,18 @@ def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin,
     return len(pairs), len(rows)
 
 
+def _trajectory_stage() -> TrajectoryStage:
+    return TrajectoryStage(TrajectoryCheckpointDeps(
+        output_dir=OUTPUT_DIR,
+        as_of_string=_as_of_string,
+        sha256=_sha256,
+        is_valid_csv_checkpoint=is_valid_csv_checkpoint,
+        trajectory_contract_version=TRAJECTORY_CONTRACT_VERSION,
+    ))
+
+
 def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
-    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    if not mission_path.is_file() or not trajectory_path.is_file():
-        return False
-    try:
-        return is_valid_csv_checkpoint(
-            trajectory_path,
-            stage="trajectory",
-            as_of=_as_of_string(),
-            inputs={
-                "mission_sha256": _sha256(mission_path),
-                "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
-            },
-        )
-    except (FileNotFoundError, OSError):
-        return False
+    return _trajectory_stage().checkpoint_valid(purpose)
 
 
 def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
