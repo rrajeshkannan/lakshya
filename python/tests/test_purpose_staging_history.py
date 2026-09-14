@@ -82,13 +82,13 @@ def test_snapshot_preserves_each_completed_turn_as_immutable_state(tmp_path: Pat
     directory = initialize_staging("2026-09-06", data_dir=data)
     snapshot_current_staging(directory)
 
-    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,\n"), data_dir=data)
     snapshot_one = snapshot_current_staging(directory)
     assert snapshot_one.name == "turn_001"
     one_rows = _read(snapshot_one / "purposes_staged.csv")
     assert float(next(r for r in one_rows if r["name"] == "A")["value"]) == pytest.approx(80.0)
 
-    run_turn("2026-09-06", _turn(tmp_path, "A,70,5,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,70,5,,\n"), data_dir=data)
     snapshot_two = snapshot_current_staging(directory)
     assert snapshot_two.name == "turn_002"
     two_rows = _read(snapshot_two / "purposes_staged.csv")
@@ -105,7 +105,7 @@ def test_snapshot_preserves_each_completed_turn_as_immutable_state(tmp_path: Pat
 def test_achievability_money_fields_are_fixed_point(tmp_path: Path):
     data = _fixture(tmp_path)
     directory = initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,\n"), data_dir=data)
     rows = _read(directory / "achievability_latest.csv")
     row = next(r for r in rows if r["purpose"] == "A")
     assert row["value"] == "80.00"

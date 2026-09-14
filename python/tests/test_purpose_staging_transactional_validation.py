@@ -66,7 +66,7 @@ def test_open_purpose_does_not_require_observed_terrain(tmp_path: Path):
     _write_checkpoint(tmp_path, "A")
 
     directory = initialize_staging("2026-09-06", data_dir=data)
-    run_turn("2026-09-06", _turn(tmp_path, "A,,,,,,\n"), data_dir=data)
+    run_turn("2026-09-06", _turn(tmp_path, "A,,,\n"), data_dir=data)
 
     results = {row["purpose"]: row for row in _read(directory / "achievability_latest.csv")}
     assert results["A"]["status"] == "within_observed_terrain"
@@ -107,7 +107,7 @@ def test_failed_evidence_validation_leaves_staging_workspace_unchanged(tmp_path:
     before = {path.name: path.read_bytes() for path in paths}
 
     with pytest.raises(FileNotFoundError, match="Achievability checkpoint missing"):
-        run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,,,\n"), data_dir=data)
+        run_turn("2026-09-06", _turn(tmp_path, "A,80,5,,\n"), data_dir=data)
 
     after = {path.name: path.read_bytes() for path in paths}
     assert after == before
