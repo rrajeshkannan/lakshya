@@ -179,6 +179,7 @@ def _write_rows(
 from .composition_evidence_stage import CompositionEvidenceDeps, CompositionEvidenceStage
 from .global_composition_stage import GlobalCompositionDeps, GlobalCompositionStage
 from .mission_stage import MissionCheckpointDeps, MissionStage
+from .mission_execution_stage import MissionExecutionDeps, MissionExecutionStage
 
 
 def _composition_evidence_stage() -> CompositionEvidenceStage:
@@ -333,40 +334,30 @@ def _mission_checkpoint_valid(purpose: Purpose) -> bool:
     return _mission_stage().checkpoint_valid(purpose)
 
 
-def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_existing) -> None:
-    identities = _load_global_identities()
-    runnable = _mission_stage().runnable_purposes(
-        purposes,
-        skip_existing=skip_existing,
-        checkpoint_valid=_mission_checkpoint_valid,
+def _mission_execution_stage() -> MissionExecutionStage:
+    return MissionExecutionStage(
+        MissionExecutionDeps(
+            load_global_identities=_load_global_identities,
+            runnable_purposes=_mission_stage().runnable_purposes,
+            checkpoint_valid=_mission_checkpoint_valid,
+            as_of_string=_as_of_string,
+            worker=_run_one_purpose,
+            executor_cls=ProcessPoolExecutor,
+            as_completed=as_completed,
+            log=_log,
+            detail=_detail,
+            manifest_update=_manifest_update,
+        )
     )
-    if not runnable:
-        _log("No Purpose requires MISSION work")
-        _detail("MISSION_SKIPPED reason=no_runnable_purposes")
-        _manifest_update("mission", "complete", purposes=0, global_survivors=len(identities))
-        return
-    _log(f"[MISSION] running {len(runnable)} independent Purpose gates from {len(identities)} persisted global survivors")
-    _detail(f"MISSION_STAGE_START purposes={len(runnable)} identities={len(identities)} workers={max_workers or 'auto'} skip_existing={skip_existing}")
-    _manifest_update("mission", "running", purposes=len(runnable), global_survivors=len(identities))
-    as_of = _as_of_string()
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(_run_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
-            for purpose in runnable
-        }
-        _detail(f"MISSION_WORKERS_READY submitted={len(futures)}")
-        for future in as_completed(futures):
-            purpose_name = futures[future]
-            try:
-                name, assessed, achievable, protected = future.result()
-                _log(f"  {name}: assessed={assessed} achievability={achievable} protection={protected}")
-                _detail(f"MISSION_WORKER_COMPLETE purpose={name} assessed={assessed} achievability={achievable} protection={protected}")
-            except Exception as exc:
-                _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
-                _manifest_update("mission", "failed", failed_purpose=purpose_name, error=repr(exc))
-                raise
-    _detail("MISSION_STAGE_COMPLETE")
-    _manifest_update("mission", "complete", purposes=len(runnable), global_survivors=len(identities))
+
+
+def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_existing) -> None:
+    _mission_execution_stage().run(
+        purposes,
+        funds_by_isin,
+        max_workers=max_workers,
+        skip_existing=skip_existing,
+    )
 
 
 def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
