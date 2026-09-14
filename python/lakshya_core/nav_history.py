@@ -5,6 +5,6 @@ as a temporary compatibility boundary while downstream behavioural consumers
 migrate to the LPS factual NAV representation.
 """
 
-from lps.nav_history import normalize_nav_history
+from lps.nav_history import cutoff_nav_history, normalize_nav_history
 
-__all__ = ["normalize_nav_history"]
+__all__ = ["cutoff_nav_history", "normalize_nav_history"]
