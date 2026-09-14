@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from lakshya_core.hashing import sha256_file
 
+_sha256 = sha256_file
+
 import argparse
 import csv
 import json
@@ -520,16 +522,175 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
     return purpose.name, len(identities), len(qualified), len(protected)
 
 
+def _mission_checkpoint_valid(purpose: Purpose) -> bool:
+    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+    achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
+    if not mission_path.is_file() or not achievability_path.is_file():
+        return False
+    try:
+        achievability_valid = is_valid_csv_checkpoint(
+            achievability_path,
+            stage="mission_achievability",
+            as_of=_as_of_string(),
+            inputs={
+                "global_survivors_sha256": _sha256(OUTPUT_DIR / "global_survivors.csv"),
+                "global_checkpoint_stage": "global_frontier",
+            },
+        )
+        if not achievability_valid:
+            return False
+        return is_valid_csv_checkpoint(
+            mission_path,
+            stage="mission",
+            as_of=_as_of_string(),
+            inputs={"achievability_sha256": _sha256(achievability_path)},
+        )
+    except (FileNotFoundError, OSError):
+        return False
+
+
+def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_existing) -> None:
+    identities = _load_global_identities()
+    runnable = [
+        purpose for purpose in purposes
+        if purpose.horizon_years is not None
+        and not (skip_existing and _mission_checkpoint_valid(purpose))
+    ]
+    if not runnable:
+        _log("No Purpose requires MISSION work")
+        _detail("MISSION_SKIPPED reason=no_runnable_purposes")
+        _manifest_update("mission", "complete", purposes=0, global_survivors=len(identities))
+        return
+    _log(f"[MISSION] running {len(runnable)} independent Purpose gates from {len(identities)} persisted global survivors")
+    _detail(f"MISSION_STAGE_START purposes={len(runnable)} identities={len(identities)} workers={max_workers or 'auto'} skip_existing={skip_existing}")
+    _manifest_update("mission", "running", purposes=len(runnable), global_survivors=len(identities))
+    as_of = _as_of_string()
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_run_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
+            for purpose in runnable
+        }
+        _detail(f"MISSION_WORKERS_READY submitted={len(futures)}")
+        for future in as_completed(futures):
+            purpose_name = futures[future]
+            try:
+                name, assessed, achievable, protected = future.result()
+                _log(f"  {name}: assessed={assessed} achievability={achievable} protection={protected}")
+                _detail(f"MISSION_WORKER_COMPLETE purpose={name} assessed={assessed} achievability={achievable} protection={protected}")
+            except Exception as exc:
+                _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
+                _manifest_update("mission", "failed", failed_purpose=purpose_name, error=repr(exc))
+                raise
+    _detail("MISSION_STAGE_COMPLETE")
+    _manifest_update("mission", "complete", purposes=len(runnable), global_survivors=len(identities))
+
+
 def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
-    ...
+    pairs: list[tuple[Composition, CompositionFingerprint]] = []
+    _detail(f"TRAJECTORY_PURPOSE_START purpose={purpose.name} survivors={len(identities)}")
+    for identity in identities:
+        composition = _composition_from_identity(identity, funds_by_isin)
+        fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
+        pairs.append((composition, fingerprint))
+    observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
+    rows: list[dict] = []
+    for composition, _ in pairs:
+        observation = observations[composition_identity(composition)]
+        for point in observation.points:
+            rows.append({
+                "composition": composition_identity(composition),
+                "horizon_years": observation.horizon_years,
+                "date": point.date.strftime("%Y-%m-%d"),
+                "elapsed_days": point.elapsed_days,
+                "nav": point.nav,
+                "normalized_nav": point.normalized_nav,
+            })
+    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
+    _write_rows(
+        trajectory_path,
+        rows,
+        stage="trajectory",
+        inputs={
+            "mission_sha256": _sha256(mission_path),
+            "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
+        },
+    )
+    _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} rows={len(rows)}")
+    return len(pairs), len(rows)
 
 
-def _run_mission_from_global(purposes, funds_by_isin, *, max_workers: int | None, skip_existing: bool) -> None:
-    ...
+def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
+    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
+    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+    if not mission_path.is_file() or not trajectory_path.is_file():
+        return False
+    try:
+        return is_valid_csv_checkpoint(
+            trajectory_path,
+            stage="trajectory",
+            as_of=_as_of_string(),
+            inputs={
+                "mission_sha256": _sha256(mission_path),
+                "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
+            },
+        )
+    except (FileNotFoundError, OSError):
+        return False
 
 
-def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers: int | None) -> None:
-    ...
+def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
+    jobs = []
+    for purpose in purposes:
+        if purpose.horizon_years is None:
+            _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
+            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_finite_horizon")
+            continue
+        if _trajectory_checkpoint_valid(purpose):
+            _log(f"  {purpose.name}: valid trajectory checkpoint; reusing")
+            _detail(f"TRAJECTORY_REUSED purpose={purpose.name}")
+            continue
+        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+        if not _mission_checkpoint_valid(purpose):
+            _log(f"  {purpose.name}: no valid persisted MISSION checkpoint; skipping")
+            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=invalid_mission_checkpoint")
+            continue
+        df = load_csv_checkpoint(
+            mission_path,
+            stage="mission",
+            as_of=_as_of_string(),
+            inputs={"achievability_sha256": _sha256(OUTPUT_DIR / f"achievability_{purpose.name}.csv")},
+        )
+        identities = df["composition"].tolist()
+        jobs.append((purpose, identities))
+        _detail(f"TRAJECTORY_JOB_READY purpose={purpose.name} survivors={len(identities)} path={mission_path}")
+    if not jobs:
+        _log("No persisted MISSION outputs require trajectory observation")
+        _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
+        _manifest_update("trajectory", "complete", purposes=0)
+        return
+    _detail(f"TRAJECTORY_STAGE_START purposes={len(jobs)} workers={max_workers or 'auto'}")
+    _manifest_update("trajectory", "running", purposes=len(jobs))
+    as_of = _as_of_string()
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
+            for purpose, identities in jobs
+        }
+        _detail(f"TRAJECTORY_WORKERS_READY submitted={len(futures)}")
+        for future in as_completed(futures):
+            purpose_name = futures[future]
+            try:
+                count, rows = future.result()
+                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
+                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} rows={rows}")
+            except Exception as exc:
+                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
+                _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
+                raise
+    _log("RESUME DONE")
+    _detail("TRAJECTORY_STAGE_COMPLETE")
+    _manifest_update("trajectory", "complete", purposes=len(jobs))
 
 
 def run(
