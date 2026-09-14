@@ -4,7 +4,7 @@
 
 **Release:** FINAL / Compromise Programming v1
 
-**As of:** 2026-09-08
+**As of:** 2026-09-14
 
 This document describes **how the Lakshya review executes**. `docs/Lakshya_Architecture.md` defines the wider production architecture; `docs/Lakshya_Domain_Model.md` defines the bounded contexts and five cross-context contracts; `docs/Lakshya_HowTo.md` defines practical reviewer operation.
 
@@ -52,52 +52,55 @@ flowchart TD
     A[Authoritative source evidence] --> B[LPS: Transactions]
     B --> C[LPS: Positions]
     C --> D[LPS: valuation observation]
-    D --> E[Purpose capital / factual views]
+    D --> E[Economic CURRENT / factual views]
 
     E --> F[Formation Evidence]
-    F --> G[LFS: FUND]
+    F --> G[LFS-Main: FUND]
     G --> H[FUND-level weak-Pareto gate]
-    H --> I[LFS: TEAM]
-    I --> J[LFS: COMPOSITION]
-    J --> K[LFS: MISSION]
-    K --> L[LFS: FINAL]
-    L --> M[LFS: TARGET]
+    H --> I[LFS-Main: TEAM]
+    I --> J[LFS-Main: COMPOSITION]
+    J --> K[LFS-Main: MISSION]
+    K --> L[LFS-Main: FINAL]
 
-    K --> N[Family Architecture Validation]
-    L --> N
-    N --> O[Human family review]
-    O --> P[Purpose Staging INIT]
-    P --> Q[Human staging turns]
-    Q --> R[Achievability + reconciliation]
-    R --> S{Satisfied and pools zero?}
-    S -->|No| Q
-    S -->|Yes| T[Purpose Staging COMMIT]
-    T --> U[Human annual snapshot review]
-    U --> V[Git historical snapshot]
+    L --> M[Purpose Staging INIT]
+    M --> N[Human staging turns]
+    N --> O[Achievability + reconciliation]
+    O --> P{Satisfied and pools zero?}
+    P -->|No| N
+    P -->|Yes| Q[Purpose Staging COMMIT]
+    Q --> R[Human annual snapshot review]
+    R --> S[Historical Snapshot]
+    S --> T[TARGET from committed Purpose + FINAL]
 
-    C --> W[Transition Evidence]
-    V --> W2[Reviewed annual state]
-    M --> X[Formation Intent]
-    W --> Y[LTS transition analysis]
-    W2 --> Y
-    X --> Y
-    Y --> Z[Transition Proposal]
-    Z --> AA[Human execution]
-    AA --> AB[New authoritative source evidence]
-    AB --> A
+    C --> U[Transition Evidence]
+    S --> V[Reviewed annual state]
+    T --> W[Formation Intent]
+    U --> X[LTS transition analysis]
+    V --> X
+    W --> X
+    X --> Y[Transition Proposal]
+    Y --> Z[Human execution]
+    Z --> AA[New authoritative source evidence]
+    AA --> A
 ```
 
-The durable annual review therefore has two distinct branches:
+The durable annual review therefore has three distinct concerns:
 
 ```text
-LPS → factual investment evidence
+LPS → factual investment evidence → Economic CURRENT
 
-LFS → FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
+LFS-Main → FUND → TEAM → COMPOSITION → MISSION → FINAL
+
+Purpose Staging → reviewed Purpose state
+
+Historical Snapshot → durable annual memory
+
+TARGET → committed Purpose state + selected FINAL decisions
 
 LTS → transition analysis using LPS facts + LFS intent
 ```
 
-Family Architecture Validation and Purpose Staging sit after formation review and before deliberate historical persistence. They are not additional optimization stages.
+Purpose Staging is a human reconciliation boundary, not an additional optimizer. TARGET is derived after the reviewed Purpose state is committed; it is not produced by LFS-Main before staging.
 
 ---
 
@@ -107,27 +110,27 @@ Family Architecture Validation and Purpose Staging sit after formation review an
 sequenceDiagram
     participant Reviewer as Family reviewer
     participant LPS as LPS
-    participant LFS as LFS
-    participant Family as Family validation
+    participant LFS as LFS-Main
     participant Stage as Purpose staging
     participant Git as Historical repository
+    participant Target as TARGET
     participant LTS as LTS
 
     Reviewer->>LPS: provide authoritative source evidence
     LPS-->>Reviewer: validated Transactions / Positions / factual views
     Reviewer->>LFS: review formation scope + Purpose inputs
-    LFS-->>Reviewer: formation evidence + TARGET
-    Reviewer->>Family: run family attribution
-    Family-->>Reviewer: concentration / dependency observation
+    LFS-->>Reviewer: FINAL evidence
     Reviewer->>Stage: INIT
     loop one or more review turns
-        Reviewer->>Stage: release / acquire / change Purpose levers
+        Reviewer->>Stage: release / acquire permitted Purpose levers
         Stage-->>Reviewer: staged state + ledger + Achievability
     end
     Reviewer->>Stage: COMMIT when satisfied and pools = 0
     Stage-->>Reviewer: authoritative Purpose state promoted
     Reviewer->>Git: inspect and commit annual snapshot
-    Reviewer->>LTS: begin separate transition analysis
+    Git-->>Target: committed annual state
+    Target-->>Reviewer: fund-level TARGET formation
+    Reviewer->>LTS: begin separate CURRENT → TARGET analysis
     LTS-->>Reviewer: one or more transition simulations
     Reviewer->>Reviewer: select / execute externally
 ```
@@ -142,16 +145,16 @@ Governing principle:
 
 ## 4.1 Source boundary
 
-LPS starts with authoritative source evidence. For mutual funds, the CAS is the authoritative evidence boundary for transactions and holdings/history.
+LPS starts with authoritative source evidence. For mutual funds, the family's authoritative account statement / CAS is the evidence boundary for transactions and holdings/history.
 
 Family policy:
 
-- request the CAS comfortably before the earliest family mutual-fund investment;
+- request the statement comfortably before the earliest family mutual-fund investment;
 - include all folios, including zero-balance folios;
-- retain the original unmodified PDFs;
+- retain the original unmodified source PDFs;
 - enter passwords interactively and never store them;
 - treat warnings or ambiguity as stop-and-ask-human conditions;
-- perform full-history CAS import for each annual review; and
+- perform full-history import for each annual review; and
 - review validation before accepting the resulting factual state.
 
 The parser/library is an implementation boundary, not the LPS domain model. Parser-specific schemas must not leak into LFS or LTS.
@@ -166,7 +169,7 @@ The family-wide transaction collection is:
 data/lps/transactions.csv
 ```
 
-Each record retains investor identity. Re-importing one investor's full-history CAS replaces that investor's records while retaining other investors' records, making annual full-history import idempotent.
+Each record retains investor identity. Re-importing one investor's full-history source replaces that investor's records while retaining other investors' records, making annual full-history import idempotent.
 
 Shared event vocabulary includes:
 
@@ -254,7 +257,7 @@ Formation Evidence contains no Position attribution, transaction history, transi
 
 ---
 
-# 6. LFS analytical production sequence
+# 6. LFS-Main analytical production sequence
 
 ```mermaid
 flowchart TD
@@ -278,7 +281,7 @@ flowchart TD
     R --> S[Percentile coordinates]
     S --> T[Utopia / L2 ordering]
     T --> U[Robustness bundle]
-    U --> V[TARGET from reviewed decisions]
+    U --> V[FINAL evidence for staging / TARGET]
 ```
 
 No stage may use a later stage merely to make its own universe smaller.
@@ -327,6 +330,7 @@ sequenceDiagram
     Funds->>TeamGen: surviving universe
     TeamGen->>TeamGen: singleton / pair / trio
     TeamGen->>Timeline: constituent histories
+    TeamGen->>Fingerprint: candidate identity
     Timeline->>Timeline: common historical period + actual observations
     Timeline->>Timeline: latest NAV on/before each observation
     Timeline->>Fingerprint: collective NAV / evidence
@@ -506,80 +510,7 @@ Robustness evidence describes stability; it does not override the primary winner
 
 ---
 
-# 12. TARGET execution
-
-TARGET is not another optimization stage.
-
-```text
-authoritative Purpose state
-        ↓
-selected FINAL Composition per Purpose
-        ↓
-Composition fund weights
-        ↓
-fund-level TARGET architecture
-```
-
-Formation Intent preserves the Purpose-level mapping even when multiple Purposes select the same Composition:
-
-```text
-Purpose A → Composition A
-Purpose B → Composition A
-Purpose C → Composition A
-Purpose D → Composition A
-Purpose E → Composition A
-Purpose F → Composition B
-```
-
-No Position identity, Investor/Folio assignment, tax treatment, or transaction instruction crosses from LFS to LTS.
-
----
-
-# 13. Family Architecture Validation execution
-
-```mermaid
-sequenceDiagram
-    participant Purpose as Purpose capital
-    participant Archive as Reviewed FINAL
-    participant Metadata as Fund / AMC metadata
-    participant Validation as Family validation
-    participant Reviewer as Human reviewer
-
-    Purpose->>Validation: Purpose capital
-    Archive->>Validation: FINAL winner + Composition weights
-    Metadata->>Validation: Fund / AMC identity
-    Validation->>Validation: Purpose × fund-weight attribution
-    Validation->>Validation: Fund / AMC aggregation
-    Validation-->>Reviewer: concentration / dependency observation
-```
-
-Core contract:
-
-```text
-Purpose capital
-        ×
-FINAL Composition fund weight
-        =
-Attributed capital
-```
-
-Structured annual outputs:
-
-```text
-family_capital_attribution.csv
-family_fund_concentration.csv
-family_amc_concentration.csv
-family_purpose_dependency.csv
-family_attribution_manifest.json
-```
-
-This layer does not impose concentration limits, penalize common dependencies, alter FINAL winners, create substitutes, optimize family allocation, declare a dependency safe/unsafe, or introduce transition-cost assumptions.
-
-Integrity failures are fail-closed: malformed Purpose capital, duplicate/missing metadata, malformed/non-100% Composition weights, unknown Fund ISINs, manifest/hash mismatches, and attribution non-reconciliation stop the layer.
-
----
-
-# 14. Purpose Staging execution
+# 12. Purpose Staging execution
 
 ```mermaid
 sequenceDiagram
@@ -594,7 +525,7 @@ sequenceDiagram
     Stage->>Source: read authoritative state
     Source-->>Stage: isolated staged copy
     loop one or more review turns
-        Reviewer->>Stage: Purpose lever changes
+        Reviewer->>Stage: permitted Purpose lever changes
         Stage->>Stage: release reductions into pools
         Reviewer->>Stage: acquisition percentages
         Stage->>Stage: allocate from turn-start pool base
@@ -609,14 +540,18 @@ sequenceDiagram
     Source-->>Reviewer: authoritative Purpose state updated
 ```
 
-Purpose remains one domain concept. Human-defined fields are the meaningful Purpose inputs; analytical horizon is derived:
+Purpose Staging is a separate execution stage from LFS-Main production. It does not alter FUND, TEAM, COMPOSITION, MISSION, FINAL, or selected FINAL Composition.
+
+The permitted staging levers are:
 
 ```text
-finite due → derive horizon
-open due   → fixed 7Y
+value
+monthly_plan
+capital_acquire_pct
+sip_acquire_pct
 ```
 
-`analytical_horizon_years` is not a human Purpose field.
+`desired` and `due` remain fixed context. `analytical_horizon_years` is derived and is not a human Purpose field.
 
 The accounting contract is:
 
@@ -627,13 +562,13 @@ pool acquisition  → another Purpose
 
 Acquisition percentages use the same pool base at the start of the acquisition phase for that turn; they are not applied sequentially to a shrinking pool.
 
-The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due change analytical requirements; they do not manufacture cash release.
+The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due are upstream Purpose-input changes, not staging levers.
 
 The authoritative `data/purpose/purposes.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
 
 ---
 
-# 15. Historical Snapshot execution
+# 13. Historical Snapshot execution
 
 ```mermaid
 sequenceDiagram
@@ -664,7 +599,58 @@ Historical Snapshot is memory. It is not a transaction ledger and does not estab
 
 ---
 
-# 16. Transition Evidence — LPS → LTS
+# 14. CURRENT → TARGET execution
+
+The authoritative annual sequence is:
+
+```text
+FINAL
+  ↓
+Purpose Staging
+  ↓
+Historical Snapshot
+  ↓
+CURRENT
+  ↓
+TARGET
+```
+
+CURRENT and TARGET are deliberately different states:
+
+```text
+ANALYTICAL CURRENT
+= what the reviewed Lakshya architecture says
+
+ECONOMIC CURRENT
+= what the family actually owns at the chosen observation date
+
+TARGET
+= what the committed Purpose state + selected FINAL decisions imply should be owned
+```
+
+Economic CURRENT is source-derived by LPS. TARGET is derived from the committed Purpose state and selected FINAL Composition decisions. Neither is inferred from the other.
+
+TARGET is not another optimization stage:
+
+```text
+committed Purpose state
+        ↓
+selected FINAL Composition per Purpose
+        ↓
+Composition fund weights
+        ↓
+fund-level TARGET architecture
+```
+
+Formation Intent then preserves the Purpose-level mapping for LTS:
+
+```text
+Purpose → Composition
+```
+
+---
+
+# 15. Transition Evidence — LPS → LTS
 
 LTS receives a purpose-built Transition Evidence projection:
 
@@ -691,7 +677,7 @@ LTS consumes Fund metadata only insofar as it affects transition mechanics. It d
 
 ---
 
-# 17. LTS transition sequence
+# 16. LTS transition sequence
 
 This sequence begins after the reviewed annual persistence boundary. It is not part of the LFS analytical optimizer.
 
@@ -749,11 +735,11 @@ LTS does not introduce a generic `Action` abstraction merely because transition 
 
 ---
 
-# 18. Transition constraints and source archaeology
+# 17. Transition constraints and source archaeology
 
 The first LTS implementation task is **source archaeology, not schema design**.
 
-The actual portfolio/account material, including the identified Geojit material, must establish what is genuinely available for:
+The actual portfolio/account source material must establish what is genuinely available for:
 
 - holding identity;
 - units and value;
@@ -782,7 +768,7 @@ The source must earn each constraint.
 
 ---
 
-# 19. Transition Proposal and reconciliation / promotion
+# 18. Transition Proposal and reconciliation / promotion
 
 LTS produces:
 
@@ -842,7 +828,7 @@ Promotion does not manufacture a Position. It reconciles a proposal against subs
 
 ---
 
-# 20. Persistence and resume semantics
+# 19. Persistence and resume semantics
 
 The general persisted-evidence lifecycle is:
 
@@ -866,7 +852,7 @@ Composition uses its narrow Completion Index to avoid unnecessary filesystem/JSO
 
 ---
 
-# 21. Human control and failure boundaries
+# 20. Human control and failure boundaries
 
 ```text
 Human
@@ -893,7 +879,7 @@ Formation and transition are not allowed to compensate for missing facts by inve
 
 ---
 
-# 22. Pipeline invariants
+# 21. Pipeline invariants
 
 1. **LPS observes. LFS forms. LTS transitions.**
 2. Observed is not inferred.
@@ -903,15 +889,16 @@ Formation and transition are not allowed to compensate for missing facts by inve
 6. A Purpose may exist before any Position is assigned to it.
 7. Fund Fingerprints belong entirely inside LFS.
 8. The Fund-level weak-Pareto gate belongs between FUND and TEAM inside LFS.
-9. LTS never chooses TARGET formation.
-10. LTS never mutates factual LPS Positions during simulation.
-11. A proposal-local NEW folio marker is never a factual folio identity.
-12. External source evidence establishes Position facts.
-13. Human acceptance establishes Purpose attribution.
-14. LTS proposals are non-authoritative.
-15. A downstream convenience must not silently alter an upstream contract.
-16. A calculation does not automatically become a downstream input.
-17. Persisted evidence is reused rather than silently recomputed.
-18. Domain concepts are not invented solely for implementation convenience.
+9. TARGET is derived only from committed Purpose state + selected FINAL decisions.
+10. LTS never chooses TARGET formation.
+11. LTS never mutates factual LPS Positions during simulation.
+12. A proposal-local NEW folio marker is never a factual folio identity.
+13. External source evidence establishes Position facts.
+14. Human acceptance establishes Purpose attribution.
+15. LTS proposals are non-authoritative.
+16. A downstream convenience must not silently alter an upstream contract.
+17. A calculation does not automatically become a downstream input.
+18. Persisted evidence is reused rather than silently recomputed.
+19. Domain concepts are not invented solely for implementation convenience.
 
 The complete domain and contract definitions are maintained in `docs/Lakshya_Domain_Model.md`.
