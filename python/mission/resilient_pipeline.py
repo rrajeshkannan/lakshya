@@ -69,6 +69,7 @@ from .trajectory_jobs_stage import TrajectoryJobDeps, TrajectoryJobPreparation, 
 from .trajectory_execution_stage import TrajectoryExecutionDeps, TrajectoryExecutionStage
 from .full_run_stage import FullRunStage, FullRunStageDeps
 from .resume_stage import ResumeStage, ResumeStageDeps
+from .run_input_stage import RunInputDeps, RunInputStage
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -519,26 +520,21 @@ def run(
     _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'}")
     _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
 
-    funds = load_admissible_funds()
-    histories = load_fund_histories(
-        funds,
-        nav_dir=NAV_DIR,
-        as_of=valuation_date,
-        log=_log,
-        detail=_detail,
-    )
-    purposes = load_purposes(valuation_date.date())
-    if purpose_names is not None:
-        requested = set(purpose_names)
-        known = {purpose.name for purpose in purposes}
-        unknown = requested - known
-        if unknown:
-            raise ValueError(f"Unknown Purpose(s): {sorted(unknown)}; available={sorted(known)}")
-        purposes = [purpose for purpose in purposes if purpose.name in requested]
-        _log("Selected purposes: " + ", ".join(purpose.name for purpose in purposes))
-        _detail("PURPOSE_SELECTION " + " ".join(purpose.name for purpose in purposes))
-    funds_by_isin = {fund.isin: fund for fund in funds}
-    _detail(f"INPUTS_READY funds={len(funds)} purposes={len(purposes)}")
+    run_inputs = RunInputStage(
+        RunInputDeps(
+            load_admissible_funds=load_admissible_funds,
+            load_fund_histories=load_fund_histories,
+            load_purposes=load_purposes,
+            nav_dir=NAV_DIR,
+            log=_log,
+            detail=_detail,
+        )
+    ).prepare(as_of, purpose_names)
+
+    funds = run_inputs.funds
+    histories = run_inputs.histories
+    purposes = run_inputs.purposes
+    funds_by_isin = run_inputs.funds_by_isin
 
     if resume_from is not None:
         if _resume_stage().run(
