@@ -118,7 +118,7 @@ The family controls `data/purpose/purposes.csv`. LFS does not parse CAS, reconst
 
 # 3. Post-FINAL human review
 
-After FINAL, the review enters a deliberately separate human-controlled staging boundary. Family Architecture Validation is **not** an active Lakshya stage.
+After FINAL, the review enters a deliberately separate human-controlled staging boundary.
 
 ```text
 FINAL
