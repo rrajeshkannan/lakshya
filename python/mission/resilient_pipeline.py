@@ -174,6 +174,7 @@ def _write_rows(
 
 from .composition_evidence_stage import CompositionEvidenceDeps, CompositionEvidenceStage
 from .global_composition_stage import GlobalCompositionDeps, GlobalCompositionStage
+from .mission_stage import MissionCheckpointDeps, MissionStage
 
 
 def _composition_evidence_stage() -> CompositionEvidenceStage:
@@ -315,40 +316,26 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
     return purpose.name, len(identities), len(qualified), len(protected)
 
 
+def _mission_stage() -> MissionStage:
+    return MissionStage(MissionCheckpointDeps(
+        output_dir=OUTPUT_DIR,
+        as_of_string=_as_of_string,
+        sha256=_sha256,
+        is_valid_csv_checkpoint=is_valid_csv_checkpoint,
+    ))
+
+
 def _mission_checkpoint_valid(purpose: Purpose) -> bool:
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
-    if not mission_path.is_file() or not achievability_path.is_file():
-        return False
-    try:
-        achievability_valid = is_valid_csv_checkpoint(
-            achievability_path,
-            stage="mission_achievability",
-            as_of=_as_of_string(),
-            inputs={
-                "global_survivors_sha256": _sha256(OUTPUT_DIR / "global_survivors.csv"),
-                "global_checkpoint_stage": "global_frontier",
-            },
-        )
-        if not achievability_valid:
-            return False
-        return is_valid_csv_checkpoint(
-            mission_path,
-            stage="mission",
-            as_of=_as_of_string(),
-            inputs={"achievability_sha256": _sha256(achievability_path)},
-        )
-    except (FileNotFoundError, OSError):
-        return False
+    return _mission_stage().checkpoint_valid(purpose)
 
 
 def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_existing) -> None:
     identities = _load_global_identities()
-    runnable = [
-        purpose for purpose in purposes
-        if purpose.horizon_years is not None
-        and not (skip_existing and _mission_checkpoint_valid(purpose))
-    ]
+    runnable = _mission_stage().runnable_purposes(
+        purposes,
+        skip_existing=skip_existing,
+        checkpoint_valid=_mission_checkpoint_valid,
+    )
     if not runnable:
         _log("No Purpose requires MISSION work")
         _detail("MISSION_SKIPPED reason=no_runnable_purposes")
