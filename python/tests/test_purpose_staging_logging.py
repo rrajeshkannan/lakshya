@@ -43,7 +43,7 @@ def test_staging_log_captures_turn_and_pool_events(tmp_path: Path):
     initialize_staging("2026-09-06", data_dir=data)
     turn = tmp_path / "turn.csv"
     turn.write_text(
-        "purpose,value,monthly_plan,desired,due,capital_acquire_pct,sip_acquire_pct\n"
+        "purpose,value,monthly_plan,capital_acquire_pct,sip_acquire_pct\n"
         "A,50,5,,,,\n",
         encoding="utf-8",
     )

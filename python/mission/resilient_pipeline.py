@@ -484,7 +484,7 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
         comparison_horizon = (
             assessment.comparison_horizon_years
             if purpose.has_achievability
-            else nearest_supported_horizon(purpose.analytical_horizon_years)
+            else nearest_supported_horizon(purpose.trajectory_horizon_years)
         )
         assessments.append({
             "composition": identity,
