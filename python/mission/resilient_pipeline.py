@@ -26,6 +26,10 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
+from .trajectory_execution_stage import (
+    TrajectoryExecutionDeps,
+    TrajectoryExecutionStage,
+)
 
 import pandas as pd
 
@@ -381,36 +385,32 @@ def _trajectory_job_stage() -> TrajectoryJobStage:
     ))
 
 
-def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
-    preparation = _trajectory_job_stage().prepare_jobs(purposes)
-    jobs = preparation.jobs
-    if not jobs:
-        _log("No persisted MISSION outputs require trajectory observation")
-        _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
-        _manifest_update("trajectory", "complete", purposes=0)
-        return
-    _detail(f"TRAJECTORY_STAGE_START purposes={len(jobs)} workers={max_workers or 'auto'}")
-    _manifest_update("trajectory", "running", purposes=len(jobs))
-    as_of = _as_of_string()
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
-            for purpose, identities in jobs
-        }
-        _detail(f"TRAJECTORY_WORKERS_READY submitted={len(futures)}")
-        for future in as_completed(futures):
-            purpose_name = futures[future]
-            try:
-                count, rows = future.result()
-                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
-                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} rows={rows}")
-            except Exception as exc:
-                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
-                _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
-                raise
-    _log("RESUME DONE")
-    _detail("TRAJECTORY_STAGE_COMPLETE")
-    _manifest_update("trajectory", "complete", purposes=len(jobs))
+def _trajectory_execution_stage() -> TrajectoryExecutionStage:
+    return TrajectoryExecutionStage(
+        TrajectoryExecutionDeps(
+            prepare_jobs=_trajectory_job_stage().prepare_jobs,
+            worker=_observe_one_purpose,
+            as_of_string=_as_of_string,
+            executor_cls=ProcessPoolExecutor,
+            as_completed=as_completed,
+            log=_log,
+            detail=_detail,
+            manifest_update=_manifest_update,
+        )
+    )
+
+
+def _observe_persisted_mission_outputs(
+    purposes,
+    funds_by_isin,
+    *,
+    max_workers,
+) -> None:
+    _trajectory_execution_stage().run(
+        purposes,
+        funds_by_isin,
+        max_workers=max_workers,
+    )
 
 
 
