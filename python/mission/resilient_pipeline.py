@@ -67,6 +67,7 @@ from .observation_horizon import nearest_supported_horizon
 from .trajectory_stage import TrajectoryCheckpointDeps, TrajectoryStage
 from .trajectory_jobs_stage import TrajectoryJobDeps, TrajectoryJobPreparation, TrajectoryJobStage
 from .full_run_stage import FullRunStage, FullRunStageDeps
+from .resume_stage import ResumeStage, ResumeStageDeps
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -463,9 +464,32 @@ def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) 
 
 
 
+def _manifest() -> dict:
+    return _RUN_MANIFEST if _RUN_MANIFEST is not None else {}
+
+
+def _resume_stage() -> ResumeStage:
+    return ResumeStage(
+        ResumeStageDeps(
+            log=_log,
+            detail=_detail,
+            run_mission_resume=lambda purposes, funds_by_isin, workers: _run_mission_from_global(
+                purposes, funds_by_isin, max_workers=workers, skip_existing=True
+            ),
+            observe_trajectories=lambda purposes, funds_by_isin, workers: _observe_persisted_mission_outputs(
+                purposes, funds_by_isin, max_workers=workers
+            ),
+            get_manifest=_manifest,
+            wall_timestamp=_wall_timestamp,
+            write_manifest=_write_manifest,
+        )
+    )
+
+
 def _full_run_stage() -> FullRunStage:
     return FullRunStage(
         FullRunStageDeps(
+            output_dir=OUTPUT_DIR,
             log=_log,
             detail=_detail,
             manifest_update=_manifest_update,
@@ -476,13 +500,16 @@ def _full_run_stage() -> FullRunStage:
             load_global_pairs_for_frontier=_load_global_pairs_for_frontier,
             persist_composition_evidence=_persist_composition_evidence,
             write_composition_candidates=_write_composition_candidates,
-            load_admissible_funds=load_admissible_funds,
             run_team_pipeline=run_team_pipeline,
             global_composition_frontier=global_composition_frontier,
             load_csv_checkpoint=load_csv_checkpoint,
             is_valid_csv_checkpoint=is_valid_csv_checkpoint,
             composition_from_identity=_composition_from_identity,
             composition_identity=composition_identity,
+            run_mission_from_global=_run_mission_from_global,
+            observe_persisted_mission_outputs=_observe_persisted_mission_outputs,
+            get_manifest=_manifest,
+            wall_timestamp=_wall_timestamp,
         )
     )
 
@@ -533,28 +560,14 @@ def run(
     funds_by_isin = {fund.isin: fund for fund in funds}
     _detail(f"INPUTS_READY funds={len(funds)} purposes={len(purposes)}")
 
-    if resume_from == "mission":
-        _log("[RESUME MISSION] Loading persisted Purpose checkpoints")
-        _detail("RESUME_MISSION_START")
-        _observe_persisted_mission_outputs(purposes, funds_by_isin, max_workers=workers)
-        _log("RESUME MISSION DONE")
-        _detail("RESUME_MISSION_COMPLETE")
-        _RUN_MANIFEST["completed_at"] = _wall_timestamp()
-        _RUN_MANIFEST["status"] = "complete"
-        _write_manifest()
-        return
-
-    if resume_from == "global":
-        _log("[RESUME GLOBAL] Loading persisted global Composition evidence")
-        _detail("RESUME_GLOBAL_START")
-        _run_mission_from_global(purposes, funds_by_isin, max_workers=workers, skip_existing=True)
-        _observe_persisted_mission_outputs(purposes, funds_by_isin, max_workers=workers)
-        _log("RESUME GLOBAL DONE")
-        _detail("RESUME_GLOBAL_COMPLETE")
-        _RUN_MANIFEST["completed_at"] = _wall_timestamp()
-        _RUN_MANIFEST["status"] = "complete"
-        _write_manifest()
-        return
+    if resume_from is not None:
+        if _resume_stage().run(
+            resume_from=resume_from,
+            purposes=purposes,
+            funds_by_isin=funds_by_isin,
+            workers=workers,
+        ):
+            return
 
     _full_run_stage().run(
         funds=funds,

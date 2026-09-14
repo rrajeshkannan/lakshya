@@ -12,21 +12,23 @@ class ResumeStageDeps:
     detail: Callable[[str], None]
     run_mission_resume: Callable[[object, object, int | None], None]
     observe_trajectories: Callable[[object, object, int | None], None]
-    complete: Callable[[], None]
+    get_manifest: Callable[[], dict]
+    wall_timestamp: Callable[[], str]
+    write_manifest: Callable[[], None]
 
 
 class ResumeStage:
     def __init__(self, deps: ResumeStageDeps) -> None:
         self._deps = deps
 
-    def dispatch(self, resume_from, purposes, funds_by_isin, workers) -> bool:
+    def run(self, *, resume_from, purposes, funds_by_isin, workers) -> bool:
         if resume_from == "mission":
             self._deps.log("[RESUME MISSION] Loading persisted Purpose checkpoints")
             self._deps.detail("RESUME_MISSION_START")
             self._deps.observe_trajectories(purposes, funds_by_isin, workers)
             self._deps.log("RESUME MISSION DONE")
             self._deps.detail("RESUME_MISSION_COMPLETE")
-            self._deps.complete()
+            self._complete()
             return True
         if resume_from == "global":
             self._deps.log("[RESUME GLOBAL] Loading persisted global Composition evidence")
@@ -35,6 +37,12 @@ class ResumeStage:
             self._deps.observe_trajectories(purposes, funds_by_isin, workers)
             self._deps.log("RESUME GLOBAL DONE")
             self._deps.detail("RESUME_GLOBAL_COMPLETE")
-            self._deps.complete()
+            self._complete()
             return True
         return False
+
+    def _complete(self) -> None:
+        manifest = self._deps.get_manifest()
+        manifest["completed_at"] = self._deps.wall_timestamp()
+        manifest["status"] = "complete"
+        self._deps.write_manifest()
