@@ -82,7 +82,7 @@ def test_runner_removes_fund_dominated_before_team(monkeypatch):
     funds = [fund("A"), fund("B")]
     histories = {
         "A": long_history([100 + i for i in range(11)]),
-        "B": long_history([200 + 2 * i for i in range(11)]),
+        "B": long_history([200 + 3 * i for i in range(11)]),
     }
 
     result = run_team_pipeline(
