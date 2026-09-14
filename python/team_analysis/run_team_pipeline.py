@@ -6,6 +6,7 @@ from collections.abc import Iterable, Mapping
 
 import pandas as pd
 
+from fund_analysis.comparator import fund_frontier_from_histories
 from lakshya_core.dominance import Dimension
 from lakshya_core.models import Fund
 
@@ -19,22 +20,33 @@ def run_team_pipeline(
     fund_histories: Mapping[str, pd.DataFrame],
     dimensions: tuple[Dimension, ...] | None = None,
 ):
-    """Run the TEAM stage and return the non-dominated Team frontier.
+    """Run the FUND gate followed by the TEAM frontier.
 
-    [lakshya] This is orchestration only. Candidate generation, collective
-    evidence construction, fingerprinting, comparator mapping, and frontier
-    calculation remain delegated to their respective components.
+    [lakshya] Human admission happens before this boundary. The FUND stage
+    applies the declared weak-Pareto behavioural gate to those admitted
+    Funds, and only its survivors enter TEAM candidate generation.
 
-    The default gate is the declared TEAM comparator surface. Callers may
-    provide a narrower dimension tuple for focused analytical experiments or
-    tests.
+    No score, rank, weighting, or suitability judgement is introduced by
+    the gate. The FUND comparison is transient and is derived directly from
+    the supplied NAV histories; no Fund fingerprint artifact is persisted.
+
+    Callers may provide a narrower dimension tuple for focused TEAM tests or
+    experiments. The same selected surface is used for the FUND gate so that
+    the orchestration remains internally consistent.
     """
     selected_dimensions = (
         fund_team_dimensions() if dimensions is None else dimensions
     )
 
+    admitted_funds = list(funds)
+    surviving_funds = fund_frontier_from_histories(
+        admitted_funds,
+        fund_histories,
+        dimensions=selected_dimensions,
+    )
+
     return team_frontier_from_histories(
-        funds,
+        surviving_funds,
         fund_histories,
         selected_dimensions,
     )
