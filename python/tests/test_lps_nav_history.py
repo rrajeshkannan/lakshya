@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lps.nav_history import normalize_nav_history
+from lps.nav_history import cutoff_nav_history, normalize_nav_history
 
 
 def test_nav_history_normalizes_chronological_order():
@@ -67,3 +67,16 @@ def test_nav_history_returns_canonical_columns():
     assert list(normalized.columns) == ["date", "nav"]
     assert pd.api.types.is_datetime64_any_dtype(normalized["date"])
     assert pd.api.types.is_numeric_dtype(normalized["nav"])
+
+
+def test_cutoff_nav_history_excludes_future_observations():
+    nav = pd.DataFrame({
+        "date": ["2026-08-03", "2026-08-01", "2026-08-10"],
+        "nav": [103.0, 101.0, 110.0],
+    })
+    cutoff = cutoff_nav_history(nav, "2026-08-03")
+    assert list(cutoff["date"]) == [
+        pd.Timestamp("2026-08-01"),
+        pd.Timestamp("2026-08-03"),
+    ]
+    assert list(cutoff["nav"]) == [101.0, 103.0]
