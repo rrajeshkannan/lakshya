@@ -58,6 +58,7 @@ from .durable_stage_output import (
     write_csv_checkpoint,
 )
 from .models import Purpose
+from .purpose_loader import load_purposes
 from .observation_horizon import nearest_supported_horizon
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
@@ -140,60 +141,6 @@ def _input_hash(path: Path) -> str:
     if not path.is_file():
         raise FileNotFoundError(f"Required checkpoint input is missing: {path}")
     return sha256_file(path)
-
-
-
-
-def _floor_years(start: pd.Timestamp, due: pd.Timestamp) -> int:
-    years = due.year - start.year
-    anniversary = start + pd.DateOffset(years=years)
-    if anniversary > due:
-        years -= 1
-    return years
-
-
-def _load_purposes(as_of: pd.Timestamp) -> list[Purpose]:
-    df = pd.read_csv(PURPOSES_PATH, keep_default_na=False)
-    required = {"name", "due", "value", "desired", "monthly_plan", "analytical_horizon_years"}
-    missing = required - set(df.columns)
-    if missing:
-        raise ValueError(f"Purpose input is missing required columns: {sorted(missing)}")
-    purposes: list[Purpose] = []
-    for row in df.to_dict("records"):
-        name = str(row["name"])
-        due_raw = str(row["due"]).strip()
-        analytical_raw = str(row["analytical_horizon_years"]).strip()
-        analytical_horizon = int(analytical_raw) if analytical_raw else None
-        if due_raw.upper() == "NA" or not due_raw:
-            if analytical_horizon is None:
-                raise ValueError(f"Purpose without a finite due date requires analytical_horizon_years: {name}")
-            purposes.append(
-                Purpose(
-                    name=name,
-                    current_capital=float(row["value"]),
-                    analytical_horizon_years=analytical_horizon,
-                )
-            )
-            continue
-        due = pd.Timestamp(due_raw)
-        horizon = _floor_years(as_of, due)
-        if horizon <= 0:
-            raise ValueError(f"Purpose due date is not beyond as-of date: {name}")
-        purposes.append(
-            Purpose(
-                name=name,
-                current_capital=float(row["value"]),
-                desired_target=float(row["desired"]),
-                horizon_years=horizon,
-                monthly_contribution=float(row["monthly_plan"]),
-            )
-        )
-    _log("Loaded purposes: " + ", ".join(f"{p.name}={p.trajectory_horizon_years}Y" for p in purposes))
-    _detail(
-        "PURPOSES_READY "
-        + " ".join(f"name={p.name} horizon={p.trajectory_horizon_years}Y achievability={p.has_achievability}" for p in purposes)
-    )
-    return purposes
 
 
 def _write_rows(
@@ -705,7 +652,7 @@ def run(
         log=_log,
         detail=_detail,
     )
-    purposes = _load_purposes(valuation_date.date())
+    purposes = load_purposes(valuation_date.date())
     if purpose_names is not None:
         requested = set(purpose_names)
         known = {purpose.name for purpose in purposes}
