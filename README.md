@@ -76,7 +76,19 @@ CURRENT is a **valuation snapshot/view**, not another domain entity.
 LFS forms the reviewed target architecture through the established analytical stages:
 
 ```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
+FUND → TEAM → COMPOSITION → MISSION → FINAL
+```
+
+TARGET is deliberately **not** a pre-staging optimization stage. It is derived only after the reviewed Purpose state has passed Purpose Staging:
+
+```text
+FINAL
+  ↓
+Purpose Staging
+  ↓
+Historical Snapshot
+  ↓
+TARGET
 ```
 
 | Stage | Native question |
@@ -86,7 +98,7 @@ FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
 | COMPOSITION | Where does capital sit within a collective? |
 | MISSION | Can this Composition serve this Purpose? |
 | FINAL | Among qualified Compositions, which is the strongest practical compromise? |
-| TARGET | What fund-level formation follows from the reviewed Purpose decisions? |
+| TARGET | What fund-level formation follows from the reviewed Purpose state and selected FINAL decisions? |
 
 FUND establishes observed individual-fund behaviour, including Elevation and Protection. TEAM forms singleton/pair/trio collectives and applies the 40-dimensional Elevation + Protection comparator. COMPOSITION explores complete positive allocations. MISSION introduces Purpose semantics. FINAL performs production compromise ordering.
 
@@ -104,37 +116,21 @@ The family controls `data/purpose/purposes.csv`. LFS does not parse CAS, reconst
 
 ---
 
-# 3. Family review layers
+# 3. Post-FINAL human review
 
-After FINAL, two deliberately non-optimizing review layers precede the annual historical boundary:
+After FINAL, the review enters a deliberately separate human-controlled staging boundary. Family Architecture Validation is **not** an active Lakshya stage.
 
 ```text
 FINAL
-  ↓
-FAMILY ARCHITECTURE VALIDATION
   ↓
 PURPOSE STAGING
   ↓
 HISTORICAL SNAPSHOT
 ```
 
-## Family Architecture Validation
-
-This is **descriptive attribution, not optimization**. It asks where independently derived Purpose decisions create common Fund/AMC dependency.
-
-```text
-Purpose current capital
-        ×
-FINAL Composition fund weight
-        =
-Attributed capital
-```
-
-It observes Fund concentration, AMC/ecosystem concentration, and Purpose dependency. It does not alter FINAL, impose concentration limits, create substitute Compositions, or optimize family allocation.
-
 ## Purpose Staging
 
-Purpose Staging is a **human-in-the-loop reconciliation workspace**. The reviewer can change only `value`, `monthly_plan`, and capital/SIP acquisition percentages. Each Purpose's `desired` target and `due` date remain fixed context while the reviewer stages those changes.
+Purpose Staging is a **human-in-the-loop reconciliation workspace**. The reviewer can change only the permitted staging levers: `value`, `monthly_plan`, and capital/SIP acquisition percentages. Each Purpose's `desired` target and `due` date remain fixed context; analytical horizon is derived and is not a staging input.
 
 ```text
 Purpose reduction → common pool
@@ -159,7 +155,35 @@ Runtime output and forensic logs remain disposable/Git-ignored where configured.
 
 ---
 
-# 5. LTS — Lakshya Transition System
+# 5. CURRENT and TARGET
+
+The annual-review hand-off is deliberately ordered:
+
+```text
+FINAL
+  ↓
+Purpose Staging
+  ↓
+Historical Snapshot
+  ↓
+CURRENT
+  ↓
+TARGET
+```
+
+The three states must remain distinct:
+
+```text
+ANALYTICAL CURRENT = what the reviewed Lakshya architecture says
+ECONOMIC CURRENT   = what the family actually owns
+TARGET             = what the reviewed Purpose state + FINAL decisions imply should be owned
+```
+
+LPS supplies Economic CURRENT from source evidence. TARGET is the fund-level formation implied by the committed Purpose state and selected FINAL Composition decisions. Neither state is inferred from the other.
+
+---
+
+# 6. LTS — Lakshya Transition System
 
 ### How do we move from CURRENT to TARGET?
 
@@ -188,85 +212,41 @@ Possible constraints include acquisition history, lock-ins, tax consequences, ex
 
 LTS is **not a second portfolio optimizer** and does not execute transactions.
 
-The three states must remain distinct:
-
-```text
-ANALYTICAL CURRENT = what the reviewed Lakshya architecture says
-ECONOMIC CURRENT   = what the family actually owns
-TARGET             = what the reviewed decisions imply should be owned
-```
-
 ---
 
-# 6. Annual review flow
+# 7. Annual review flow
 
 ```text
-HUMAN INPUTS
-   │
-   ├── funds_in_scope.csv
-   └── purposes.csv
+AUTHORITATIVE SOURCE EVIDENCE
           │
           ▼
-        LFS
- FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
+        LPS
+ Transactions → Positions → valuation
           │
-          ▼
- Family Architecture Validation
-          │
-          ▼
- Purpose Staging
-          │
-          ▼
- Historical Snapshot
-          │
-          ▼
-        LTS
- CURRENT ←──────────────→ TARGET
-          │
-          ▼
- Human transition plan / execution
+          ├──────────────────────────────┐
+          ▼                              │
+        LFS-MAIN                         │
+ FUND → TEAM → COMPOSITION → MISSION → FINAL
+                                         │
+                                         ▼
+                                  PURPOSE STAGING
+                                         │
+                                         ▼
+                                  HISTORICAL SNAPSHOT
+                                         │
+                                         ▼
+                                       CURRENT
+                                         │
+                                         ▼
+                                       TARGET
+                                         │
+                                         ▼
+                                  LTS CURRENT → TARGET
 ```
 
-LPS supplies the factual side independently:
+LPS also supplies factual Transition Evidence directly to LTS. The LFS formation chain and the LPS factual chain remain separate bounded responsibilities.
 
-```text
-source evidence
-    ↓
-Transactions
-    ↓
-Positions
-    ↓
-valuation observation
-    ↓
-Economic CURRENT
-```
-
-Thus the LTS hand-off is:
-
-```text
-LPS → CURRENT + factual history
-LFS → TARGET
-```
-
----
-
-# 7. Running Lakshya
-
-Canonical analytical entry point:
-
-```bash
-python python/run_production.py --as-of YYYY-MM-DD
-```
-
-Example:
-
-```bash
-python python/run_production.py --as-of 2026-09-06
-```
-
-Selected Purposes may be supplied with `--purposes`. The production pipeline is checkpoint-aware and reuses valid persisted work.
-
-For practical operation, see `docs/Lakshya_HowTo.md`.
+For the practical annual procedure, see `docs/Lakshya_HowTo.md`.
 For execution sequence and persistence boundaries, see `docs/Lakshya_Pipeline_Sequence.md`.
 For the architectural contract, see `docs/Lakshya_Architecture.md`.
 
