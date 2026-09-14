@@ -53,7 +53,8 @@ Current functions:
 - `_floor_years`
 - `_load_purposes`
 
-Proposed destination: `pipeline_inputs.py`
+Proposed destination: `pipeline_inputs.py`, subject to the Purpose-boundary rule
+below.
 
 Responsibilities:
 
@@ -64,6 +65,31 @@ Responsibilities:
 - preserve Purpose selection semantics.
 
 The NAV cutoff must remain explicit and must never be deferred to later stages.
+
+#### Authoritative Purpose boundary
+
+The existing production Purpose contract is owned by
+`python/mission/purpose_loader.py`, not by a second CSV-only parser.
+
+The authoritative loader:
+
+- reads Purpose intent fields;
+- derives current capital from LPS positions;
+- validates blank and duplicate Purpose names;
+- validates the relationship between Purpose intent and LPS capital evidence;
+- validates non-negative targets and monthly contributions;
+- calculates finite due-date horizons; and
+- constructs the established `mission.models.Purpose` objects.
+
+`mission/__init__.py` currently preserves compatibility by exposing that loader
+through the resilient runner's `_load_purposes` name. Any future extraction must
+preserve this behavior and must not replace LPS-derived capital with the
+`value` column from `purposes.csv`.
+
+The newer `pipeline_inputs.py` helper currently contains a separate, narrower
+Purpose parser used by focused boundary tests. It is **not** the production
+Purpose source of truth and must not be wired into the resilient runner until
+its contract is deliberately reconciled with `mission.purpose_loader`.
 
 ### 3. CSV and durable stage output
 
@@ -222,26 +248,30 @@ Every extraction must preserve:
    retain their current meanings.
 5. **Purpose selection** — explicit Purpose selection and unknown-Purpose errors
    must remain unchanged.
-6. **Multiprocessing safety** — worker functions submitted to process pools must
+6. **Authoritative Purpose capital** — production Purpose capital must continue to
+   come from LPS position evidence, not a duplicated CSV value parser.
+7. **Multiprocessing safety** — worker functions submitted to process pools must
    remain importable and serializable.
-7. **Forensic observability** — existing manifest updates and detailed event logs
+8. **Forensic observability** — existing manifest updates and detailed event logs
    must remain available and semantically consistent.
-8. **Public compatibility** — the existing `run()` and CLI behavior must remain
+9. **Public compatibility** — the existing `run()` and CLI behavior must remain
    stable unless a separate, explicitly reviewed change says otherwise.
 
 ## Recommended extraction order
 
 1. Add this decomposition map and establish the documentation baseline.
 2. Extract pure or nearly pure helpers with limited coupling.
-3. Extract input loading and normalization.
-4. Extract ordinary output and checkpoint-index support where interfaces are
+3. Extract input loading and normalization, beginning with the NAV boundary.
+4. Reconcile the duplicate Purpose helper with `mission.purpose_loader` before
+   routing production code through any new Purpose boundary.
+5. Extract ordinary output and checkpoint-index support where interfaces are
    explicit.
-5. Extract the Composition evidence stage as one coherent unit.
-6. Extract the global Composition stage and identity helpers.
-7. Extract MISSION and trajectory stages, keeping process-pool workers local to
+6. Extract the Composition evidence stage as one coherent unit.
+7. Extract the global Composition stage and identity helpers.
+8. Extract MISSION and trajectory stages, keeping process-pool workers local to
    their stage modules initially.
-8. Reduce `resilient_pipeline.py` to orchestration and CLI code.
-9. Run the full regression suite and inspect the final diff for behavioral drift.
+9. Reduce `resilient_pipeline.py` to orchestration and CLI code.
+10. Run the full regression suite and inspect the final diff for behavioral drift.
 
 ## Explicit non-goals
 
@@ -261,5 +291,6 @@ The first production extraction should target **input loading and normalization*
 only after its current callers and tests have been identified. It is relatively
 isolated and directly reinforces the canonical `as_of` NAV boundary.
 
-No code extraction should begin until the documentation baseline is reviewed and
-accepted.
+The NAV input boundary has now been extracted and tested. Purpose loading remains
+intentionally on the authoritative LPS-backed path until its duplicate helper is
+reconciled in a separately reviewed change.
