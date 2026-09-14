@@ -4,7 +4,7 @@
 
 **Release:** FINAL / Compromise Programming v1
 
-**As of:** 2026-09-08
+**As of:** 2026-09-14
 
 This document defines the wider production architecture of Lakshya. `docs/Lakshya_Domain_Model.md` records the bounded-context language and the five cross-context contracts. `docs/Lakshya_Pipeline_Sequence.md` describes execution and persistence boundaries. `docs/Lakshya_HowTo.md` describes practical reviewer operation.
 
@@ -103,11 +103,11 @@ It does not own fund selection, behavioural Fund analysis, formation stages, tra
 
 ## 3.2 Source boundary
 
-For mutual funds, the CAS is the authoritative evidence boundary for transactions and holdings/history.
+For mutual funds, the family's authoritative account statement / CAS is the evidence boundary for transactions and holdings/history.
 
 Family source policy:
 
-- request the CAS comfortably before the earliest family mutual-fund investment;
+- request the statement comfortably before the earliest family mutual-fund investment;
 - include all folios, including zero-balance folios;
 - retain original unmodified PDFs;
 - enter passwords interactively and never store them;
@@ -115,7 +115,7 @@ Family source policy:
 - perform full-history import for each annual review; and
 - review validation before accepting factual holdings.
 
-Parser-specific schemas remain implementation details. They must not leak into LFS or LTS.
+The operational source provider may change without changing the LPS contract. Parser-specific schemas remain implementation details and must not leak into LFS or LTS.
 
 ## 3.3 Core data model
 
@@ -250,7 +250,7 @@ Broader Fund metadata is deliberately subject to dependency review after LTS is 
 LFS owns the complete formation engine:
 
 ```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
+FUND → TEAM → COMPOSITION → MISSION → FINAL
 ```
 
 These are stages inside LFS, not separate bounded systems.
@@ -383,12 +383,26 @@ Robustness evidence describes stability; it does not override the primary winner
 
 The production contract is versioned. Changes to the decision rule, spoke surface, percentile semantics, primary norm, weighting, L-infinity treatment, bootstrap semantics, p sweep, tie-breaking, or winner meaning require deliberate release/version changes with tests and documentation.
 
-## 4.7 TARGET
+## 4.7 TARGET formation
 
-TARGET is not a new optimization stage. It is the fund-level formation implied by reviewed Purpose state and selected FINAL Composition decisions:
+TARGET is not a new optimization stage and is not produced by LFS-Main before human Purpose Staging.
+
+The authoritative annual sequence is:
 
 ```text
-authoritative Purpose state
+FINAL
+  ↓
+Purpose Staging
+  ↓
+Historical Snapshot
+  ↓
+TARGET
+```
+
+TARGET is the fund-level formation implied by the **committed** Purpose state and selected FINAL Composition decisions:
+
+```text
+authoritative committed Purpose state
         ↓
 selected FINAL Composition per Purpose
         ↓
@@ -559,57 +573,23 @@ Promotion does not manufacture a Position. It reconciles a proposal against subs
 
 ---
 
-# 7. Post-FINAL family review layers
+# 7. Post-FINAL review and annual persistence
 
-These layers sit after FINAL and before the deliberate annual persistence boundary. They are not optimization stages.
+The post-FINAL boundary is deliberately human-controlled and non-optimizing.
 
 ```text
 FINAL
-  ↓
-FAMILY ARCHITECTURE VALIDATION
   ↓
 PURPOSE STAGING
   ↓
 HISTORICAL SNAPSHOT
 ```
 
-## 7.1 Family Architecture Validation
-
-Native question:
-
-> **Given the independent Purpose-level decisions together, where does family capital depend on common Funds or investment organizations?**
-
-This is attribution, not optimization.
-
-Core contract:
-
-```text
-Purpose capital
-        ×
-FINAL Composition fund weight
-        =
-Attributed capital
-```
-
-Structured annual outputs:
-
-```text
-family_capital_attribution.csv
-family_fund_concentration.csv
-family_amc_concentration.csv
-family_purpose_dependency.csv
-family_attribution_manifest.json
-```
-
-It does not impose concentration limits, penalize common dependencies, alter FINAL winners, create substitute Compositions, optimize family allocation, declare dependencies safe/unsafe, or introduce transition-cost assumptions.
-
-Integrity is fail-closed for malformed Purpose capital, duplicate/missing Fund metadata, malformed/non-100% Composition weights, unknown Fund ISINs, manifest/hash mismatches, and attribution non-reconciliation.
-
-## 7.2 Purpose Staging
+## 7.1 Purpose Staging
 
 Purpose Staging is a deliberately small human-in-the-loop reconciliation workspace. It does not alter FUND, TEAM, COMPOSITION, MISSION, FINAL, or selected FINAL Composition.
 
-The human controls the meaningful Purpose inputs. A finite `due` derives its analytical horizon; an open due uses the fixed 7Y analytical horizon. `analytical_horizon_years` is therefore not a human Purpose field.
+The human controls the meaningful staging levers: `value`, `monthly_plan`, `capital_acquire_pct`, and `sip_acquire_pct`. A finite `due` remains fixed context; an open due uses the fixed 7Y analytical horizon. `analytical_horizon_years` is therefore not a human Purpose field.
 
 The accounting contract is:
 
@@ -620,11 +600,11 @@ pool acquisition  → another Purpose
 
 Acquisition percentages use the same pool base at the start of the acquisition phase for that turn; they are not applied sequentially to a shrinking pool.
 
-The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due change analytical requirements; they do not manufacture cash release.
+The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due are upstream Purpose-input changes, not staging levers, and do not manufacture cash release.
 
 The authoritative `data/purpose/purposes.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
 
-## 7.3 Historical Snapshot
+## 7.2 Historical Snapshot
 
 Historical Snapshot is a human-controlled Git persistence boundary. It is memory, not a transaction ledger.
 
@@ -729,8 +709,11 @@ The architecture deliberately parks the following until evidence earns them:
 - Purpose residual/over-target automation;
 - unmapped-Position automation;
 - a formal Z-trigger framework for rare exceptions;
-- broader LPS reference-data expansion; and
-- Purpose-specific external views until a consumer earns one.
+- broader LPS reference-data expansion;
+- Purpose-specific external views until a consumer earns one; and
+- **removal of the obsolete Family Architecture Validation implementation (`python/run_family_attribution.py` and its supporting `python/family/` code).**
+
+The last item is an explicit cleanup task, not an active pipeline stage. Until that cleanup is deliberately executed, the legacy code must not be described as part of the production architecture or annual review flow.
 
 Parking means deliberately refusing to make architecture pay for a need before evidence demonstrates it.
 
