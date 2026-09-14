@@ -64,7 +64,7 @@ from .survivor_trajectory_experiment import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-NAV_DIR = DATA_DIR / "nav"
+NAV_DIR = DATA_DIR / "lps" / "nav"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
 CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
