@@ -18,7 +18,8 @@ from final.compromise_programming import (
     write_analysis,
 )
 from lakshya_core.hashing import sha256_file
-from mission.resilient_pipeline import _load_purposes, run as run_mission
+from mission.purpose_loader import load_purposes
+from mission.resilient_pipeline import run as run_mission
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
@@ -73,7 +74,7 @@ def run_final_stage(
     reuse_valid: bool = True,
 ) -> None:
     """Consume persisted MISSION survivors and execute/reuse FINAL outputs."""
-    purposes = _load_purposes(pd.Timestamp(as_of).date())
+    purposes = load_purposes(pd.Timestamp(as_of).date())
     if purpose_names is not None:
         requested = set(purpose_names)
         unknown = requested - {purpose.name for purpose in purposes}
@@ -150,7 +151,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    configured = _load_purposes(pd.Timestamp(args.as_of).date())
+    configured = load_purposes(pd.Timestamp(args.as_of).date())
     if args.purposes is None:
         selected_purposes = [purpose.name for purpose in configured]
     else:
