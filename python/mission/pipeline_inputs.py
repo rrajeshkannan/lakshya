@@ -10,6 +10,8 @@ import pandas as pd
 
 from lakshya_core.nav_history import cutoff_nav_history
 
+from .models import Purpose
+
 Log = Callable[[str], None]
 
 
@@ -65,3 +67,67 @@ def load_fund_histories(
     if detail is not None:
         detail(f"NAV_LOAD_COMPLETE funds={len(histories)} as_of={as_of.date()}")
     return histories
+
+
+def load_purposes(
+    purposes_path: Path,
+    *,
+    as_of: pd.Timestamp,
+    floor_years: Callable[[pd.Timestamp, pd.Timestamp], int],
+    log: Log | None = None,
+    detail: Log | None = None,
+) -> list[Purpose]:
+    """Load and validate purpose inputs without applying purpose selection.
+
+    The caller supplies the date-relative year-flooring rule so this boundary
+    does not own orchestration policy or duplicate that calculation.
+    """
+    df = pd.read_csv(purposes_path, keep_default_na=False)
+    required = {"name", "due", "value", "desired", "monthly_plan", "analytical_horizon_years"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"Purpose input is missing required columns: {sorted(missing)}")
+
+    purposes: list[Purpose] = []
+    for row in df.to_dict("records"):
+        name = str(row["name"])
+        due_raw = str(row["due"]).strip()
+        analytical_raw = str(row["analytical_horizon_years"]).strip()
+        analytical_horizon = int(analytical_raw) if analytical_raw else None
+        if due_raw.upper() == "NA" or not due_raw:
+            if analytical_horizon is None:
+                raise ValueError(f"Purpose without a finite due date requires analytical_horizon_years: {name}")
+            purposes.append(
+                Purpose(
+                    name=name,
+                    current_capital=float(row["value"]),
+                    analytical_horizon_years=analytical_horizon,
+                )
+            )
+            continue
+
+        due = pd.Timestamp(due_raw)
+        horizon = floor_years(as_of, due)
+        if horizon <= 0:
+            raise ValueError(f"Purpose due date is not beyond as-of date: {name}")
+        purposes.append(
+            Purpose(
+                name=name,
+                current_capital=float(row["value"]),
+                desired_target=float(row["desired"]),
+                horizon_years=horizon,
+                monthly_contribution=float(row["monthly_plan"]),
+            )
+        )
+
+    if log is not None:
+        log("Loaded purposes: " + ", ".join(f"{p.name}={p.trajectory_horizon_years}Y" for p in purposes))
+    if detail is not None:
+        detail(
+            "PURPOSES_READY "
+            + " ".join(
+                f"name={p.name} horizon={p.trajectory_horizon_years}Y achievability={p.has_achievability}"
+                for p in purposes
+            )
+        )
+    return purposes
