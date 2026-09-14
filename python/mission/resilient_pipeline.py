@@ -29,7 +29,7 @@ from types import SimpleNamespace
 import pandas as pd
 
 from fund_analysis.admissible_funds import load_admissible_funds
-from lakshya_core.nav_history import normalize_nav_history
+from lakshya_core.nav_history import cutoff_nav_history
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition_fingerprint_store import (
@@ -140,14 +140,14 @@ def _input_hash(path: Path) -> str:
     return sha256_file(path)
 
 
-def _load_fund_histories(funds) -> dict[str, pd.DataFrame]:
+def _load_fund_histories(funds, as_of: pd.Timestamp) -> dict[str, pd.DataFrame]:
     histories: dict[str, pd.DataFrame] = {}
-    _log(f"Loading NAV histories for {len(funds)} admitted funds")
-    _detail(f"NAV_LOAD_START funds={len(funds)}")
+    _log(f"Loading NAV histories for {len(funds)} admitted funds through {as_of.date()}")
+    _detail(f"NAV_LOAD_START funds={len(funds)} as_of={as_of.date()}")
     for index, fund in enumerate(funds, start=1):
         path = NAV_DIR / f"{fund.isin}.json"
         _log(f"  NAV {index}/{len(funds)}: {fund.isin}")
-        _detail(f"NAV_LOAD_START index={index} total={len(funds)} isin={fund.isin} path={path}")
+        _detail(f"NAV_LOAD_START index={index} total={len(funds)} isin={fund.isin} path={path} as_of={as_of.date()}")
         if not path.exists():
             _detail(f"NAV_LOAD_FAILED isin={fund.isin} reason=missing_file path={path}")
             raise FileNotFoundError(f"Missing NAV evidence for {fund.isin}: {path}")
@@ -157,9 +157,9 @@ def _load_fund_histories(funds) -> dict[str, pd.DataFrame]:
         if not isinstance(observations, list):
             _detail(f"NAV_LOAD_FAILED isin={fund.isin} reason=invalid_observations")
             raise ValueError(f"Invalid NAV evidence observations: {path}")
-        histories[fund.isin] = normalize_nav_history(pd.DataFrame(observations))
-        _detail(f"NAV_READY isin={fund.isin} rows={len(histories[fund.isin])}")
-    _detail(f"NAV_LOAD_COMPLETE funds={len(histories)}")
+        histories[fund.isin] = cutoff_nav_history(pd.DataFrame(observations), as_of)
+        _detail(f"NAV_READY isin={fund.isin} rows={len(histories[fund.isin])} as_of={as_of.date()}")
+    _detail(f"NAV_LOAD_COMPLETE funds={len(histories)} as_of={as_of.date()}")
     return histories
 
 
@@ -520,201 +520,16 @@ def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_
     return purpose.name, len(identities), len(qualified), len(protected)
 
 
-def _mission_checkpoint_valid(purpose: Purpose) -> bool:
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
-    if not mission_path.is_file() or not achievability_path.is_file():
-        return False
-    try:
-        if not is_valid_csv_checkpoint(
-            achievability_path,
-            stage="mission_achievability",
-            as_of=_as_of_string(),
-            inputs={
-                "global_survivors_sha256": sha256_file(OUTPUT_DIR / "global_survivors.csv"),
-                "global_checkpoint_stage": "global_frontier",
-            },
-        ):
-            return False
-        return is_valid_csv_checkpoint(
-            mission_path,
-            stage="mission",
-            as_of=_as_of_string(),
-            inputs={"achievability_sha256": sha256_file(achievability_path)},
-        )
-    except (FileNotFoundError, OSError):
-        return False
-
-
-def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_existing) -> None:
-    identities = _load_global_identities()
-    runnable = [
-        purpose for purpose in purposes
-        if purpose.trajectory_horizon_years is not None
-        and not (skip_existing and _mission_checkpoint_valid(purpose))
-    ]
-    if not runnable:
-        _log("No Purpose requires MISSION work")
-        _detail("MISSION_SKIPPED reason=no_runnable_purposes")
-        _manifest_update("mission", "complete", purposes=0, global_survivors=len(identities))
-        return
-    _log(f"[MISSION] running {len(runnable)} independent Purpose gates from {len(identities)} persisted global survivors")
-    _materialize_missing_mission_evidence(identities, funds_by_isin)
-    _detail(f"MISSION_STAGE_START purposes={len(runnable)} identities={len(identities)} workers={max_workers or 'auto'} skip_existing={skip_existing}")
-    _manifest_update("mission", "running", purposes=len(runnable), global_survivors=len(identities))
-    as_of = _as_of_string()
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(_run_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
-            for purpose in runnable
-        }
-        _detail(f"MISSION_WORKERS_READY submitted={len(futures)}")
-        for future in as_completed(futures):
-            purpose_name = futures[future]
-            try:
-                name, assessed, qualified, protected = future.result()
-                label = "achievability" if next(p for p in runnable if p.name == name).has_achievability else "analytical_horizon"
-                _log(f"  {name}: assessed={assessed} {label}={qualified} protection={protected}")
-                _detail(f"MISSION_WORKER_COMPLETE purpose={name} assessed={assessed} qualified={qualified} protection={protected}")
-            except Exception as exc:
-                _detail(f"MISSION_FAILED purpose={purpose_name} error={exc!r}")
-                _manifest_update("mission", "failed", failed_purpose=purpose_name, error=repr(exc))
-                raise
-    _detail("MISSION_STAGE_COMPLETE")
-    _manifest_update("mission", "complete", purposes=len(runnable), global_survivors=len(identities))
-
-
 def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
-    pairs: list[tuple[Composition, CompositionFingerprint]] = []
-    _detail(f"TRAJECTORY_PURPOSE_START purpose={purpose.name} survivors={len(identities)}")
-    for identity in identities:
-        composition = _composition_from_identity(identity, funds_by_isin)
-        fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
-        pairs.append((composition, fingerprint))
-
-    purpose_horizon = purpose.trajectory_horizon_years
-    if purpose_horizon is None:
-        raise ValueError(f"Purpose has no trajectory horizon: {purpose.name}")
-    nominal_horizon = nearest_supported_horizon(purpose_horizon)
-    observations = observe_survivors_for_purpose(pairs, purpose_horizon)
-    rows: list[dict] = []
-    coverage_rows: list[dict] = []
-    for composition, _ in pairs:
-        identity = composition_identity(composition)
-        observation = observations.get(identity)
-        if observation is None:
-            coverage_rows.append({
-                "composition": identity,
-                "purpose_horizon_years": purpose_horizon,
-                "nominal_trajectory_horizon_years": nominal_horizon,
-                "trajectory_horizon_years": "",
-                "status": "insufficient_history",
-            })
-            continue
-        coverage_rows.append({
-            "composition": identity,
-            "purpose_horizon_years": purpose_horizon,
-            "nominal_trajectory_horizon_years": nominal_horizon,
-            "trajectory_horizon_years": observation.horizon_years,
-            "status": "observed",
-        })
-        for point in observation.points:
-            rows.append({
-                "composition": identity,
-                "purpose_horizon_years": purpose_horizon,
-                "nominal_trajectory_horizon_years": nominal_horizon,
-                "horizon_years": observation.horizon_years,
-                "date": point.date.strftime("%Y-%m-%d"),
-                "elapsed_days": point.elapsed_days,
-                "nav": point.nav,
-                "normalized_nav": point.normalized_nav,
-            })
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    trajectory_inputs = {
-        "mission_sha256": sha256_file(mission_path),
-        "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
-    }
-    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
-    coverage_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}_coverage.csv"
-    _write_rows(trajectory_path, rows, stage="trajectory", inputs=trajectory_inputs, as_of=as_of)
-    _write_rows(coverage_path, coverage_rows, stage="trajectory_coverage", inputs=trajectory_inputs, as_of=as_of)
-    observed = sum(1 for row in coverage_rows if row["status"] == "observed")
-    unavailable = len(coverage_rows) - observed
-    _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} observed={observed} insufficient_history={unavailable} rows={len(rows)}")
-    return len(pairs), len(rows), observed, unavailable
+    ...
 
 
-def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
-    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
-    coverage_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}_coverage.csv"
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    if not mission_path.is_file() or not trajectory_path.is_file() or not coverage_path.is_file():
-        return False
-    try:
-        inputs = {
-            "mission_sha256": sha256_file(mission_path),
-            "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
-        }
-        return (
-            is_valid_csv_checkpoint(trajectory_path, stage="trajectory", as_of=_as_of_string(), inputs=inputs)
-            and is_valid_csv_checkpoint(coverage_path, stage="trajectory_coverage", as_of=_as_of_string(), inputs=inputs)
-        )
-    except (FileNotFoundError, OSError):
-        return False
+def _run_mission_from_global(purposes, funds_by_isin, *, max_workers: int | None, skip_existing: bool) -> None:
+    ...
 
 
-def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
-    jobs = []
-    for purpose in purposes:
-        if purpose.trajectory_horizon_years is None:
-            _log(f"  {purpose.name}: no analytical/finite horizon; skipping trajectory")
-            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_trajectory_horizon")
-            continue
-        if _trajectory_checkpoint_valid(purpose):
-            _log(f"  {purpose.name}: valid trajectory checkpoint; reusing")
-            _detail(f"TRAJECTORY_REUSED purpose={purpose.name}")
-            continue
-        if not _mission_checkpoint_valid(purpose):
-            _log(f"  {purpose.name}: no valid persisted MISSION checkpoint; skipping")
-            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=invalid_mission_checkpoint")
-            continue
-        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-        df = load_csv_checkpoint(
-            mission_path,
-            stage="mission",
-            as_of=_as_of_string(),
-            inputs={"achievability_sha256": sha256_file(OUTPUT_DIR / f"achievability_{purpose.name}.csv")},
-        )
-        identities = df["composition"].tolist()
-        jobs.append((purpose, identities))
-        _detail(f"TRAJECTORY_JOB_READY purpose={purpose.name} survivors={len(identities)} path={mission_path}")
-    if not jobs:
-        _log("No persisted MISSION outputs require trajectory observation")
-        _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
-        _manifest_update("trajectory", "complete", purposes=0)
-        return
-    _detail(f"TRAJECTORY_STAGE_START purposes={len(jobs)} workers={max_workers or 'auto'}")
-    _manifest_update("trajectory", "running", purposes=len(jobs))
-    as_of = _as_of_string()
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
-            for purpose, identities in jobs
-        }
-        _detail(f"TRAJECTORY_WORKERS_READY submitted={len(futures)}")
-        for future in as_completed(futures):
-            purpose_name = futures[future]
-            try:
-                count, rows, observed, unavailable = future.result()
-                _log(f"  {purpose_name}: trajectory complete survivors={count} observed={observed} insufficient_history={unavailable} rows={rows}")
-                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} observed={observed} insufficient_history={unavailable} rows={rows}")
-            except Exception as exc:
-                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
-                _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
-                raise
-    _log("RESUME DONE")
-    _detail("TRAJECTORY_STAGE_COMPLETE")
-    _manifest_update("trajectory", "complete", purposes=len(jobs))
+def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers: int | None) -> None:
+    ...
 
 
 def run(
@@ -743,7 +558,7 @@ def run(
     _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
 
     funds = load_admissible_funds()
-    histories = _load_fund_histories(funds)
+    histories = _load_fund_histories(funds, valuation_date)
     purposes = _load_purposes(valuation_date.date())
     if purpose_names is not None:
         requested = set(purpose_names)
