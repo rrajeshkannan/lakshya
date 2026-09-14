@@ -173,6 +173,7 @@ def _write_rows(
 
 
 from .composition_evidence_stage import CompositionEvidenceDeps, CompositionEvidenceStage
+from .global_composition_stage import GlobalCompositionDeps, GlobalCompositionStage
 
 
 def _composition_evidence_stage() -> CompositionEvidenceStage:
@@ -201,31 +202,33 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
     return _composition_evidence_stage().persist_evidence(teams, fund_histories, max_workers=max_workers)
 
 
-def _load_global_pairs_for_frontier(teams):
-    for composition in _candidate_compositions(teams):
-        path = fingerprint_path(FINGERPRINT_DIR, composition)
-        if not path.is_file():
-            _detail(f"GLOBAL_FINGERPRINT_MISSING composition={composition_identity(composition)} path={path}")
-            raise FileNotFoundError(f"Missing Composition fingerprint checkpoint: {path}")
-        _detail(f"GLOBAL_FINGERPRINT_LOADED composition={composition_identity(composition)} path={path}")
-        yield composition, load_fingerprint(path, composition)
+def _global_composition_stage() -> GlobalCompositionStage:
+    return GlobalCompositionStage(GlobalCompositionDeps(
+        output_dir=OUTPUT_DIR,
+        project_root=PROJECT_ROOT,
+        fingerprint_dir=FINGERPRINT_DIR,
+        candidates_path=OUTPUT_DIR / "composition_candidates.csv",
+        global_survivors_path=OUTPUT_DIR / "global_survivors.csv",
+        fingerprint_schema_version=FINGERPRINT_SCHEMA_VERSION,
+        input_hash=_input_hash,
+        candidate_compositions=_candidate_compositions,
+        fingerprint_path=fingerprint_path,
+        composition_identity=composition_identity,
+        load_fingerprint=load_fingerprint,
+        global_composition_frontier=global_composition_frontier,
+        load_csv_checkpoint=load_csv_checkpoint,
+        detail=_detail,
+        as_of_string=_as_of_string,
+    ))
 
+def _load_global_pairs_for_frontier(teams):
+    yield from _global_composition_stage().load_pairs_for_frontier(teams)
 
 def _global_inputs() -> dict[str, str]:
-    return {
-        "composition_candidates_sha256": _input_hash(OUTPUT_DIR / "composition_candidates.csv"),
-        "fingerprint_schema_version": str(FINGERPRINT_SCHEMA_VERSION),
-    }
-
+    return _global_composition_stage().inputs()
 
 def _load_global_identities() -> list[str]:
-    path = OUTPUT_DIR / "global_survivors.csv"
-    df = load_csv_checkpoint(path, stage="global_frontier", as_of=_as_of_string(), inputs=_global_inputs())
-    if "composition" not in df.columns:
-        raise ValueError(f"Invalid global frontier checkpoint: {path}")
-    identities = df["composition"].tolist()
-    _detail(f"GLOBAL_CHECKPOINT_READY path={path} survivors={len(identities)}")
-    return identities
+    return _global_composition_stage().load_identities()
 
 
 def _composition_from_identity(identity: str, funds_by_isin) -> Composition:
