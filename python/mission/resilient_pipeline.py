@@ -70,6 +70,7 @@ from .trajectory_execution_stage import TrajectoryExecutionDeps, TrajectoryExecu
 from .full_run_stage import FullRunStage, FullRunStageDeps
 from .resume_stage import ResumeStage, ResumeStageDeps
 from .run_input_stage import RunInputDeps, RunInputStage
+from .run_context_stage import RunContextDeps, RunContextStage
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -86,6 +87,11 @@ LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
 MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
 
 _RUN_MANIFEST: dict | None = None
+
+
+def _set_run_manifest(manifest: dict) -> None:
+    global _RUN_MANIFEST
+    _RUN_MANIFEST = manifest
 
 
 def _wall_timestamp() -> str:
@@ -503,22 +509,23 @@ def run(
 ) -> None:
     global _RUN_MANIFEST
     valuation_date = pd.Timestamp(as_of)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    run_id = uuid.uuid4().hex[:12]
-    _RUN_MANIFEST = {
-        "run_id": run_id,
-        "started_at": _wall_timestamp(),
-        "as_of": str(valuation_date.date()),
-        "mode": resume_from or "full",
-        "workers": workers or "auto",
-        "purpose_selection": purpose_names or "all",
-        "python": platform.python_version(),
-        "pipeline": "resilient_pipeline",
-        "stages": {},
-    }
-    _write_manifest()
-    _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'}")
-    _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
+    RunContextStage(
+        RunContextDeps(
+            wall_timestamp=_wall_timestamp,
+            output_dir=OUTPUT_DIR,
+            write_manifest=_write_manifest,
+            log=_log,
+            detail=_detail,
+            log_path=LOG_PATH,
+            manifest_path=MANIFEST_PATH,
+            set_manifest=lambda manifest: _set_run_manifest(manifest),
+        )
+    ).initialize(
+        valuation_date=valuation_date,
+        resume_from=resume_from,
+        workers=workers,
+        purpose_names=purpose_names,
+    )
 
     run_inputs = RunInputStage(
         RunInputDeps(
