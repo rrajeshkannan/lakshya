@@ -172,128 +172,33 @@ def _write_rows(
     return count
 
 
-def _write_composition_candidates(teams) -> int:
-    path = OUTPUT_DIR / "composition_candidates.csv"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    count = 0
-    with temporary.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=("composition", "team"))
-        writer.writeheader()
-        for team in teams:
-            for composition in generate_compositions(team):
-                writer.writerow(
-                    {
-                        "composition": composition_identity(composition),
-                        "team": "|".join(member.isin for member in composition.team.members),
-                    }
-                )
-                count += 1
-    temporary.replace(path)
-    _log(f"  wrote {path.relative_to(PROJECT_ROOT)} ({count} rows)")
-    _detail(f"COMPOSITION_CANDIDATES_WRITTEN path={path.relative_to(PROJECT_ROOT)} rows={count}")
-    return count
+from .composition_evidence_stage import CompositionEvidenceDeps, CompositionEvidenceStage
 
+
+def _composition_evidence_stage() -> CompositionEvidenceStage:
+    return CompositionEvidenceStage(CompositionEvidenceDeps(
+        output_dir=OUTPUT_DIR, project_root=PROJECT_ROOT, fingerprint_dir=FINGERPRINT_DIR,
+        checkpoint_index_path=CHECKPOINT_INDEX_PATH, input_hash=_input_hash,
+        load_checkpoint_index=load_checkpoint_index, publish_checkpoint_index=publish_checkpoint_index,
+        checkpoint_metadata=checkpoint_metadata, has_fingerprint=has_fingerprint,
+        fingerprint_path=fingerprint_path, composition_identity=composition_identity,
+        generate_compositions=generate_compositions,
+        analyze_compositions_parallel_resilient=analyze_compositions_parallel_resilient,
+        persist_fingerprint=persist_fingerprint, log=_log, detail=_detail,
+        manifest_update=_manifest_update,
+    ))
+
+def _write_composition_candidates(teams) -> int:
+    return _composition_evidence_stage().write_candidates(teams)
 
 def _candidate_compositions(teams):
-    for team in teams:
-        yield from generate_compositions(team)
+    yield from _composition_evidence_stage().candidate_compositions(teams)
 
-
-
-def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], dict[str, dict[str, int]], str]:
-    """Scan Composition checkpoints using the durable index as a narrow cache.
-
-    The index can accelerate only metadata matches. Every miss, stale entry,
-    malformed entry, or changed file falls back to authoritative validation via
-    has_fingerprint(). The returned entries are published only after all missing
-    Composition work has successfully persisted.
-    """
-    candidates_sha256 = _input_hash(OUTPUT_DIR / "composition_candidates.csv")
-    indexed_entries = load_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256)
-    index_reusable = bool(indexed_entries)
-    total = existing = 0
-    missing_compositions: list[Composition] = []
-    valid_entries: dict[str, dict[str, int]] = {}
-    indexed_hits = authoritative_checks = 0
-
-    for composition in _candidate_compositions(teams):
-        total += 1
-        identity = composition_identity(composition)
-        path = fingerprint_path(FINGERPRINT_DIR, composition)
-        metadata = checkpoint_metadata(path)
-        indexed_metadata = indexed_entries.get(identity) if index_reusable else None
-        if metadata is not None and indexed_metadata == metadata:
-            existing += 1
-            indexed_hits += 1
-            valid_entries[identity] = metadata
-            continue
-        authoritative_checks += 1
-        if has_fingerprint(FINGERPRINT_DIR, composition):
-            existing += 1
-            refreshed = checkpoint_metadata(path)
-            if refreshed is not None:
-                valid_entries[identity] = refreshed
-        else:
-            missing_compositions.append(composition)
-
-    _detail(
-        f"FINGERPRINT_CHECKPOINT_SCAN total={total} existing={existing} missing={len(missing_compositions)} "
-        f"indexed_hits={indexed_hits} authoritative_checks={authoritative_checks} index_reusable={index_reusable}"
-    )
-    return total, existing, missing_compositions, valid_entries, candidates_sha256
-
+def _scan_composition_checkpoints(teams):
+    return _composition_evidence_stage().scan_checkpoints(teams)
 
 def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | None) -> int:
-    """Compute only missing fingerprints and persist each result immediately."""
-    total, existing, missing_compositions, checkpoint_entries, candidates_sha256 = _scan_composition_checkpoints(teams)
-    missing = len(missing_compositions)
-    _log(f"  fingerprint checkpoint scan: total={total} existing={existing} missing={missing}")
-    _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
-    if missing == 0:
-        _log("  all Composition fingerprints already persisted; no recomputation required")
-        publish_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256, checkpoint_entries)
-        _detail(f"FINGERPRINT_STAGE_SKIPPED reason=all_checkpoints_present index_entries={len(checkpoint_entries)}")
-        _manifest_update("composition_evidence", "complete", total=total, newly_computed=0, reused=existing)
-        return total
-
-    started = time.perf_counter()
-    completed = failed = 0
-    for composition, fingerprint, error in analyze_compositions_parallel_resilient(
-        missing_compositions, fund_histories, max_workers=max_workers
-    ):
-        identity = composition_identity(composition)
-        if error is not None:
-            failed += 1
-            _detail(f"FINGERPRINT_FAILED composition={identity} error={error!r}")
-            continue
-        destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
-        metadata = checkpoint_metadata(destination)
-        if metadata is None:
-            failed += 1
-            _detail(f"FINGERPRINT_FAILED composition={identity} error=checkpoint_missing_after_persist")
-            continue
-        checkpoint_entries[identity] = metadata
-        completed += 1
-        _detail(f"FINGERPRINT_PERSISTED index={completed}/{missing} composition={identity} path={destination.relative_to(PROJECT_ROOT)}")
-        processed = completed + failed
-        if processed % 1000 == 0 or processed == missing:
-            elapsed = time.perf_counter() - started
-            rate = processed / elapsed if elapsed else 0.0
-            eta = (missing - processed) / rate if rate else 0.0
-            _log(f"  Composition evidence: {processed}/{missing} missing work units | persisted={completed} failed={failed} | rate={rate:.1f}/s | ETA~{eta:.0f}s")
-            _detail(f"FINGERPRINT_PROGRESS processed={processed} total_missing={missing} persisted={completed} failed={failed} rate={rate:.3f} eta_seconds={eta:.1f}")
-            _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing, processed=processed, persisted=completed, failed=failed)
-    if failed:
-        _detail(f"FINGERPRINT_STAGE_FAILED failed={failed} total_missing={missing}")
-        _manifest_update("composition_evidence", "failed", total=total, newly_computed=completed, failed=failed)
-        raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
-    elapsed = time.perf_counter() - started
-    publish_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256, checkpoint_entries)
-    _log(f"  Composition evidence complete: {total} persisted | newly computed={completed} | elapsed={elapsed:.1f}s")
-    _detail(f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} elapsed_seconds={elapsed:.3f} index_entries={len(checkpoint_entries)}")
-    _manifest_update("composition_evidence", "complete", total=total, reused=existing, newly_computed=completed, elapsed_seconds=round(elapsed, 3))
-    return total
+    return _composition_evidence_stage().persist_evidence(teams, fund_histories, max_workers=max_workers)
 
 
 def _load_global_pairs_for_frontier(teams):
