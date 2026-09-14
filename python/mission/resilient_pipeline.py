@@ -181,6 +181,7 @@ from .global_composition_stage import GlobalCompositionDeps, GlobalCompositionSt
 from .mission_stage import MissionCheckpointDeps, MissionStage
 from .mission_execution_stage import MissionExecutionDeps, MissionExecutionStage
 from .mission_purpose_worker import MissionPurposeWorker, MissionPurposeWorkerDeps
+from .trajectory_purpose_worker import TrajectoryPurposeWorker, TrajectoryPurposeWorkerDeps
 
 
 def _composition_evidence_stage() -> CompositionEvidenceStage:
@@ -331,39 +332,26 @@ def _run_mission_from_global(purposes, funds_by_isin, *, max_workers, skip_exist
     )
 
 
-def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
-    pairs: list[tuple[Composition, CompositionFingerprint]] = []
-    _detail(f"TRAJECTORY_PURPOSE_START purpose={purpose.name} survivors={len(identities)}")
-    for identity in identities:
-        composition = _composition_from_identity(identity, funds_by_isin)
-        fingerprint = load_fingerprint(fingerprint_path(FINGERPRINT_DIR, composition), composition)
-        pairs.append((composition, fingerprint))
-    observations = observe_survivors_for_purpose(pairs, purpose.horizon_years)
-    rows: list[dict] = []
-    for composition, _ in pairs:
-        observation = observations[composition_identity(composition)]
-        for point in observation.points:
-            rows.append({
-                "composition": composition_identity(composition),
-                "horizon_years": observation.horizon_years,
-                "date": point.date.strftime("%Y-%m-%d"),
-                "elapsed_days": point.elapsed_days,
-                "nav": point.nav,
-                "normalized_nav": point.normalized_nav,
-            })
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    trajectory_path = OUTPUT_DIR / "trajectory_observations" / f"{purpose.name}.csv"
-    _write_rows(
-        trajectory_path,
-        rows,
-        stage="trajectory",
-        inputs={
-            "mission_sha256": _sha256(mission_path),
-            "trajectory_contract_version": str(TRAJECTORY_CONTRACT_VERSION),
-        },
+def _trajectory_purpose_worker() -> TrajectoryPurposeWorker:
+    return TrajectoryPurposeWorker(
+        TrajectoryPurposeWorkerDeps(
+            output_dir=OUTPUT_DIR,
+            fingerprint_dir=FINGERPRINT_DIR,
+            composition_from_identity=_composition_from_identity,
+            fingerprint_path=fingerprint_path,
+            load_fingerprint=load_fingerprint,
+            observe_survivors_for_purpose=observe_survivors_for_purpose,
+            composition_identity=composition_identity,
+            sha256=_sha256,
+            trajectory_contract_version=TRAJECTORY_CONTRACT_VERSION,
+            write_rows=_write_rows,
+            detail=_detail,
+        )
     )
-    _detail(f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} survivors={len(pairs)} rows={len(rows)}")
-    return len(pairs), len(rows)
+
+
+def _observe_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
+    return _trajectory_purpose_worker().run(purpose, identities, funds_by_isin, as_of)
 
 
 def _trajectory_stage() -> TrajectoryStage:
