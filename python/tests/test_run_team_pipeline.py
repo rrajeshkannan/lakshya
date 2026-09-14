@@ -18,6 +18,13 @@ def history(values):
     })
 
 
+def long_history(values):
+    return pd.DataFrame({
+        "date": pd.date_range("2010-01-01", periods=len(values), freq="YS"),
+        "nav": values,
+    })
+
+
 def test_runner_delegates_to_team_frontier_with_explicit_dimensions():
     funds = [fund("A"), fund("B")]
     histories = {
@@ -58,3 +65,31 @@ def test_runner_uses_declared_team_gate_by_default(monkeypatch):
     assert captured["funds"] == funds
     assert captured["histories"] == histories
     assert len(captured["dimensions"]) == 40
+
+
+def test_runner_removes_fund_dominated_before_team(monkeypatch):
+    captured = {}
+
+    def fake_frontier(funds, fund_histories, dimensions):
+        captured["funds"] = list(funds)
+        return ["frontier"]
+
+    monkeypatch.setattr(
+        "team_analysis.run_team_pipeline.team_frontier_from_histories",
+        fake_frontier,
+    )
+
+    funds = [fund("A"), fund("B")]
+    histories = {
+        "A": long_history([100 + i for i in range(11)]),
+        "B": long_history([200 + 2 * i for i in range(11)]),
+    }
+
+    result = run_team_pipeline(
+        funds=funds,
+        fund_histories=histories,
+        dimensions=(Dimension("elevation_3y_median", "up"),),
+    )
+
+    assert result == ["frontier"]
+    assert [item.isin for item in captured["funds"]] == ["B"]
