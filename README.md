@@ -134,7 +134,7 @@ It observes Fund concentration, AMC/ecosystem concentration, and Purpose depende
 
 ## Purpose Staging
 
-Purpose Staging is a **human-in-the-loop reconciliation workspace**. The reviewer can change `value`, `monthly_plan`, `desired`, `due` / analytical horizon, and capital/SIP acquisition percentages.
+Purpose Staging is a **human-in-the-loop reconciliation workspace**. The reviewer can change only `value`, `monthly_plan`, and capital/SIP acquisition percentages. Each Purpose's `desired` target and `due` date remain fixed context while the reviewer stages those changes.
 
 ```text
 Purpose reduction → common pool

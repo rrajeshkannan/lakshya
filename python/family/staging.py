@@ -39,7 +39,7 @@ EPSILON = 1e-8
 INTENT_FIELDS = ["name", "due", "desired", "monthly_plan"]
 PURPOSE_FIELDS = ["name", "due", "value", "desired", "monthly_plan"]
 TURN_FIELDS = [
-    "purpose", "value", "monthly_plan", "desired", "due",
+    "purpose", "value", "monthly_plan",
     "capital_acquire_pct", "sip_acquire_pct",
 ]
 LEDGER_FIELDS = ["turn", "kind", "purpose", "amount", "pool_after"]
@@ -78,7 +78,7 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def _number(value: str, field: str) -> float | None:
-    text = str(value).strip()
+    text = "" if value is None else str(value).strip()
     if not text:
         return None
     try:
@@ -261,11 +261,11 @@ def _apply_levers(staged: dict[str, dict[str, str]], rows: list[dict[str, str]],
     for change in rows:
         name = change["purpose"].strip()
         current = updated[name]
-        for field in ("value", "monthly_plan", "desired", "due"):
+        for field in ("value", "monthly_plan"):
             proposed = change.get(field, "").strip()
             if not proposed:
                 continue
-            if field in ("value", "monthly_plan", "desired"):
+            if field in ("value", "monthly_plan"):
                 number = _number(proposed, field)
                 assert number is not None
                 if number < 0:

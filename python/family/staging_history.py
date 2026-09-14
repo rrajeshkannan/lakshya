@@ -40,8 +40,6 @@ def write_turn_template(directory: Path) -> Path:
             "purpose": row["name"],
             "value": row["value"],
             "monthly_plan": row["monthly_plan"],
-            "desired": row["desired"],
-            "due": row["due"],
             "capital_acquire_pct": "",
             "sip_acquire_pct": "",
         }
