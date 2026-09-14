@@ -66,11 +66,8 @@ from .purpose_loader import load_purposes
 from .observation_horizon import nearest_supported_horizon
 from .trajectory_stage import TrajectoryCheckpointDeps, TrajectoryStage
 from .trajectory_jobs_stage import TrajectoryJobDeps, TrajectoryJobPreparation, TrajectoryJobStage
-from .trajectory_execution_stage import TrajectoryExecutionDeps, TrajectoryExecutionStage
 from .full_run_stage import FullRunStage, FullRunStageDeps
 from .resume_stage import ResumeStage, ResumeStageDeps
-from .run_input_stage import RunInputDeps, RunInputStage
-from .run_context_stage import RunContextDeps, RunContextStage
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -87,11 +84,6 @@ LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
 MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
 
 _RUN_MANIFEST: dict | None = None
-
-
-def _set_run_manifest(manifest: dict) -> None:
-    global _RUN_MANIFEST
-    _RUN_MANIFEST = manifest
 
 
 def _wall_timestamp() -> str:
@@ -188,6 +180,7 @@ from .composition_evidence_stage import CompositionEvidenceDeps, CompositionEvid
 from .global_composition_stage import GlobalCompositionDeps, GlobalCompositionStage
 from .mission_stage import MissionCheckpointDeps, MissionStage
 from .mission_execution_stage import MissionExecutionDeps, MissionExecutionStage
+from .mission_purpose_worker import MissionPurposeWorker, MissionPurposeWorkerDeps
 
 
 def _composition_evidence_stage() -> CompositionEvidenceStage:
@@ -276,57 +269,27 @@ def _materialize_missing_mission_evidence(identities: list[str], funds_by_isin) 
     return missing
 
 
+def _mission_purpose_worker() -> MissionPurposeWorker:
+    return MissionPurposeWorker(
+        MissionPurposeWorkerDeps(
+            output_dir=OUTPUT_DIR,
+            fingerprint_dir=FINGERPRINT_DIR,
+            composition_from_identity=_composition_from_identity,
+            fingerprint_path=fingerprint_path,
+            load_fingerprint_evidence=load_fingerprint_evidence,
+            assess_achievability=assess_achievability,
+            nearest_supported_horizon=nearest_supported_horizon,
+            protection_frontier=protection_frontier,
+            composition_identity=composition_identity,
+            sha256_file=sha256_file,
+            write_rows=_write_rows,
+            detail=_detail,
+        )
+    )
+
+
 def _run_one_purpose(purpose: Purpose, identities: list[str], funds_by_isin, as_of: str):
-    if purpose.trajectory_horizon_years is None:
-        return purpose.name, 0, 0, 0
-
-    qualified: list[tuple[Composition, object]] = []
-    assessments: list[dict] = []
-    _detail(f"MISSION_PURPOSE_START purpose={purpose.name} identities={len(identities)} achievability={purpose.has_achievability}")
-    for identity in identities:
-        composition = _composition_from_identity(identity, funds_by_isin)
-        elevation, protection = load_fingerprint_evidence(
-            fingerprint_path(FINGERPRINT_DIR, composition), composition
-        )
-        evidence = SimpleNamespace(composition=composition, elevation=elevation, protection=protection)
-        assessment = assess_achievability(purpose, evidence)
-        comparison_horizon = (
-            assessment.comparison_horizon_years
-            if purpose.has_achievability
-            else nearest_supported_horizon(purpose.trajectory_horizon_years)
-        )
-        assessments.append({
-            "composition": identity,
-            "status": assessment.status.value,
-            "required_annual_return": assessment.required_annual_return,
-            "comparison_horizon_years": comparison_horizon,
-            "observed_upper_return": assessment.observed_upper_return,
-        })
-        if not purpose.has_achievability or assessment.status == AchievabilityStatus.WITHIN_OBSERVED_TERRAIN:
-            qualified.append((composition, evidence))
-
-    global_path = OUTPUT_DIR / "global_survivors.csv"
-    global_inputs = {
-        "global_survivors_sha256": sha256_file(global_path),
-        "global_checkpoint_stage": "global_frontier",
-    }
-    achievability_path = OUTPUT_DIR / f"achievability_{purpose.name}.csv"
-    _write_rows(achievability_path, assessments, stage="mission_achievability", inputs=global_inputs, as_of=as_of)
-
-    protected = protection_frontier(qualified)
-    mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-    _write_rows(
-        mission_path,
-        [{"composition": composition_identity(composition)} for composition in protected],
-        stage="mission",
-        inputs={"achievability_sha256": sha256_file(achievability_path)},
-        as_of=as_of,
-    )
-    _detail(
-        f"MISSION_PURPOSE_COMPLETE purpose={purpose.name} assessed={len(identities)} "
-        f"achievability={len(qualified) if purpose.has_achievability else 'not_applicable'} protection={len(protected)}"
-    )
-    return purpose.name, len(identities), len(qualified), len(protected)
+    return _mission_purpose_worker().run(purpose, identities, funds_by_isin, as_of)
 
 
 def _mission_stage() -> MissionStage:
@@ -430,25 +393,37 @@ def _trajectory_job_stage() -> TrajectoryJobStage:
     ))
 
 
-def _trajectory_execution_stage() -> TrajectoryExecutionStage:
-    return TrajectoryExecutionStage(
-        TrajectoryExecutionDeps(
-            prepare_jobs=_trajectory_job_stage().prepare_jobs,
-            worker=_observe_one_purpose,
-            as_of_string=_as_of_string,
-            executor_cls=ProcessPoolExecutor,
-            as_completed=as_completed,
-            log=_log,
-            detail=_detail,
-            manifest_update=_manifest_update,
-        )
-    )
-
-
 def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
-    _trajectory_execution_stage().run(
-        purposes, funds_by_isin, max_workers=max_workers
-    )
+    preparation = _trajectory_job_stage().prepare_jobs(purposes)
+    jobs = preparation.jobs
+    if not jobs:
+        _log("No persisted MISSION outputs require trajectory observation")
+        _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
+        _manifest_update("trajectory", "complete", purposes=0)
+        return
+    _detail(f"TRAJECTORY_STAGE_START purposes={len(jobs)} workers={max_workers or 'auto'}")
+    _manifest_update("trajectory", "running", purposes=len(jobs))
+    as_of = _as_of_string()
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_observe_one_purpose, purpose, identities, funds_by_isin, as_of): purpose.name
+            for purpose, identities in jobs
+        }
+        _detail(f"TRAJECTORY_WORKERS_READY submitted={len(futures)}")
+        for future in as_completed(futures):
+            purpose_name = futures[future]
+            try:
+                count, rows = future.result()
+                _log(f"  {purpose_name}: trajectory complete survivors={count} rows={rows}")
+                _detail(f"TRAJECTORY_WORKER_COMPLETE purpose={purpose_name} survivors={count} rows={rows}")
+            except Exception as exc:
+                _detail(f"TRAJECTORY_FAILED purpose={purpose_name} error={exc!r}")
+                _manifest_update("trajectory", "failed", failed_purpose=purpose_name, error=repr(exc))
+                raise
+    _log("RESUME DONE")
+    _detail("TRAJECTORY_STAGE_COMPLETE")
+    _manifest_update("trajectory", "complete", purposes=len(jobs))
+
 
 
 def _manifest() -> dict:
@@ -509,39 +484,43 @@ def run(
 ) -> None:
     global _RUN_MANIFEST
     valuation_date = pd.Timestamp(as_of)
-    RunContextStage(
-        RunContextDeps(
-            wall_timestamp=_wall_timestamp,
-            output_dir=OUTPUT_DIR,
-            write_manifest=_write_manifest,
-            log=_log,
-            detail=_detail,
-            log_path=LOG_PATH,
-            manifest_path=MANIFEST_PATH,
-            set_manifest=lambda manifest: _set_run_manifest(manifest),
-        )
-    ).initialize(
-        valuation_date=valuation_date,
-        resume_from=resume_from,
-        workers=workers,
-        purpose_names=purpose_names,
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    run_id = uuid.uuid4().hex[:12]
+    _RUN_MANIFEST = {
+        "run_id": run_id,
+        "started_at": _wall_timestamp(),
+        "as_of": str(valuation_date.date()),
+        "mode": resume_from or "full",
+        "workers": workers or "auto",
+        "purpose_selection": purpose_names or "all",
+        "python": platform.python_version(),
+        "pipeline": "resilient_pipeline",
+        "stages": {},
+    }
+    _write_manifest()
+    _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'}")
+    _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
+
+    funds = load_admissible_funds()
+    histories = load_fund_histories(
+        funds,
+        nav_dir=NAV_DIR,
+        as_of=valuation_date,
+        log=_log,
+        detail=_detail,
     )
-
-    run_inputs = RunInputStage(
-        RunInputDeps(
-            load_admissible_funds=load_admissible_funds,
-            load_fund_histories=load_fund_histories,
-            load_purposes=load_purposes,
-            nav_dir=NAV_DIR,
-            log=_log,
-            detail=_detail,
-        )
-    ).prepare(as_of, purpose_names)
-
-    funds = run_inputs.funds
-    histories = run_inputs.histories
-    purposes = run_inputs.purposes
-    funds_by_isin = run_inputs.funds_by_isin
+    purposes = load_purposes(valuation_date.date())
+    if purpose_names is not None:
+        requested = set(purpose_names)
+        known = {purpose.name for purpose in purposes}
+        unknown = requested - known
+        if unknown:
+            raise ValueError(f"Unknown Purpose(s): {sorted(unknown)}; available={sorted(known)}")
+        purposes = [purpose for purpose in purposes if purpose.name in requested]
+        _log("Selected purposes: " + ", ".join(purpose.name for purpose in purposes))
+        _detail("PURPOSE_SELECTION " + " ".join(purpose.name for purpose in purposes))
+    funds_by_isin = {fund.isin: fund for fund in funds}
+    _detail(f"INPUTS_READY funds={len(funds)} purposes={len(purposes)}")
 
     if resume_from is not None:
         if _resume_stage().run(
