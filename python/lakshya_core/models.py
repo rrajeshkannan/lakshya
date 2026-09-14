@@ -11,28 +11,14 @@ They do not calculate investment metrics and they do not make investment
 decisions.
 
 The detailed evidence objects remain owned by the modules that calculate
-them:
-
-    rolling_returns.py
-        -> RollingReturnEvidence
-
-The Fund Fingerprint then composes the two active Fund Compass dimensions:
-
-    Elevation
-    Protection
-
-This separation is intentional.  We don't want multiple competing
-definitions of the same evidence object scattered across the codebase.
+them.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from .rolling_returns import RollingReturnEvidence
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -74,7 +60,7 @@ class Family:
 class Portfolio:
     """A portfolio container.
 
-    This remains intentionally lightweight.  Portfolio behaviour belongs
+    This remains intentionally lightweight. Portfolio behaviour belongs
     to the next architectural stage and is not implemented here.
     """
 
@@ -91,14 +77,8 @@ class EvidenceWindow:
     An evidence window records the temporal boundary of an observation,
     rather than making any judgement about the quality or behaviour
     observed within that window.
-
-    Keeping the window explicit matters because behavioural evidence is
-    inherently historical: the same calculation can mean something
-    different when based on a short, long, recent, or full-period history.
-
-    This is a supporting domain concept. It does not itself determine
-    whether a fund is suitable or preferable.
     """
+
     start_date: date
     end_date: date
     observations: int
@@ -115,10 +95,10 @@ class ElevationEvidence:
     None means "not observed / insufficient evidence", not zero.
     """
 
-    rolling_3y: RollingReturnEvidence | None
-    rolling_5y: RollingReturnEvidence | None
-    rolling_7y: RollingReturnEvidence | None
-    rolling_10y: RollingReturnEvidence | None
+    rolling_3y: object | None
+    rolling_5y: object | None
+    rolling_7y: object | None
+    rolling_10y: object | None
 
 
 @dataclass(frozen=True)
@@ -126,10 +106,6 @@ class ProtectionEvidence:
     """
     Observed adversity terrain measured against the fund's own
     high-water mark.
-
-    This object deliberately contains severity information only.
-    Benchmark-relative behaviour is kept outside this intrinsic Fund
-    Compass dimension.
     """
 
     observations: int
@@ -141,29 +117,3 @@ class ProtectionEvidence:
     maximum_severity_pct: float | None
     days_at_or_above_threshold: dict[int, int]
     pct_days_at_or_above_threshold: dict[int, float]
-
-
-@dataclass(frozen=True)
-class FundFingerprint:
-    """
-    The Fund-stage behavioural description of a fund.
-
-    The active Fund Compass is:
-
-        Elevation
-        Protection
-
-    It intentionally contains no score, rank, suitability judgement or
-    recommendation.
-
-    The purpose at this stage is to answer:
-
-        "What kind of teammate is this fund?"
-
-    The question of whether several funds should form a team belongs to
-    the later Portfolio stage.
-    """
-
-    fund: Fund
-    elevation: ElevationEvidence
-    protection: ProtectionEvidence
