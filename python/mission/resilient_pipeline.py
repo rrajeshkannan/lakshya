@@ -65,6 +65,8 @@ from .models import Purpose
 from .purpose_loader import load_purposes
 from .observation_horizon import nearest_supported_horizon
 from .trajectory_stage import TrajectoryCheckpointDeps, TrajectoryStage
+from .trajectory_jobs_stage import TrajectoryJobDeps, TrajectoryJobPreparation, TrajectoryJobStage
+from .full_run_stage import FullRunStage, FullRunStageDeps
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,
     observe_survivors_for_purpose,
@@ -415,31 +417,22 @@ def _trajectory_checkpoint_valid(purpose: Purpose) -> bool:
     return _trajectory_stage().checkpoint_valid(purpose)
 
 
+def _trajectory_job_stage() -> TrajectoryJobStage:
+    return TrajectoryJobStage(TrajectoryJobDeps(
+        output_dir=OUTPUT_DIR,
+        as_of_string=_as_of_string,
+        sha256=_sha256,
+        mission_checkpoint_valid=_mission_checkpoint_valid,
+        trajectory_checkpoint_valid=_trajectory_checkpoint_valid,
+        load_csv_checkpoint=load_csv_checkpoint,
+        log=_log,
+        detail=_detail,
+    ))
+
+
 def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) -> None:
-    jobs = []
-    for purpose in purposes:
-        if purpose.horizon_years is None:
-            _log(f"  {purpose.name}: no finite horizon; skipping trajectory")
-            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_finite_horizon")
-            continue
-        if _trajectory_checkpoint_valid(purpose):
-            _log(f"  {purpose.name}: valid trajectory checkpoint; reusing")
-            _detail(f"TRAJECTORY_REUSED purpose={purpose.name}")
-            continue
-        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
-        if not _mission_checkpoint_valid(purpose):
-            _log(f"  {purpose.name}: no valid persisted MISSION checkpoint; skipping")
-            _detail(f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=invalid_mission_checkpoint")
-            continue
-        df = load_csv_checkpoint(
-            mission_path,
-            stage="mission",
-            as_of=_as_of_string(),
-            inputs={"achievability_sha256": _sha256(OUTPUT_DIR / f"achievability_{purpose.name}.csv")},
-        )
-        identities = df["composition"].tolist()
-        jobs.append((purpose, identities))
-        _detail(f"TRAJECTORY_JOB_READY purpose={purpose.name} survivors={len(identities)} path={mission_path}")
+    preparation = _trajectory_job_stage().prepare_jobs(purposes)
+    jobs = preparation.jobs
     if not jobs:
         _log("No persisted MISSION outputs require trajectory observation")
         _detail("TRAJECTORY_STAGE_SKIPPED reason=no_jobs")
@@ -467,6 +460,31 @@ def _observe_persisted_mission_outputs(purposes, funds_by_isin, *, max_workers) 
     _log("RESUME DONE")
     _detail("TRAJECTORY_STAGE_COMPLETE")
     _manifest_update("trajectory", "complete", purposes=len(jobs))
+
+
+
+def _full_run_stage() -> FullRunStage:
+    return FullRunStage(
+        FullRunStageDeps(
+            log=_log,
+            detail=_detail,
+            manifest_update=_manifest_update,
+            write_rows=_write_rows,
+            write_manifest=_write_manifest,
+            as_of_string=_as_of_string,
+            global_inputs=_global_inputs,
+            load_global_pairs_for_frontier=_load_global_pairs_for_frontier,
+            persist_composition_evidence=_persist_composition_evidence,
+            write_composition_candidates=_write_composition_candidates,
+            load_admissible_funds=load_admissible_funds,
+            run_team_pipeline=run_team_pipeline,
+            global_composition_frontier=global_composition_frontier,
+            load_csv_checkpoint=load_csv_checkpoint,
+            is_valid_csv_checkpoint=is_valid_csv_checkpoint,
+            composition_from_identity=_composition_from_identity,
+            composition_identity=composition_identity,
+        )
+    )
 
 
 def run(
@@ -538,73 +556,13 @@ def run(
         _write_manifest()
         return
 
-    _log("[1/7] Loading admitted funds")
-    _log(f"  admitted funds: {len(funds)}")
-    _detail(f"STAGE_1_COMPLETE admitted_funds={len(funds)}")
-    _manifest_update("admitted_funds", "complete", count=len(funds))
-    _log("[2/7] Loading persisted NAV evidence")
-    _log("[3/7] Loading Purpose inputs")
-    _detail(f"STAGE_2_3_COMPLETE nav_funds={len(histories)} purposes={len(purposes)}")
-    _manifest_update("inputs", "complete", nav_funds=len(histories), purposes=len(purposes))
-    _log("[4/7] Running TEAM pipeline")
-    stage_started = time.perf_counter()
-    _detail("TEAM_STAGE_START")
-    _manifest_update("team", "running")
-    teams = run_team_pipeline(funds=funds, fund_histories=histories)
-    team_elapsed = time.perf_counter() - stage_started
-    _log(f"  TEAM survivors: {len(teams)} | elapsed={team_elapsed:.1f}s")
-    _detail(f"TEAM_STAGE_COMPLETE survivors={len(teams)} elapsed_seconds={team_elapsed:.3f}")
-    _manifest_update("team", "complete", survivors=len(teams), elapsed_seconds=round(team_elapsed, 3))
-    _write_rows(OUTPUT_DIR / "team_survivors.csv", [{"team": "|".join(member.isin for member in team.members), "members": len(team.members)} for team in teams])
-
-    _log("[5/7] Generating and persisting Composition fingerprints")
-    expected_total = _write_composition_candidates(teams)
-    _persist_composition_evidence(teams, histories, max_workers=workers)
-
-    _log("[6/7] Applying existing MISSION gates")
-    stage_started = time.perf_counter()
-    global_inputs = _global_inputs()
-    global_path = OUTPUT_DIR / "global_survivors.csv"
-    if is_valid_csv_checkpoint(global_path, stage="global_frontier", as_of=_as_of_string(), inputs=global_inputs):
-        global_df = load_csv_checkpoint(global_path, stage="global_frontier", as_of=_as_of_string(), inputs=global_inputs)
-        global_survivors = [_composition_from_identity(identity, funds_by_isin) for identity in global_df["composition"].tolist()]
-        _log(f"  global Composition frontier: {len(global_survivors)} | valid checkpoint reused")
-        _detail(f"GLOBAL_FRONTIER_REUSED survivors={len(global_survivors)}")
-        _manifest_update("global_frontier", "complete", candidates=expected_total, survivors=len(global_survivors), reused=True)
-    else:
-        _detail("GLOBAL_FRONTIER_STAGE_START")
-        _manifest_update("global_frontier", "running", candidates=expected_total)
-        global_survivors = global_composition_frontier(_load_global_pairs_for_frontier(teams))
-        global_elapsed = time.perf_counter() - stage_started
-        _write_rows(
-            global_path,
-            [{"composition": composition_identity(composition)} for composition in global_survivors],
-            stage="global_frontier",
-            inputs=global_inputs,
-        )
-        _log(f"  global Composition frontier: {len(global_survivors)} | elapsed={global_elapsed:.1f}s")
-        _detail(f"GLOBAL_FRONTIER_STAGE_COMPLETE survivors={len(global_survivors)} elapsed_seconds={global_elapsed:.3f}")
-        _manifest_update("global_frontier", "complete", candidates=expected_total, survivors=len(global_survivors), elapsed_seconds=round(global_elapsed, 3), reused=False)
-
-    _run_mission_from_global(purposes, funds_by_isin, max_workers=workers, skip_existing=False)
-    _log("[7/7] Observing Purpose trajectories")
-    _observe_persisted_mission_outputs(purposes, funds_by_isin, max_workers=workers)
-    _write_rows(
-        OUTPUT_DIR / "pipeline_summary.csv",
-        [
-            {"stage": "admissible_funds", "count": len(funds)},
-            {"stage": "team_frontier", "count": len(teams)},
-            {"stage": "composition_candidates", "count": expected_total},
-            {"stage": "global_composition_frontier", "count": len(global_survivors)},
-        ],
+    _full_run_stage().run(
+        funds=funds,
+        histories=histories,
+        purposes=purposes,
+        funds_by_isin=funds_by_isin,
+        workers=workers,
     )
-    _log("DONE")
-    _detail("RUN_COMPLETE")
-    _RUN_MANIFEST["completed_at"] = _wall_timestamp()
-    _RUN_MANIFEST["status"] = "complete"
-    _write_manifest()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--as-of", required=True, help="Purpose valuation date, e.g. 2026-08-31")
