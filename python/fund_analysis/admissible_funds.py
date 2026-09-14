@@ -1,63 +1,16 @@
-from pathlib import Path
+"""Compatibility import for the human-reviewed Fund scope loader.
 
-import pandas as pd
+The formation boundary is now ``funds_in_scope.csv``. This module remains
+only as a thin compatibility name for the production runner while callers
+migrate to ``fund_analysis.funds_in_scope``.
+"""
 
-from lakshya_core.models import Fund
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-FUNDS_ADMISSIBLE_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "fund"
-    / "funds_admissible.csv"
-)
+from fund_analysis.funds_in_scope import FUNDS_IN_SCOPE_PATH, load_funds_in_scope
 
 
-def load_admissible_funds(
-    path: Path = FUNDS_ADMISSIBLE_PATH,
-) -> list[Fund]:
-    """
-    Load the admissible Fund universe as domain Fund objects.
+# Temporary compatibility alias. No automated admissibility policy lives here.
+FUNDS_ADMISSIBLE_PATH = FUNDS_IN_SCOPE_PATH
 
-    At this boundary, a Fund has already earned standing or admission.
-    CURRENT/POTENTIAL provenance is deliberately no longer relevant.
 
-    The admissible CSV provides only the identity information required
-    by the Fund-stage behavioural engine:
-
-        name
-        isin
-        category
-
-    Portfolio allocation, goals, metadata, and behavioural calculations
-    remain outside this boundary.
-    """
-
-    df = pd.read_csv(path)
-
-    required_columns = {
-        "scheme_name",
-        "isin",
-        "category",
-    }
-
-    missing_columns = required_columns - set(df.columns)
-
-    if missing_columns:
-        raise ValueError(
-            "Admissible Fund universe is missing required columns: "
-            f"{sorted(missing_columns)}"
-        )
-
-    funds = [
-        Fund(
-            name=row["scheme_name"],
-            isin=row["isin"],
-            category=row["category"],
-        )
-        for _, row in df.iterrows()
-    ]
-
-    return funds
+def load_admissible_funds(path=FUNDS_IN_SCOPE_PATH):
+    return load_funds_in_scope(path)
