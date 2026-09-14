@@ -35,7 +35,7 @@ def load_intent_rows(source: Path, positions_path: Path) -> dict[str, dict[str, 
         result[name] = {
             "name": name,
             "due": row["due"].strip(),
-            "value": f"{capital[name]:g}",
+            "value": f"{capital[name]:.2f}",
             "desired": row["desired"].strip(),
             "monthly_plan": row["monthly_plan"].strip(),
         }

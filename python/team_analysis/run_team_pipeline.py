@@ -11,6 +11,7 @@ from lakshya_core.models import Fund
 
 from .comparator_surface import fund_team_dimensions
 from .frontier_pipeline import team_frontier_from_histories
+from .fund_frontier import fund_frontier_from_histories
 
 
 def run_team_pipeline(
@@ -19,22 +20,28 @@ def run_team_pipeline(
     fund_histories: Mapping[str, pd.DataFrame],
     dimensions: tuple[Dimension, ...] | None = None,
 ):
-    """Run the TEAM stage and return the non-dominated Team frontier.
+    """Run the FUND weak-Pareto gate followed by the TEAM frontier.
 
-    [lakshya] This is orchestration only. Candidate generation, collective
-    evidence construction, fingerprinting, comparator mapping, and frontier
-    calculation remain delegated to their respective components.
+    Human admission happens before this boundary. The FUND gate is the
+    behavioural elimination step inside LFS; only its survivors enter TEAM
+    candidate generation.
 
-    The default gate is the declared TEAM comparator surface. Callers may
-    provide a narrower dimension tuple for focused analytical experiments or
-    tests.
+    The gate is transient: comparator values are derived directly from the
+    supplied NAV histories and no Fund fingerprint artifact is persisted.
     """
     selected_dimensions = (
         fund_team_dimensions() if dimensions is None else dimensions
     )
 
+    admitted_funds = list(funds)
+    surviving_funds = fund_frontier_from_histories(
+        admitted_funds,
+        fund_histories,
+        dimensions=selected_dimensions,
+    )
+
     return team_frontier_from_histories(
-        funds,
+        surviving_funds,
         fund_histories,
         selected_dimensions,
     )

@@ -27,7 +27,7 @@ REVIEW_FIELDS = [
     "horizon_years",
     "selected_composition",
     "selected_formation",
-    "observed_upper_return",
+    "observed_terrain",
     "required_annual_return",
     "achievability_status",
 ]
@@ -82,11 +82,6 @@ def _format_money(raw: str) -> str:
     return "" if value is None else f"{value:.2f}"
 
 
-def _format_percent(raw: str) -> str:
-    value = _number(raw)
-    return "" if value is None else f"{value * 100:.2f}%"
-
-
 def _format_formation(identity: str) -> str:
     try:
         _, weights_raw = identity.split("|", 1)
@@ -99,10 +94,17 @@ def _format_formation(identity: str) -> str:
         return identity
 
 
-def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float]]:
+def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | None]]:
+    """Recover selected FINAL formation and optional achievability terrain.
+
+    Some open-ended Purposes have no target/due-date achievability calculation,
+    so their checkpoint can legitimately have no observed upper return. The
+    selected formation remains valid evidence; absence of an achievability
+    return must not make the review surface fail.
+    """
     review_dir = data_dir / "reviews" / as_of
     output_dir = data_dir.parent / "output"
-    result: dict[str, tuple[str, float]] = {}
+    result: dict[str, tuple[str, float | None]] = {}
     for summary in sorted(review_dir.glob("*_summary.csv")):
         rows = _read_csv(summary)
         if len(rows) != 1:
@@ -118,8 +120,6 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float]]:
         if len(matches) != 1:
             raise ValueError(f"Cannot recover selected achievability evidence for {purpose}")
         upper = _number(matches[0].get("observed_upper_return", ""))
-        if upper is None:
-            raise ValueError(f"Selected achievability evidence has no observed upper return: {purpose}")
         result[purpose] = (winner, upper)
     return result
 
@@ -149,6 +149,7 @@ def refresh_review_surface(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
 
         winner, upper = evidence.get(row["name"], ("", None))
         required_text = ""
+        terrain = ""
         status = "not_applicable"
         if target is not None and due is not None:
             purpose = Purpose(
@@ -162,20 +163,23 @@ def refresh_review_surface(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
             required = required_annual_return(purpose)
             if required is not None:
                 required_text = f"{required:.10f}"
-                status = (
-                    "within_observed_terrain"
-                    if upper is not None and required <= upper
-                    else "beyond_observed_terrain"
-                    if upper is not None
-                    else "insufficient_evidence"
-                )
+                if upper is not None:
+                    terrain = "observed terrain demonstrated by selected FINAL formation"
+                    status = (
+                        "within_observed_terrain"
+                        if required <= upper
+                        else "beyond_observed_terrain"
+                    )
+                else:
+                    terrain = "insufficient FINAL formation evidence"
+                    status = "insufficient_evidence"
 
         normalized_rows.append({
             "name": row["name"],
             "due": row["due"],
-            "value": f"{current:.2f}",
-            "desired": "" if target is None else f"{target:.2f}",
-            "monthly_plan": "" if monthly is None else f"{monthly:.2f}",
+            "value": _format_money(row["value"]),
+            "desired": _format_money(row["desired"]),
+            "monthly_plan": _format_money(row["monthly_plan"]),
         })
         review_rows.append({
             "purpose": row["name"],
@@ -187,7 +191,7 @@ def refresh_review_surface(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
             "horizon_years": horizon,
             "selected_composition": winner,
             "selected_formation": _format_formation(winner),
-            "observed_upper_return": "" if upper is None else _format_percent(str(upper)),
+            "observed_terrain": terrain,
             "required_annual_return": required_text,
             "achievability_status": status,
         })

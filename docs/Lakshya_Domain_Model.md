@@ -2,7 +2,7 @@
 
 **Status:** Authoritative domain model
 
-**As of:** 2026-09-08
+**As of:** 2026-09-14
 
 This document records the bounded-context boundaries, ubiquitous language, ownership rules, and cross-context contracts established during the Lakshya architecture elicitation. It is complementary to `docs/Lakshya_Architecture.md`: this document defines the domain boundaries; the Architecture document describes the wider production architecture and analytical stages.
 
@@ -106,10 +106,16 @@ LPS does not infer Purpose attribution from fund identity, folio identity, trans
 
 LFS is the analytical formation bounded context.
 
-Its internal stages are:
+Its analytical production stages are:
 
 ```text
-FUND → TEAM → COMPOSITION → MISSION → FINAL → TARGET
+FUND → TEAM → COMPOSITION → MISSION → FINAL
+```
+
+TARGET is deliberately derived only after the reviewed Purpose state has passed Purpose Staging and the annual persistence boundary:
+
+```text
+FINAL → Purpose Staging → Historical Snapshot → TARGET
 ```
 
 These are stages inside LFS, not separate bounded contexts.
@@ -123,7 +129,7 @@ LFS owns:
 - COMPOSITION formation and fingerprints;
 - MISSION suitability analysis;
 - FINAL compromise selection; and
-- TARGET formation implied by reviewed Purpose decisions and selected FINAL Compositions.
+- TARGET formation implied by the committed Purpose state and selected FINAL Compositions.
 
 LFS does not own:
 
@@ -274,7 +280,7 @@ LTS does not introduce an `Action` abstraction merely for implementation conveni
 
 **Human + new source evidence → LPS**
 
-After the reviewer effects a selected transition, a subsequent MyCAMS import supplies new authoritative evidence. LPS reconstructs the resulting factual Positions.
+After the reviewer effects a selected transition, a subsequent authoritative source import supplies new evidence. LPS reconstructs the resulting factual Positions.
 
 The reconciliation workflow then:
 
@@ -310,7 +316,7 @@ Therefore:
 | **Composition** | Team + complete weights | LFS |
 | **MISSION** | Purpose-facing analytical stage assessing whether a Composition can serve a Purpose | LFS |
 | **FINAL** | Practical compromise selection among qualified MISSION Compositions | LFS |
-| **TARGET** | Formation implied by reviewed Purpose decisions and selected FINAL Compositions | LFS |
+| **TARGET** | Formation implied by the committed Purpose state and selected FINAL Compositions | LFS |
 | **Transition Evidence** | LPS projection consumed by LTS to understand factual Positions and relevant history | LPS → LTS |
 | **Formation Intent** | Purpose → selected Composition mapping supplied by LFS | LFS → LTS |
 | **Transition Proposal** | Non-authoritative candidate transformation produced by LTS | LTS |
@@ -329,15 +335,16 @@ Therefore:
 5. One Purpose may have zero, one, or many Positions.
 6. A Purpose may exist before any Position is assigned to it.
 7. Fund Fingerprints belong entirely inside LFS.
-8. LTS never chooses the TARGET formation.
-9. LTS never mutates factual LPS Positions during simulation.
-10. `NEW` is never a factual folio identity.
-11. External source evidence establishes Position facts.
-12. Human acceptance establishes Purpose attribution.
-13. LTS proposals are non-authoritative.
-14. LPS remains the authoritative factual home of Transactions, Positions, and accepted Purpose attribution.
-15. A downstream convenience must not silently alter an upstream analytical contract.
-16. Domain concepts are not invented solely for implementation convenience.
+8. TARGET is derived only from committed Purpose state + selected FINAL decisions.
+9. LTS never chooses the TARGET formation.
+10. LTS never mutates factual LPS Positions during simulation.
+11. `NEW` is never a factual folio identity.
+12. External source evidence establishes Position facts.
+13. Human acceptance establishes Purpose attribution.
+14. LTS proposals are non-authoritative.
+15. LPS remains the authoritative factual home of Transactions, Positions, and accepted Purpose attribution.
+16. A downstream convenience must not silently alter an upstream analytical contract.
+17. Domain concepts are not invented solely for implementation convenience.
 
 ---
 

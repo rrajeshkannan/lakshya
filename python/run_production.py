@@ -73,7 +73,7 @@ def run_final_stage(
     reuse_valid: bool = True,
 ) -> None:
     """Consume persisted MISSION survivors and execute/reuse FINAL outputs."""
-    purposes = _load_purposes(pd.Timestamp(as_of))
+    purposes = _load_purposes(pd.Timestamp(as_of).date())
     if purpose_names is not None:
         requested = set(purpose_names)
         unknown = requested - {purpose.name for purpose in purposes}
