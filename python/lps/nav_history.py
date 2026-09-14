@@ -69,3 +69,18 @@ def normalize_nav_history(nav: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("NAV values must be strictly positive.")
 
     return normalized.sort_values("date").reset_index(drop=True)
+
+
+def cutoff_nav_history(nav: pd.DataFrame, as_of: str | pd.Timestamp) -> pd.DataFrame:
+    """Return canonical NAV observations available on or before ``as_of``.
+
+    The cutoff is applied after canonical date parsing so that every caller
+    uses the same date semantics. The returned frame retains the canonical
+    ``date``/``nav`` columns and chronological ordering.
+    """
+
+    normalized = normalize_nav_history(nav)
+    cutoff = pd.Timestamp(as_of)
+    if pd.isna(cutoff):
+        raise ValueError(f"Invalid as-of date: {as_of!r}")
+    return normalized.loc[normalized["date"] <= cutoff].reset_index(drop=True)
