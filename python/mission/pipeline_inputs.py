@@ -100,8 +100,8 @@ def load_purposes(
             purposes.append(
                 Purpose(
                     name=name,
-                    current_capital=float(row["value"]),
-                    analytical_horizon_years=analytical_horizon,
+                    capital=float(row["value"]),
+                    horizon_years=analytical_horizon,
                 )
             )
             continue
@@ -113,7 +113,7 @@ def load_purposes(
         purposes.append(
             Purpose(
                 name=name,
-                current_capital=float(row["value"]),
+                capital=float(row["value"]),
                 desired_target=float(row["desired"]),
                 horizon_years=horizon,
                 monthly_contribution=float(row["monthly_plan"]),
