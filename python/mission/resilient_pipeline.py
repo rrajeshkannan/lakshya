@@ -19,7 +19,6 @@ _sha256 = sha256_file
 import argparse
 import csv
 import json
-import os
 import platform
 import time
 import uuid
@@ -52,6 +51,11 @@ from team_analysis.run_team_pipeline import run_team_pipeline
 from team_analysis.team import Team
 
 from .achievability_interpretation import AchievabilityStatus, assess_achievability
+from .composition_checkpoint_index import (
+    checkpoint_metadata,
+    load_checkpoint_index,
+    publish_checkpoint_index,
+)
 from .durable_stage_output import (
     is_valid_csv_checkpoint,
     load_csv_checkpoint,
@@ -71,7 +75,6 @@ NAV_DIR = DATA_DIR / "lps" / "nav"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
 CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
-CHECKPOINT_INDEX_SCHEMA_VERSION = 1
 OUTPUT_DIR = PROJECT_ROOT / "output"
 LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
 MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
@@ -197,50 +200,6 @@ def _candidate_compositions(teams):
         yield from generate_compositions(team)
 
 
-def _checkpoint_metadata(path: Path) -> dict[str, int] | None:
-    try:
-        stat = path.stat()
-    except OSError:
-        return None
-    return {
-        "size": stat.st_size,
-        "mtime_ns": stat.st_mtime_ns,
-        "inode": stat.st_ino,
-    }
-
-
-def _load_checkpoint_index(candidates_sha256: str) -> dict[str, dict[str, int]]:
-    try:
-        with CHECKPOINT_INDEX_PATH.open("r", encoding="utf-8") as handle:
-            payload = json.load(handle)
-    except (OSError, json.JSONDecodeError):
-        return {}
-    if (
-        payload.get("schema_version") != CHECKPOINT_INDEX_SCHEMA_VERSION
-        or payload.get("composition_candidates_sha256") != candidates_sha256
-        or payload.get("fingerprint_schema_version") != FINGERPRINT_SCHEMA_VERSION
-        or not isinstance(payload.get("entries"), dict)
-    ):
-        return {}
-    return payload["entries"]
-
-
-def _publish_checkpoint_index(candidates_sha256: str, entries: dict[str, dict[str, int]]) -> None:
-    payload = {
-        "schema_version": CHECKPOINT_INDEX_SCHEMA_VERSION,
-        "composition_candidates_sha256": candidates_sha256,
-        "fingerprint_schema_version": FINGERPRINT_SCHEMA_VERSION,
-        "entries": entries,
-    }
-    CHECKPOINT_INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
-    temporary = CHECKPOINT_INDEX_PATH.with_suffix(CHECKPOINT_INDEX_PATH.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
-        handle.write("\n")
-        handle.flush()
-        os.fsync(handle.fileno())
-    temporary.replace(CHECKPOINT_INDEX_PATH)
-
 
 def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], dict[str, dict[str, int]], str]:
     """Scan Composition checkpoints using the durable index as a narrow cache.
@@ -251,7 +210,7 @@ def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], d
     Composition work has successfully persisted.
     """
     candidates_sha256 = _input_hash(OUTPUT_DIR / "composition_candidates.csv")
-    indexed_entries = _load_checkpoint_index(candidates_sha256)
+    indexed_entries = load_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256)
     index_reusable = bool(indexed_entries)
     total = existing = 0
     missing_compositions: list[Composition] = []
@@ -262,7 +221,7 @@ def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], d
         total += 1
         identity = composition_identity(composition)
         path = fingerprint_path(FINGERPRINT_DIR, composition)
-        metadata = _checkpoint_metadata(path)
+        metadata = checkpoint_metadata(path)
         indexed_metadata = indexed_entries.get(identity) if index_reusable else None
         if metadata is not None and indexed_metadata == metadata:
             existing += 1
@@ -272,7 +231,7 @@ def _scan_composition_checkpoints(teams) -> tuple[int, int, list[Composition], d
         authoritative_checks += 1
         if has_fingerprint(FINGERPRINT_DIR, composition):
             existing += 1
-            refreshed = _checkpoint_metadata(path)
+            refreshed = checkpoint_metadata(path)
             if refreshed is not None:
                 valid_entries[identity] = refreshed
         else:
@@ -293,7 +252,7 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
     _manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
     if missing == 0:
         _log("  all Composition fingerprints already persisted; no recomputation required")
-        _publish_checkpoint_index(candidates_sha256, checkpoint_entries)
+        publish_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256, checkpoint_entries)
         _detail(f"FINGERPRINT_STAGE_SKIPPED reason=all_checkpoints_present index_entries={len(checkpoint_entries)}")
         _manifest_update("composition_evidence", "complete", total=total, newly_computed=0, reused=existing)
         return total
@@ -309,7 +268,7 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
             _detail(f"FINGERPRINT_FAILED composition={identity} error={error!r}")
             continue
         destination = persist_fingerprint(fingerprint, FINGERPRINT_DIR)
-        metadata = _checkpoint_metadata(destination)
+        metadata = checkpoint_metadata(destination)
         if metadata is None:
             failed += 1
             _detail(f"FINGERPRINT_FAILED composition={identity} error=checkpoint_missing_after_persist")
@@ -330,7 +289,7 @@ def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | N
         _manifest_update("composition_evidence", "failed", total=total, newly_computed=completed, failed=failed)
         raise RuntimeError(f"Composition evidence stage completed with {failed} failed work units")
     elapsed = time.perf_counter() - started
-    _publish_checkpoint_index(candidates_sha256, checkpoint_entries)
+    publish_checkpoint_index(CHECKPOINT_INDEX_PATH, candidates_sha256, checkpoint_entries)
     _log(f"  Composition evidence complete: {total} persisted | newly computed={completed} | elapsed={elapsed:.1f}s")
     _detail(f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} elapsed_seconds={elapsed:.3f} index_entries={len(checkpoint_entries)}")
     _manifest_update("composition_evidence", "complete", total=total, reused=existing, newly_computed=completed, elapsed_seconds=round(elapsed, 3))
