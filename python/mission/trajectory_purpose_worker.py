@@ -95,6 +95,7 @@ class TrajectoryPurposeWorker:
                     self.deps.trajectory_contract_version
                 ),
             },
+            as_of=as_of,
         )
         self.deps.detail(
             f"TRAJECTORY_PURPOSE_COMPLETE purpose={purpose.name} "
