@@ -46,3 +46,17 @@ def test_the_classic_basket_trap_is_safe():
     accumulator.consider(d, {"x": 11, "y": 9})
 
     assert accumulator.items() == [c, d]
+
+
+def test_frontier_events_identify_dominator_and_evicted_frontier_member():
+    a, b, c = object(), object(), object()
+    events = []
+    accumulator = FrontierAccumulator((UP, DOWN), on_event=events.append)
+
+    accumulator.consider(a, {"x": 10, "y": 10})
+    accumulator.consider(b, {"x": 9, "y": 9})
+    accumulator.consider(c, {"x": 11, "y": 8})
+
+    assert ("dominated", b, a) in events
+    assert ("evicted", a, c) in events
+    assert ("admitted", c, None) in events
