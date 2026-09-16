@@ -55,6 +55,58 @@ def fund_comparator_values(
     return fund, values
 
 
+def fund_dominance_audit_rows(
+    funds: Iterable[Fund],
+    fund_histories: Mapping[str, pd.DataFrame],
+    dimensions: tuple[Dimension, ...] | None = None,
+) -> list[dict[str, object]]:
+    """Return explanatory rows for every FUND eliminated by Pareto dominance.
+
+    This is an observability surface only. It recomputes comparator values and
+    never participates in the frontier decision.
+    """
+    selected_dimensions = fund_team_dimensions() if dimensions is None else dimensions
+    candidates = [
+        fund_comparator_values(fund, fund_histories[fund.isin])
+        for fund in funds
+    ]
+    rows: list[dict[str, object]] = []
+    for loser, loser_values in candidates:
+        dominator = next(
+            (
+                other_fund
+                for other_fund, other_values in candidates
+                if other_fund is not loser
+                and dominates(other_values, loser_values, selected_dimensions)
+            ),
+            None,
+        )
+        if dominator is None:
+            continue
+        dominator_values = next(values for fund, values in candidates if fund is dominator)
+        for dimension in selected_dimensions:
+            loser_value = loser_values.get(dimension.name)
+            dominator_value = dominator_values.get(dimension.name)
+            if loser_value is None or dominator_value is None:
+                comparison = "missing"
+            elif dimension.direction == "up":
+                comparison = "dominator_ge_loser" if dominator_value >= loser_value else "dominator_lt_loser"
+            else:
+                comparison = "dominator_le_loser" if dominator_value <= loser_value else "dominator_gt_loser"
+            rows.append(
+                {
+                    "loser": loser.isin,
+                    "dominator": dominator.isin,
+                    "dimension": dimension.name,
+                    "direction": dimension.direction,
+                    "loser_value": loser_value,
+                    "dominator_value": dominator_value,
+                    "comparison": comparison,
+                }
+            )
+    return rows
+
+
 def fund_frontier_from_histories(
     funds: Iterable[Fund],
     fund_histories: Mapping[str, pd.DataFrame],
