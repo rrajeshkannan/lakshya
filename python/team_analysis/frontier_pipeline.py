@@ -13,7 +13,7 @@ from .collective_timeline import build_collective_nav
 from .team import Team
 from .team_comparator import team_comparator_values
 from .team_fingerprint import TeamFingerprint
-from .streaming_frontier import streaming_frontier
+from .streaming_frontier import FrontierEvent, streaming_frontier
 from .candidate_generator import generate_team_candidates
 
 
@@ -36,10 +36,16 @@ def team_frontier_from_histories(
     funds: Iterable[Fund],
     fund_histories: Mapping[str, pd.DataFrame],
     dimensions: tuple[Dimension, ...],
+    *,
+    on_frontier_event: FrontierEvent | None = None,
 ) -> list[Team]:
     """Compute the exact TEAM frontier without retaining the Team universe."""
     candidates = (
         (team, team_comparator_values(fingerprint))
         for team, fingerprint in stream_team_evidence(funds, fund_histories)
     )
-    return streaming_frontier(candidates, dimensions)
+    return streaming_frontier(
+        candidates,
+        dimensions,
+        on_event=on_frontier_event,
+    )
