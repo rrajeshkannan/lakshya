@@ -83,8 +83,13 @@ def run_final_stage(
         purposes = [purpose for purpose in purposes if purpose.name in requested]
 
     for purpose in purposes:
-        if purpose.trajectory_horizon_years is None:
-            raise ValueError(f"Purpose has no analytical horizon: {purpose.name}")
+        # Purposes without a finite horizon intentionally stop before
+        # trajectory/FINAL analysis; they are retained as protected Purpose
+        # records for later transition handling.
+        if purpose.horizon_years is None:
+            print(f"FINAL {purpose.name}: no finite horizon; skipping FINAL")
+            continue
+
         mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
         if not mission_path.is_file():
             raise FileNotFoundError(
@@ -153,10 +158,16 @@ def main() -> None:
 
     configured = load_purposes(pd.Timestamp(args.as_of).date())
     if args.purposes is None:
-        selected_purposes = [purpose.name for purpose in configured]
+        selected_purposes = [
+            purpose.name for purpose in configured if purpose.horizon_years is not None
+        ]
     else:
         selected = set(args.purposes)
-        selected_purposes = [purpose.name for purpose in configured if purpose.name in selected]
+        selected_purposes = [
+            purpose.name
+            for purpose in configured
+            if purpose.name in selected and purpose.horizon_years is not None
+        ]
 
     run_mission(
         args.as_of,
