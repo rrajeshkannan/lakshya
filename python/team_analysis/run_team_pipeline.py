@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from math import comb
+from pathlib import Path
 
 import pandas as pd
 
@@ -12,7 +13,7 @@ from lakshya_core.models import Fund
 
 from .comparator_surface import fund_team_dimensions
 from .frontier_pipeline import team_frontier_from_histories
-from .fund_frontier import fund_frontier_from_histories
+from .fund_frontier import fund_dominance_audit_rows, fund_frontier_from_histories
 
 
 def _team_label(team) -> str:
@@ -25,6 +26,7 @@ def run_team_pipeline(
     fund_histories: Mapping[str, pd.DataFrame],
     dimensions: tuple[Dimension, ...] | None = None,
     detail: Callable[[str], None] | None = None,
+    fund_audit_path: Path | None = None,
 ):
     """Run the FUND weak-Pareto gate followed by the TEAM frontier.
 
@@ -34,6 +36,8 @@ def run_team_pipeline(
 
     The gate is transient: comparator values are derived directly from the
     supplied NAV histories and no Fund fingerprint artifact is persisted.
+    ``fund_audit_path`` is an observability-only explanatory CSV for eliminated
+    Funds; it cannot affect the frontier decision.
     """
     selected_dimensions = (
         fund_team_dimensions() if dimensions is None else dimensions
@@ -53,6 +57,29 @@ def run_team_pipeline(
         dimensions=selected_dimensions,
         on_dominated=on_fund_dominated,
     )
+
+    if fund_audit_path is not None:
+        audit_rows = fund_dominance_audit_rows(
+            admitted_funds,
+            fund_histories,
+            dimensions=selected_dimensions,
+        )
+        audit_path = Path(fund_audit_path)
+        audit_path.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(
+            audit_rows,
+            columns=[
+                "loser",
+                "dominator",
+                "dimension",
+                "direction",
+                "loser_value",
+                "dominator_value",
+                "comparison",
+            ],
+        ).to_csv(audit_path, index=False)
+        if detail is not None:
+            detail(f"FUND_AUDIT path={audit_path} rows={len(audit_rows)}")
 
     if detail is not None:
         detail(
