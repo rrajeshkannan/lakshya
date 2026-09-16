@@ -17,6 +17,15 @@ def _configure(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(pipeline, "LOG_PATH", output / "pipeline.log")
     monkeypatch.setattr(pipeline, "MANIFEST_PATH", output / "manifest.json")
     monkeypatch.setattr(pipeline, "FINGERPRINT_DIR", tmp_path / "fingerprints")
+    purposes = tmp_path / "purposes.csv"
+    purposes.write_text("name,due,desired,monthly_plan\nEdu_B,2031-01-01,5500000,40000\n", encoding="utf-8")
+    monkeypatch.setattr(pipeline, "PURPOSES_PATH", purposes)
+    snapshot = pipeline._positions_as_of_path(AS_OF)
+    snapshot.write_text(
+        "investor,folio,isin,units,nav,market_value,purpose\n"
+        "Amma,F1,ISIN1,10,100,1000,Edu_B\n",
+        encoding="utf-8",
+    )
     pipeline._RUN_MANIFEST = {"as_of": AS_OF, "stages": {}}
     return output
 
@@ -34,6 +43,7 @@ def _write_global(output: Path):
 
 
 def _write_mission(output: Path):
+    purpose_inputs = pipeline._purpose_inputs_sha256(AS_OF)
     write_csv_checkpoint(
         output / "achievability_Edu_B.csv",
         [{"composition": "A|A=1.0", "status": "WITHIN_OBSERVED_TERRAIN"}],
@@ -42,6 +52,7 @@ def _write_mission(output: Path):
         inputs={
             "global_survivors_sha256": sha256_file(output / "global_survivors.csv"),
             "global_checkpoint_stage": "global_frontier",
+            "purpose_inputs_sha256": purpose_inputs,
         },
     )
     write_csv_checkpoint(
@@ -49,7 +60,10 @@ def _write_mission(output: Path):
         [{"composition": "A|A=1.0"}],
         stage="mission",
         as_of=AS_OF,
-        inputs={"achievability_sha256": sha256_file(output / "achievability_Edu_B.csv")},
+        inputs={
+            "achievability_sha256": sha256_file(output / "achievability_Edu_B.csv"),
+            "purpose_inputs_sha256": purpose_inputs,
+        },
     )
 
 
