@@ -79,6 +79,7 @@ class FullRunStage:
             funds=funds,
             fund_histories=histories,
             detail=deps.detail,
+            fund_audit_path=output_dir / f"fund_frontier_audit_{as_of}.csv",
         )
         team_elapsed = time.perf_counter() - stage_started
         deps.log(f"  TEAM survivors: {len(teams)} | elapsed={team_elapsed:.1f}s")
