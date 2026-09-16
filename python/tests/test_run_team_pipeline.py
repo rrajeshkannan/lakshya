@@ -45,7 +45,7 @@ def test_runner_delegates_to_team_frontier_with_explicit_dimensions():
 def test_runner_uses_declared_team_gate_by_default(monkeypatch):
     captured = {}
 
-    def fake_frontier(funds, fund_histories, dimensions):
+    def fake_frontier(funds, fund_histories, dimensions, **kwargs):
         captured["funds"] = funds
         captured["histories"] = fund_histories
         captured["dimensions"] = dimensions
@@ -70,7 +70,7 @@ def test_runner_uses_declared_team_gate_by_default(monkeypatch):
 def test_runner_removes_fund_dominated_before_team(monkeypatch):
     captured = {}
 
-    def fake_frontier(funds, fund_histories, dimensions):
+    def fake_frontier(funds, fund_histories, dimensions, **kwargs):
         captured["funds"] = list(funds)
         return ["frontier"]
 
@@ -93,3 +93,36 @@ def test_runner_removes_fund_dominated_before_team(monkeypatch):
 
     assert result == ["frontier"]
     assert [item.isin for item in captured["funds"]] == ["B"]
+
+
+def test_runner_emits_fund_dominator_audit(monkeypatch):
+    captured = []
+
+    def fake_fund_frontier(funds, fund_histories, dimensions, *, on_dominated=None):
+        assert on_dominated is not None
+        on_dominated(funds[0], funds[1])
+        return [funds[1]]
+
+    def fake_team_frontier(funds, fund_histories, dimensions, **kwargs):
+        return ["frontier"]
+
+    monkeypatch.setattr(
+        "team_analysis.run_team_pipeline.fund_frontier_from_histories",
+        fake_fund_frontier,
+    )
+    monkeypatch.setattr(
+        "team_analysis.run_team_pipeline.team_frontier_from_histories",
+        fake_team_frontier,
+    )
+
+    funds = [fund("A"), fund("B")]
+    run_team_pipeline(
+        funds=funds,
+        fund_histories={"A": history([100, 110, 120, 130]), "B": history([50, 60, 70, 80])},
+        dimensions=(Dimension("elevation_3y_median", "up"),),
+        detail=captured.append,
+    )
+
+    assert "FUND_DOMINATED loser=A dominator=B" in captured
+    assert "FUND_FRONTIER admitted=2 survivors=1 eliminated=1" in captured
+    assert "TEAM_CANDIDATE_UNIVERSE size_1=1 total=1" in captured
