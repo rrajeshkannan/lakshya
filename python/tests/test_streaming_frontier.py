@@ -22,7 +22,7 @@ def test_incoming_candidate_can_remove_multiple_frontier_members():
     accumulator = FrontierAccumulator((UP, DOWN))
 
     assert accumulator.consider(a, {"x": 10, "y": 10})
-    assert accumulator.consider(b, {"x": 9, "y": 11})
+    assert accumulator.consider(b, {"x": 9, "y": 9})
     assert accumulator.consider(c, {"x": 11, "y": 8})
     assert accumulator.items() == [c]
 
