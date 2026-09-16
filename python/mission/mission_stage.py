@@ -17,7 +17,7 @@ class MissionCheckpointDeps:
     output_dir: Path
     as_of_string: Callable[[], str]
     sha256: Callable[[Path], str]
-    purpose_inputs_sha256: Callable[[], str]
+    purpose_inputs_sha256: Callable[[str], str]
     is_valid_csv_checkpoint: Callable[..., bool]
 
 
@@ -38,11 +38,12 @@ class MissionStage:
         if not mission_path.is_file() or not achievability_path.is_file():
             return False
         try:
-            purpose_inputs = self.deps.purpose_inputs_sha256()
+            as_of = self.deps.as_of_string()
+            purpose_inputs = self.deps.purpose_inputs_sha256(as_of)
             achievability_valid = self.deps.is_valid_csv_checkpoint(
                 achievability_path,
                 stage="mission_achievability",
-                as_of=self.deps.as_of_string(),
+                as_of=as_of,
                 inputs={
                     "global_survivors_sha256": self.deps.sha256(output_dir / "global_survivors.csv"),
                     "global_checkpoint_stage": "global_frontier",
@@ -54,7 +55,7 @@ class MissionStage:
             return self.deps.is_valid_csv_checkpoint(
                 mission_path,
                 stage="mission",
-                as_of=self.deps.as_of_string(),
+                as_of=as_of,
                 inputs={
                     "achievability_sha256": self.deps.sha256(achievability_path),
                     "purpose_inputs_sha256": purpose_inputs,
