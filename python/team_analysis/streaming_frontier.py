@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
 from lakshya_core.dominance import Dimension, dominates
+
+
+FrontierEvent = Callable[[str, object, object | None], None]
 
 
 class FrontierAccumulator:
@@ -18,24 +21,44 @@ class FrontierAccumulator:
     frontier contains every object not dominated by any candidate seen so far.
     """
 
-    def __init__(self, dimensions: tuple[Dimension, ...]) -> None:
+    def __init__(
+        self,
+        dimensions: tuple[Dimension, ...],
+        *,
+        on_event: FrontierEvent | None = None,
+    ) -> None:
         self._dimensions = dimensions
         self._frontier: list[tuple[object, Mapping[str, Any]]] = []
+        self._on_event = on_event
+
+    def _emit(self, event: str, item: object, related: object | None = None) -> None:
+        if self._on_event is not None:
+            self._on_event(event, item, related)
 
     def consider(self, item: object, values: Mapping[str, Any]) -> bool:
         """Consider one candidate; return True if it enters the frontier."""
-        if any(
-            dominates(existing_values, values, self._dimensions)
-            for _, existing_values in self._frontier
-        ):
+        dominator = next(
+            (
+                existing_item
+                for existing_item, existing_values in self._frontier
+                if dominates(existing_values, values, self._dimensions)
+            ),
+            None,
+        )
+        if dominator is not None:
+            self._emit("dominated", item, dominator)
             return False
 
-        self._frontier = [
-            (existing_item, existing_values)
-            for existing_item, existing_values in self._frontier
-            if not dominates(values, existing_values, self._dimensions)
-        ]
+        survivors: list[tuple[object, Mapping[str, Any]]] = []
+        for existing_item, existing_values in self._frontier:
+            if dominates(values, existing_values, self._dimensions):
+                self._emit("evicted", existing_item, item)
+            else:
+                survivors.append((existing_item, existing_values))
+
+        self._frontier = survivors
         self._frontier.append((item, values))
+        self._emit("admitted", item, None)
         return True
 
     def items(self) -> list[object]:
@@ -46,9 +69,11 @@ class FrontierAccumulator:
 def streaming_frontier(
     items: Iterable[tuple[object, Mapping[str, Any]]],
     dimensions: tuple[Dimension, ...],
+    *,
+    on_event: FrontierEvent | None = None,
 ) -> list[object]:
     """Compute the exact frontier without retaining dominated candidates."""
-    accumulator = FrontierAccumulator(dimensions)
+    accumulator = FrontierAccumulator(dimensions, on_event=on_event)
     for item, values in items:
         accumulator.consider(item, values)
     return accumulator.items()
