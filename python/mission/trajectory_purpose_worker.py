@@ -61,12 +61,14 @@ class TrajectoryPurposeWorker:
             pairs.append((composition, fingerprint))
 
         observations = self.deps.observe_survivors_for_purpose(
-            pairs, purpose.horizon_years
+            pairs, purpose.trajectory_horizon_years
         )
         rows: list[dict] = []
 
         for composition, _ in pairs:
-            observation = observations[self.deps.composition_identity(composition)]
+            observation = observations.get(self.deps.composition_identity(composition))
+            if observation is None:
+                continue
             for point in observation.points:
                 rows.append(
                     {
