@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 
 import pandas as pd
 
-from lakshya_core.dominance import Dimension, non_dominated_frontier
+from lakshya_core.dominance import Dimension, dominates, non_dominated_frontier
 from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.elevation import calculate_elevation
 from lakshya_core.models import Fund
 
 from .comparator_surface import ROLLING_HORIZONS, ROLLING_METRICS, fund_team_dimensions
+
+
+FundDominanceEvent = Callable[[Fund, Fund], None]
 
 
 def fund_comparator_values(
@@ -56,17 +59,42 @@ def fund_frontier_from_histories(
     funds: Iterable[Fund],
     fund_histories: Mapping[str, pd.DataFrame],
     dimensions: tuple[Dimension, ...] | None = None,
+    *,
+    on_dominated: FundDominanceEvent | None = None,
 ) -> list[Fund]:
-    """Return the weak-Pareto Fund frontier from the supplied histories."""
+    """Return the weak-Pareto Fund frontier from the supplied histories.
+
+    The optional callback is observability only. It does not participate in
+    the frontier decision and therefore cannot change the mathematical result.
+    """
     selected_dimensions = fund_team_dimensions() if dimensions is None else dimensions
     candidates = [
         fund_comparator_values(fund, fund_histories[fund.isin])
         for fund in funds
     ]
-    frontier_values = non_dominated_frontier(
-        [values for _, values in candidates],
-        selected_dimensions,
-    )
+    candidate_values = [values for _, values in candidates]
+    frontier_values = non_dominated_frontier(candidate_values, selected_dimensions)
+    frontier_ids = {id(values) for values in frontier_values}
+
+    if on_dominated is not None:
+        for fund, values in candidates:
+            if id(values) in frontier_ids:
+                continue
+            dominator = next(
+                (
+                    other_fund
+                    for other_fund, other_values in candidates
+                    if other_fund is not fund
+                    and dominates(other_values, values, selected_dimensions)
+                ),
+                None,
+            )
+            if dominator is None:
+                raise AssertionError(
+                    f"FUND frontier inconsistency: non-frontier fund has no dominator: {fund.isin}"
+                )
+            on_dominated(fund, dominator)
+
     return [
         next(fund for fund, values in candidates if values is frontier_values_item)
         for frontier_values_item in frontier_values
