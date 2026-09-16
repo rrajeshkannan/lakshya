@@ -2,10 +2,28 @@
 
 from __future__ import annotations
 
+from datetime import date
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
+
+
+def _assert_histories_through_as_of(histories, as_of: str) -> None:
+    """Fail closed if any historical LFS NAV input contains post-boundary data."""
+    boundary = date.fromisoformat(as_of)
+    for isin, history in histories.items():
+        if "date" not in history.columns:
+            raise AssertionError(f"Historical NAV input has no date column: {isin}")
+        if history.empty:
+            continue
+        latest = history["date"].max()
+        latest_date = latest.date() if hasattr(latest, "date") else date.fromisoformat(str(latest)[:10])
+        if latest_date > boundary:
+            raise AssertionError(
+                f"Historical NAV cutoff violated for {isin}: "
+                f"latest={latest_date} as_of={boundary}"
+            )
 
 
 @dataclass(frozen=True)
@@ -40,6 +58,11 @@ class FullRunStage:
     def run(self, *, funds, histories, purposes, funds_by_isin, workers) -> None:
         deps = self._deps
         output_dir = deps.output_dir
+        as_of = deps.as_of_string()
+        _assert_histories_through_as_of(histories, as_of)
+        deps.detail(
+            f"HISTORICAL_NAV_ASSERTION as_of={as_of} histories={len(histories)} status=passed"
+        )
         deps.log("[1/7] Loading admitted funds")
         deps.log(f"  admitted funds: {len(funds)}")
         deps.detail(f"STAGE_1_COMPLETE admitted_funds={len(funds)}")
@@ -52,7 +75,11 @@ class FullRunStage:
         stage_started = time.perf_counter()
         deps.detail("TEAM_STAGE_START")
         deps.manifest_update("team", "running")
-        teams = deps.run_team_pipeline(funds=funds, fund_histories=histories)
+        teams = deps.run_team_pipeline(
+            funds=funds,
+            fund_histories=histories,
+            detail=deps.detail,
+        )
         team_elapsed = time.perf_counter() - stage_started
         deps.log(f"  TEAM survivors: {len(teams)} | elapsed={team_elapsed:.1f}s")
         deps.detail(f"TEAM_STAGE_COMPLETE survivors={len(teams)} elapsed_seconds={team_elapsed:.3f}")
@@ -67,7 +94,6 @@ class FullRunStage:
         stage_started = time.perf_counter()
         global_inputs = deps.global_inputs()
         global_path = output_dir / "global_survivors.csv"
-        as_of = deps.as_of_string()
         if deps.is_valid_csv_checkpoint(global_path, stage="global_frontier", as_of=as_of, inputs=global_inputs):
             global_df = deps.load_csv_checkpoint(global_path, stage="global_frontier", as_of=as_of, inputs=global_inputs)
             global_survivors = [deps.composition_from_identity(identity, funds_by_isin) for identity in global_df["composition"].tolist()]
@@ -79,7 +105,7 @@ class FullRunStage:
             deps.manifest_update("global_frontier", "running", candidates=expected_total)
             global_survivors = deps.global_composition_frontier(deps.load_global_pairs_for_frontier(teams))
             global_elapsed = time.perf_counter() - stage_started
-            deps.write_rows(global_path, [{"composition": deps.composition_identity(composition)} for composition in global_survivors], stage="global_frontier", inputs=global_inputs)
+            deps.write_rows(global_path, [{"composition": deps.composition_identity(composition)} for composition in global_survivors], stage="global_frontier", inputs=global_inputs, as_of=as_of)
             deps.log(f"  global Composition frontier: {len(global_survivors)} | elapsed={global_elapsed:.1f}s")
             deps.detail(f"GLOBAL_FRONTIER_STAGE_COMPLETE survivors={len(global_survivors)} elapsed_seconds={global_elapsed:.3f}")
             deps.manifest_update("global_frontier", "complete", candidates=expected_total, survivors=len(global_survivors), elapsed_seconds=round(global_elapsed, 3), reused=False)
