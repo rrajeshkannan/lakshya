@@ -23,9 +23,10 @@ def test_fund_frontier_audit_identifies_a_real_dominator(monkeypatch):
 
     events = []
     dimensions = (Dimension("x", "up"), Dimension("y", "down"))
+    histories = {isin: None for isin in values}
     frontier = fund_frontier_from_histories(
         funds,
-        {},
+        histories,
         dimensions=dimensions,
         on_dominated=lambda loser, dominator: events.append((loser.isin, dominator.isin)),
     )
@@ -47,10 +48,11 @@ def test_fund_frontier_audit_is_observability_only(monkeypatch):
     )
 
     dimensions = (Dimension("x", "up"),)
-    without_callback = fund_frontier_from_histories(funds, {}, dimensions=dimensions)
+    histories = {isin: None for isin in values}
+    without_callback = fund_frontier_from_histories(funds, histories, dimensions=dimensions)
     with_callback = fund_frontier_from_histories(
         funds,
-        {},
+        histories,
         dimensions=dimensions,
         on_dominated=lambda loser, dominator: None,
     )
