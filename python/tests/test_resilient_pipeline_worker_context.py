@@ -8,6 +8,7 @@ def test_write_rows_uses_explicit_worker_as_of_without_manifest(tmp_path: Path, 
     output.mkdir()
     monkeypatch.setattr(pipeline, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(pipeline, "OUTPUT_DIR", output)
+    monkeypatch.setattr(pipeline, "LOG_PATH", output / "trajectory_pipeline.log")
     pipeline._RUN_MANIFEST = None
 
     captured = {}
