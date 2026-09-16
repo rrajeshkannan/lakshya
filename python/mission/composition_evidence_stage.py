@@ -61,14 +61,11 @@ class CompositionEvidenceStage:
         self.d.detail(f"COMPOSITION_CANDIDATES_WRITTEN path={path.relative_to(self.d.project_root)} rows={count}")
         return count
 
-
     def candidate_compositions(self, teams):
         for team in teams:
             yield from self.d.generate_compositions(team)
 
-
-
-    def scan_checkpoints(self, teams) -> tuple[int, int, list[Composition], dict[str, dict[str, int]], str]:
+    def scan_checkpoints(self, teams) -> tuple[int, int, list, dict[str, dict[str, int]], str]:
         """Scan Composition checkpoints using the durable index as a narrow cache.
 
         The index can accelerate only metadata matches. Every miss, stale entry,
@@ -80,11 +77,11 @@ class CompositionEvidenceStage:
         indexed_entries = self.d.load_checkpoint_index(self.d.checkpoint_index_path, candidates_sha256)
         index_reusable = bool(indexed_entries)
         total = existing = 0
-        missing_compositions: list[Composition] = []
+        missing_compositions: list = []
         valid_entries: dict[str, dict[str, int]] = {}
         indexed_hits = authoritative_checks = 0
 
-        for composition in candidate_compositions(teams):
+        for composition in self.candidate_compositions(teams):
             total += 1
             identity = self.d.composition_identity(composition)
             path = self.d.fingerprint_path(self.d.fingerprint_dir, composition)
@@ -110,10 +107,9 @@ class CompositionEvidenceStage:
         )
         return total, existing, missing_compositions, valid_entries, candidates_sha256
 
-
     def persist_evidence(self, teams, fund_histories, *, max_workers: int | None) -> int:
         """Compute only missing fingerprints and persist each result immediately."""
-        total, existing, missing_compositions, checkpoint_entries, candidates_sha256 = scan_checkpoints(teams)
+        total, existing, missing_compositions, checkpoint_entries, candidates_sha256 = self.scan_checkpoints(teams)
         missing = len(missing_compositions)
         self.d.log(f"  fingerprint checkpoint scan: total={total} existing={existing} missing={missing}")
         self.d.manifest_update("composition_evidence", "running", total=total, existing=existing, missing=missing)
@@ -161,4 +157,3 @@ class CompositionEvidenceStage:
         self.d.detail(f"FINGERPRINT_STAGE_COMPLETE total={total} newly_computed={completed} elapsed_seconds={elapsed:.3f} index_entries={len(checkpoint_entries)}")
         self.d.manifest_update("composition_evidence", "complete", total=total, reused=existing, newly_computed=completed, elapsed_seconds=round(elapsed, 3))
         return total
-
