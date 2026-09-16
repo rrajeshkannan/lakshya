@@ -40,16 +40,25 @@ def run_team_pipeline(
     )
 
     admitted_funds = list(funds)
+
+    def on_fund_dominated(loser: Fund, dominator: Fund) -> None:
+        if detail is not None:
+            detail(
+                f"FUND_DOMINATED loser={loser.isin} dominator={dominator.isin}"
+            )
+
     surviving_funds = fund_frontier_from_histories(
         admitted_funds,
         fund_histories,
         dimensions=selected_dimensions,
+        on_dominated=on_fund_dominated,
     )
 
     if detail is not None:
         detail(
             f"FUND_FRONTIER admitted={len(admitted_funds)} "
-            f"survivors={len(surviving_funds)}"
+            f"survivors={len(surviving_funds)} eliminated="
+            f"{len(admitted_funds) - len(surviving_funds)}"
         )
         detail(
             "FUND_SURVIVORS "
@@ -75,7 +84,7 @@ def run_team_pipeline(
         if event == "dominated":
             detail(f"TEAM_DOMINATED candidate={team} dominated_by={_team_label(related)}")
         elif event == "evicted":
-            detail(f"TEAM_DOMINATED candidate={team} dominated_by={_team_label(related)}")
+            detail(f"TEAM_EVICTED candidate={team} dominator={_team_label(related)}")
 
     teams = team_frontier_from_histories(
         surviving_funds,
@@ -87,7 +96,7 @@ def run_team_pipeline(
     if detail is not None:
         detail(
             f"TEAM_FRONTIER_SUMMARY candidates={team_candidate_total} survivors={len(teams)} "
-            f"dominated_or_evicted={team_candidate_total - len(teams)}"
+            f"eliminated={team_candidate_total - len(teams)}"
         )
 
     return teams
