@@ -17,6 +17,7 @@ class TrajectoryJobDeps:
     output_dir: Path
     as_of_string: Callable[[], str]
     sha256: Callable[[Path], str]
+    purpose_inputs_sha256: Callable[[str], str]
     mission_checkpoint_valid: Callable[[Any], bool]
     trajectory_checkpoint_valid: Callable[[Any], bool]
     load_csv_checkpoint: Callable[..., Any]
@@ -55,14 +56,17 @@ class TrajectoryJobStage:
                     f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=invalid_mission_checkpoint"
                 )
                 continue
+            as_of = self._deps.as_of_string()
+            purpose_inputs = self._deps.purpose_inputs_sha256(as_of)
             df = self._deps.load_csv_checkpoint(
                 mission_path,
                 stage="mission",
-                as_of=self._deps.as_of_string(),
+                as_of=as_of,
                 inputs={
                     "achievability_sha256": self._deps.sha256(
                         self._deps.output_dir / f"achievability_{purpose.name}.csv"
-                    )
+                    ),
+                    "purpose_inputs_sha256": purpose_inputs,
                 },
             )
             identities = df["composition"].tolist()
