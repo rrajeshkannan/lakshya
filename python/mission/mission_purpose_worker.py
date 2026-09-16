@@ -29,7 +29,7 @@ class MissionPurposeWorkerDeps:
     protection_frontier: Callable[[list[tuple[Any, Any]]], list[Any]]
     composition_identity: Callable[[Any], str]
     sha256_file: Callable[[Path], str]
-    purpose_inputs_sha256: Callable[[], str]
+    purpose_inputs_sha256: Callable[[str], str]
     write_rows: Callable[..., int]
     detail: Callable[[str], None]
 
@@ -87,7 +87,7 @@ class MissionPurposeWorker:
         global_inputs = {
             "global_survivors_sha256": self._deps.sha256_file(global_path),
             "global_checkpoint_stage": "global_frontier",
-            "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(),
+            "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(as_of),
         }
         achievability_path = (
             self._deps.output_dir / f"achievability_{purpose.name}.csv"
@@ -113,7 +113,7 @@ class MissionPurposeWorker:
             stage="mission",
             inputs={
                 "achievability_sha256": self._deps.sha256_file(achievability_path),
-                "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(),
+                "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(as_of),
             },
             as_of=as_of,
         )
