@@ -12,6 +12,7 @@ provenance all validate.
 
 from __future__ import annotations
 
+from hashlib import sha256
 from lakshya_core.hashing import sha256_file
 
 _sha256 = sha256_file
@@ -23,7 +24,7 @@ import platform
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace
 from .trajectory_execution_stage import (
@@ -34,6 +35,9 @@ from .trajectory_execution_stage import (
 import pandas as pd
 
 from fund_analysis.admissible_funds import load_admissible_funds
+from lps.position_persistence import read_positions
+from lps.transaction_persistence import read_transactions
+from .historical_positions import build_positions_as_of
 from .pipeline_inputs import load_fund_histories
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.composition_fingerprint import CompositionFingerprint
@@ -81,6 +85,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 NAV_DIR = DATA_DIR / "lps" / "nav"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
+CURRENT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
 CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
 OUTPUT_DIR = PROJECT_ROOT / "output"
@@ -154,6 +160,110 @@ def _input_hash(path: Path) -> str:
     return sha256_file(path)
 
 
+def _positions_as_of_path(as_of: str) -> Path:
+    return OUTPUT_DIR / f"positions_as_of_{as_of}.csv"
+
+
+def _positions_as_of_inputs(
+    *,
+    transactions,
+    as_of: date,
+) -> dict[str, str]:
+    """Return provenance for the historical Position snapshot.
+
+    NAV evidence is append-only, so a fixed historical boundary continues to
+    resolve to the same recorded observations when newer NAV observations are
+    added.  The transaction and accepted-current-attribution files therefore
+    form the durable source inputs for the snapshot checkpoint.
+    """
+    historical_isins = sorted(
+        {
+            transaction.isin
+            for transaction in transactions
+            if transaction.transaction_date <= as_of and transaction.units is not None
+        }
+    )
+    nav_fingerprint = sha256(
+        "\n".join(
+            f"{isin}:{_input_hash(NAV_DIR / f'{isin}.json')}"
+            for isin in historical_isins
+            if (NAV_DIR / f"{isin}.json").is_file()
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "transactions_sha256": _input_hash(TRANSACTIONS_PATH),
+        "current_positions_sha256": _input_hash(CURRENT_POSITIONS_PATH),
+        "nav_inputs_sha256": nav_fingerprint,
+    }
+
+
+def _position_rows(positions) -> list[dict[str, str]]:
+    return [
+        {
+            "investor": position.id.investor,
+            "folio": position.id.folio,
+            "isin": position.id.isin,
+            "units": str(position.units),
+            "nav": "" if position.nav is None else str(position.nav),
+            "market_value": "" if position.market_value is None else str(position.market_value),
+            "purpose": "" if position.purpose is None else position.purpose,
+        }
+        for position in positions
+    ]
+
+
+def _load_positions_as_of(formation_as_of: date) -> tuple[list, Path]:
+    """Load or durably form the Position state applicable at ``formation_as_of``."""
+    snapshot_path = _positions_as_of_path(formation_as_of.isoformat())
+    transactions = read_transactions(TRANSACTIONS_PATH)
+    inputs = _positions_as_of_inputs(transactions=transactions, as_of=formation_as_of)
+
+    if is_valid_csv_checkpoint(
+        snapshot_path,
+        stage="lfs_positions_as_of",
+        as_of=formation_as_of.isoformat(),
+        inputs=inputs,
+    ):
+        positions = read_positions(snapshot_path)
+        _detail(
+            f"POSITIONS_AS_OF_REUSED as_of={formation_as_of} "
+            f"path={snapshot_path.relative_to(PROJECT_ROOT)} rows={len(positions)}"
+        )
+        return positions, snapshot_path
+
+    current_positions = read_positions(CURRENT_POSITIONS_PATH)
+    positions = build_positions_as_of(
+        transactions,
+        current_positions,
+        formation_as_of=formation_as_of,
+        nav_dir=NAV_DIR,
+    )
+    _write_rows(
+        snapshot_path,
+        _position_rows(positions),
+        stage="lfs_positions_as_of",
+        inputs=inputs,
+        as_of=formation_as_of.isoformat(),
+    )
+    _detail(
+        f"POSITIONS_AS_OF_FORMED as_of={formation_as_of} "
+        f"path={snapshot_path.relative_to(PROJECT_ROOT)} rows={len(positions)}"
+    )
+    return positions, snapshot_path
+
+
+def _purpose_inputs_sha256(as_of: str) -> str:
+    """Hash the exact durable inputs from which MISSION Purpose objects arise."""
+    snapshot_path = _positions_as_of_path(as_of)
+    if not snapshot_path.is_file():
+        raise FileNotFoundError(f"Historical Position snapshot is missing: {snapshot_path}")
+    material = (
+        f"purposes:{_input_hash(PURPOSES_PATH)}\n"
+        f"positions_as_of:{_input_hash(snapshot_path)}"
+    )
+    return sha256(material.encode("utf-8")).hexdigest()
+
+
 def _write_rows(
     path: Path,
     rows: list[dict],
@@ -201,14 +311,18 @@ def _composition_evidence_stage() -> CompositionEvidenceStage:
         manifest_update=_manifest_update,
     ))
 
+
 def _write_composition_candidates(teams) -> int:
     return _composition_evidence_stage().write_candidates(teams)
+
 
 def _candidate_compositions(teams):
     yield from _composition_evidence_stage().candidate_compositions(teams)
 
+
 def _scan_composition_checkpoints(teams):
     return _composition_evidence_stage().scan_checkpoints(teams)
+
 
 def _persist_composition_evidence(teams, fund_histories, *, max_workers: int | None) -> int:
     return _composition_evidence_stage().persist_evidence(teams, fund_histories, max_workers=max_workers)
@@ -233,11 +347,14 @@ def _global_composition_stage() -> GlobalCompositionStage:
         as_of_string=_as_of_string,
     ))
 
+
 def _load_global_pairs_for_frontier(teams):
     yield from _global_composition_stage().load_pairs_for_frontier(teams)
 
+
 def _global_inputs() -> dict[str, str]:
     return _global_composition_stage().inputs()
+
 
 def _load_global_identities() -> list[str]:
     return _global_composition_stage().load_identities()
@@ -287,6 +404,7 @@ def _mission_purpose_worker() -> MissionPurposeWorker:
             protection_frontier=protection_frontier,
             composition_identity=composition_identity,
             sha256_file=sha256_file,
+            purpose_inputs_sha256=_purpose_inputs_sha256,
             write_rows=_write_rows,
             detail=_detail,
         )
@@ -302,6 +420,7 @@ def _mission_stage() -> MissionStage:
         output_dir=OUTPUT_DIR,
         as_of_string=_as_of_string,
         sha256=_sha256,
+        purpose_inputs_sha256=_purpose_inputs_sha256,
         is_valid_csv_checkpoint=is_valid_csv_checkpoint,
     ))
 
@@ -413,7 +532,6 @@ def _observe_persisted_mission_outputs(
     )
 
 
-
 def _manifest() -> dict:
     return _RUN_MANIFEST if _RUN_MANIFEST is not None else {}
 
@@ -497,7 +615,16 @@ def run(
         log=_log,
         detail=_detail,
     )
-    purposes = load_purposes(valuation_date.date())
+    _, positions_as_of_path = _load_positions_as_of(valuation_date.date())
+    purposes = load_purposes(
+        valuation_date.date(),
+        positions_path=positions_as_of_path,
+    )
+    _RUN_MANIFEST["positions_as_of"] = {
+        "path": str(positions_as_of_path.relative_to(PROJECT_ROOT)),
+        "sha256": _input_hash(positions_as_of_path),
+    }
+    _write_manifest()
     if purpose_names is not None:
         requested = set(purpose_names)
         known = {purpose.name for purpose in purposes}
@@ -526,6 +653,8 @@ def run(
         funds_by_isin=funds_by_isin,
         workers=workers,
     )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--as-of", required=True, help="Purpose valuation date, e.g. 2026-08-31")
