@@ -22,7 +22,7 @@ def test_incoming_candidate_can_remove_multiple_frontier_members():
     accumulator = FrontierAccumulator((UP, DOWN))
 
     assert accumulator.consider(a, {"x": 10, "y": 10})
-    assert accumulator.consider(b, {"x": 9, "y": 9})
+    assert accumulator.consider(b, {"x": 9, "y": 11})
     assert accumulator.consider(c, {"x": 11, "y": 8})
     assert accumulator.items() == [c]
 
@@ -54,7 +54,7 @@ def test_frontier_events_identify_dominator_and_evicted_frontier_member():
     accumulator = FrontierAccumulator((UP, DOWN), on_event=lambda *event: events.append(event))
 
     accumulator.consider(a, {"x": 10, "y": 10})
-    accumulator.consider(b, {"x": 9, "y": 9})
+    accumulator.consider(b, {"x": 9, "y": 11})
     accumulator.consider(c, {"x": 11, "y": 8})
 
     assert ("dominated", b, a) in events
