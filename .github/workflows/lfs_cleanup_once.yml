@@ -1,0 +1,147 @@
+name: LFS cleanup migration
+
+on:
+  push:
+    branches:
+      - feat/lfs-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: ${{ !contains(github.event.head_commit.message, 'LFS cleanup migration complete') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: feat/lfs-cleanup
+
+      - name: Apply LFS persistence cleanup
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv
+          import shutil
+
+          root = Path.cwd()
+          data = root / 'data'
+          output = root / 'output'
+          lfs = data / 'lfs'
+          lfs.mkdir(parents=True, exist_ok=True)
+          output.mkdir(parents=True, exist_ok=True)
+
+          # Generated composition fingerprints are runtime material.
+          old_fp = data / 'fingerprints'
+          new_fp = output / 'fingerprints'
+          if old_fp.exists():
+              if new_fp.exists():
+                  for item in old_fp.iterdir():
+                      dest = new_fp / item.name
+                      if item.is_dir():
+                          shutil.copytree(item, dest, dirs_exist_ok=True)
+                      else:
+                          shutil.copy2(item, dest)
+                  shutil.rmtree(old_fp)
+              else:
+                  shutil.move(str(old_fp), str(new_fp))
+
+          # Legacy/duplicate durable namespaces are no longer authoritative.
+          for path in [data / 'lps' / 'current', data / 'nav', data / 'fund']:
+              if path.exists():
+                  shutil.rmtree(path)
+
+          # Consolidate the existing one-row-per-Purpose FINAL summaries.
+          summary_fields = None
+          rows = {}
+          review_root = data / 'reviews'
+          if review_root.exists():
+              for summary in sorted(review_root.glob('*/*_summary.csv')):
+                  with summary.open(newline='', encoding='utf-8') as handle:
+                      reader = csv.DictReader(handle)
+                      for row in reader:
+                          purpose = row.get('purpose', '').strip()
+                          if purpose:
+                              if summary_fields is None:
+                                  summary_fields = list(reader.fieldnames or [])
+                              rows[purpose] = row
+
+          summary_path = lfs / 'purpose_summaries.csv'
+          if rows:
+              fields = ['as_of'] + [field for field in summary_fields if field != 'as_of']
+              # All existing archived rows came from the same dated snapshot.
+              as_of = sorted(review_root.iterdir())[-1].name
+              tmp = summary_path.with_suffix('.csv.tmp')
+              with tmp.open('w', newline='', encoding='utf-8') as handle:
+                  writer = csv.DictWriter(handle, fieldnames=fields, lineterminator='\n')
+                  writer.writeheader()
+                  for purpose in sorted(rows):
+                      row = dict(rows[purpose])
+                      row['as_of'] = as_of
+                      writer.writerow(row)
+              tmp.replace(summary_path)
+          elif not summary_path.exists():
+              summary_path.write_text('', encoding='utf-8')
+
+          if review_root.exists():
+              shutil.rmtree(review_root)
+
+          # Purpose Staging is generated working material; keep it under output.
+          for path in [root / 'python' / 'family' / 'staging.py', root / 'python' / 'family' / 'review_surface.py', root / 'python' / 'run_purpose_simulation.py']:
+              if path.exists():
+                  text = path.read_text(encoding='utf-8')
+                  text = text.replace('data_dir / "reviews" / as_of / "purpose_staging"', 'data_dir.parent / "output" / "purpose_staging" / as_of')
+                  text = text.replace('DATA_DIR / "reviews" / as_of / "purpose_staging"', 'PROJECT_ROOT / "output" / "purpose_staging" / as_of')
+                  text = text.replace('DATA_DIR / "reviews" / as_of', 'PROJECT_ROOT / "output" / "purpose_staging" / as_of')
+                  path.write_text(text, encoding='utf-8')
+
+          # Generated Composition fingerprints live in output, not data.
+          for path in [root / 'python' / 'mission' / 'resilient_pipeline.py', root / 'python' / 'final' / 'compromise_programming.py']:
+              text = path.read_text(encoding='utf-8')
+              text = text.replace('FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"', 'FINGERPRINT_DIR = PROJECT_ROOT / "output" / "fingerprints" / "composition"')
+              path.write_text(text, encoding='utf-8')
+
+          # Update remaining direct Fund-scope references.
+          for path in [root / 'python' / 'fund_analysis' / 'admissible_funds.py']:
+              if path.exists():
+                  text = path.read_text(encoding='utf-8')
+                  text = text.replace('data/fund/funds_in_scope.csv', 'data/lps/funds_in_scope.csv')
+                  path.write_text(text, encoding='utf-8')
+
+          # Replace the old archival implementation with the single durable LFS summary.
+          archival = root / 'python' / 'final' / 'archival.py'
+          archival.write_text('''"""Persist the compact FINAL summary for all Purposes as one LFS snapshot."""\n\nfrom __future__ import annotations\n\nimport csv\nimport os\nfrom datetime import date\nfrom pathlib import Path\n\n\nSUMMARY_FILENAME = "purpose_summaries.csv"\n\n\ndef _read_rows(path: Path) -> list[dict[str, str]]:\n    if not path.is_file():\n        return []\n    with path.open(newline="", encoding="utf-8") as handle:\n        return list(csv.DictReader(handle))\n\n\ndef _atomic_write(path: Path, fields: list[str], rows: list[dict[str, str]]) -> None:\n    path.parent.mkdir(parents=True, exist_ok=True)\n    temporary = path.with_suffix(path.suffix + ".tmp")\n    with temporary.open("w", newline="", encoding="utf-8") as handle:\n        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\\n")\n        writer.writeheader()\n        writer.writerows(rows)\n        handle.flush()\n        os.fsync(handle.fileno())\n    temporary.replace(path)\n\n\ndef archive_final_summaries(\n    as_of: str,\n    purpose_names: list[str] | None = None,\n    *,\n    output_dir: Path,\n    archive_root: Path,\n    final_contract_version: str,\n) -> list[Path]:\n    """Update the durable LFS Purpose-summary snapshot in place.\n\n    ``archive_root`` is the LFS data directory. Generated FINAL diagnostics\n    remain under ``output``; only the compact one-row-per-Purpose summary is\n    persisted under ``data/lfs``. Partial runs update only their selected\n    Purpose rows.\n    """\n    date.fromisoformat(as_of)\n    summary_paths = sorted(output_dir.glob("final_*_summary.csv"))\n    summaries: dict[str, Path] = {}\n    for path in summary_paths:\n        purpose = path.name.removeprefix("final_").removesuffix("_summary.csv")\n        if purpose:\n            summaries[purpose] = path\n\n    if purpose_names is not None:\n        requested = set(purpose_names)\n        unknown = requested - set(summaries)\n        if unknown:\n            raise FileNotFoundError(\n                "FINAL summary missing for requested Purpose(s): " + ", ".join(sorted(unknown))\n            )\n        summaries = {name: summaries[name] for name in sorted(requested)}\n    else:\n        summaries = dict(sorted(summaries.items()))\n\n    if not summaries:\n        raise FileNotFoundError(f"No FINAL summary files found in {output_dir}")\n\n    existing_path = archive_root / SUMMARY_FILENAME\n    existing = {row["purpose"]: row for row in _read_rows(existing_path) if row.get("purpose")}\n\n    fields: list[str] | None = None\n    for purpose, source in summaries.items():\n        rows = _read_rows(source)\n        if len(rows) != 1:\n            raise ValueError(f"FINAL summary must contain exactly one row: {source}")\n        row = dict(rows[0])\n        if row.get("purpose") != purpose:\n            raise ValueError(f"FINAL summary Purpose mismatch: {source}")\n        checkpoint = output_dir / f"final_{purpose}_checkpoint.json"\n        if not checkpoint.is_file():\n            raise FileNotFoundError(f"FINAL checkpoint missing for {purpose}: {checkpoint}")\n        existing[purpose] = {"as_of": as_of, **row}\n        fields = ["as_of", *[key for key in row if key != "as_of"]]\n\n    if fields is None:\n        raise ValueError("No FINAL summaries selected")\n\n    # Preserve a stable union if older rows carry the same schema.\n    all_fields = ["as_of"]\n    for row in existing.values():\n        for key in row:\n            if key not in all_fields:\n                all_fields.append(key)\n    rows_out = []\n    for purpose in sorted(existing):\n        row = {field: existing[purpose].get(field, "") for field in all_fields}\n        rows_out.append(row)\n    _atomic_write(existing_path, all_fields, rows_out)\n    return [existing_path]\n''', encoding='utf-8')
+
+          # Update production runner to use data/lfs rather than data/reviews.
+          run = root / 'python' / 'run_production.py'
+          text = run.read_text(encoding='utf-8')
+          text = text.replace('REVIEW_ARCHIVE_DIR = PROJECT_ROOT / "data" / "reviews"', 'LFS_DATA_DIR = PROJECT_ROOT / "data" / "lfs"')
+          text = text.replace('archive_root=REVIEW_ARCHIVE_DIR', 'archive_root=LFS_DATA_DIR')
+          run.write_text(text, encoding='utf-8')
+
+          # Update the review surface to consume the durable consolidated LFS summary.
+          review = root / 'python' / 'family' / 'review_surface.py'
+          text = review.read_text(encoding='utf-8')
+          text = text.replace('review_dir = data_dir / "reviews" / as_of', 'review_dir = data_dir / "lfs"')
+          text = text.replace('directory = data_dir / "reviews" / as_of / "purpose_staging"', 'directory = data_dir.parent / "output" / "purpose_staging" / as_of')
+          review.write_text(text, encoding='utf-8')
+
+          # Remove this one-shot migration workflow after it has performed the migration.
+          workflow = root / '.github' / 'workflows' / 'lfs_cleanup_once.yml'
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No migration changes required."
+            exit 0
+          fi
+          git commit -m "Complete LFS persistence cleanup"
+          git push origin HEAD:feat/lfs-cleanup
