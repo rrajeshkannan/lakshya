@@ -30,7 +30,7 @@ def _fixture(tmp_path: Path) -> Path:
         + "Amma,F3,PC,1,300,300,C\n",
         encoding="utf-8",
     )
-    review = data / "reviews" / "2026-09-06"
+    review = data / "lfs"
     review.mkdir(parents=True)
     for name in ("A", "B", "C"):
         (review / f"{name}_summary.csv").write_text(
@@ -61,7 +61,7 @@ def _read(path: Path):
 
 
 def _state(data: Path) -> dict:
-    path = data / "reviews" / "2026-09-06" / "purpose_staging" / "staging_state.json"
+    path = data.parent / "output" / "purpose_staging" / "2026-09-06" / "staging_state.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -82,7 +82,7 @@ def test_working_revision_tracks_turns_without_resetting_cumulative_pool(tmp_pat
     assert _state(data)["working_revision"] == 3
     assert _state(data)["pool_capital"] == 0.0
 
-    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    staging = data.parent / "output" / "purpose_staging" / "2026-09-06"
     ledger = _read(staging / "reconciliation_ledger.csv")
     assert [row["turn"] for row in ledger] == ["1", "2", "3"]
     assert [row["kind"] for row in ledger] == ["RELEASE_CAPITAL", "ACQUIRE_CAPITAL", "ACQUIRE_CAPITAL"]
