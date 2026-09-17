@@ -71,13 +71,12 @@ class MissionStage:
         skip_existing: bool,
         checkpoint_valid: Callable[[object], bool] | None = None,
     ) -> list:
-        # Keep the runner-level checkpoint predicate injectable.  This preserves
-        # the historical test/compatibility seam while the stage owns the
-        # default implementation.
+        # Every Purpose is analytically runnable. A Purpose with no finite
+        # business horizon uses Purpose.trajectory_horizon_years (7Y) rather
+        # than being excluded from MISSION.
         is_valid = checkpoint_valid or self.checkpoint_valid
         return [
             purpose
             for purpose in purposes
-            if purpose.horizon_years is not None
-            and not (skip_existing and is_valid(purpose))
+            if not (skip_existing and is_valid(purpose))
         ]
