@@ -23,7 +23,7 @@ def test_staging_log_captures_turn_and_pool_events(tmp_path: Path):
         "Amma,F2,PB,1,200,200,B\n",
         encoding="utf-8",
     )
-    review = data / "reviews" / "2026-09-06"
+    review = data / "lfs"
     review.mkdir(parents=True)
     for name in ("A", "B"):
         (review / f"{name}_summary.csv").write_text(
@@ -49,7 +49,7 @@ def test_staging_log_captures_turn_and_pool_events(tmp_path: Path):
     )
     run_turn("2026-09-06", turn, data_dir=data)
 
-    log = (data / "reviews" / "2026-09-06" / "purpose_staging" / "staging.log").read_text(encoding="utf-8")
+    log = (data.parent / "output" / "purpose_staging" / "2026-09-06" / "staging.log").read_text(encoding="utf-8")
     assert "TURN_START" in log
     assert "RELEASE_CAPITAL" in log
     assert "RELEASE_SIP" in log
