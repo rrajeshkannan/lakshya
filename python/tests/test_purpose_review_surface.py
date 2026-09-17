@@ -13,7 +13,7 @@ def _read(path: Path):
 
 def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: Path):
     data = tmp_path / "data"
-    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    staging = data.parent / "output" / "purpose_staging" / "2026-09-06"
     staging.mkdir(parents=True)
     (staging / "purposes_staged.csv").write_text(
         "name,due,value,desired,monthly_plan\n"
@@ -21,7 +21,8 @@ def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: P
         "B,NA,341588,,\n",
         encoding="utf-8",
     )
-    review = data / "reviews" / "2026-09-06"
+    review = data / "lfs"
+    review.mkdir(parents=True)
     (review / "A_summary.csv").write_text(
         "purpose,purpose_horizon_years,primary_winner,contract_version\n"
         'A,9,"X|X=1.0000",1\n',
@@ -55,14 +56,15 @@ def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: P
 
 def test_review_surface_allows_open_purpose_without_achievability_return(tmp_path: Path):
     data = tmp_path / "data"
-    staging = data / "reviews" / "2026-09-06" / "purpose_staging"
+    staging = data.parent / "output" / "purpose_staging" / "2026-09-06"
     staging.mkdir(parents=True)
     (staging / "purposes_staged.csv").write_text(
         "name,due,value,desired,monthly_plan\n"
         "Open,NA,341588,,\n",
         encoding="utf-8",
     )
-    review = data / "reviews" / "2026-09-06"
+    review = data / "lfs"
+    review.mkdir(parents=True)
     (review / "Open_summary.csv").write_text(
         "purpose,purpose_horizon_years,primary_winner,contract_version\n"
         'Open,7,"X|X=1.0000",1\n',
