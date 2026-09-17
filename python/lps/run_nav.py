@@ -10,7 +10,7 @@ from lps.nav_pipeline import run_nav_pipeline
 from lps.nav_source import MfapiNavSource, mfapi_http_transport
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SCOPE_PATH = PROJECT_ROOT / "data" / "fund" / "funds_in_scope.csv"
+SCOPE_PATH = PROJECT_ROOT / "data" / "lps" / "funds_in_scope.csv"
 
 
 def load_in_scope_isins(path: Path = SCOPE_PATH) -> list[str]:
