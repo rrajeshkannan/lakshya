@@ -13,7 +13,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 
 
 def _directory(as_of: str) -> Path:
-    return DATA_DIR / "reviews" / as_of / "purpose_staging"
+    return PROJECT_ROOT / "output" / "purpose_staging" / as_of
 
 
 def main() -> None:

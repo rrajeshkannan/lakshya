@@ -41,7 +41,7 @@ from .observation_horizon import nearest_supported_horizon
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-FINGERPRINT_DIR = DATA_DIR / "fingerprints" / "composition"
+FINGERPRINT_DIR = PROJECT_ROOT / "output" / "fingerprints" / "composition"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
 FINAL_CONTRACT_VERSION = "1"

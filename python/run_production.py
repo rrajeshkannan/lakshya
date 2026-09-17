@@ -23,7 +23,7 @@ from mission.resilient_pipeline import run as run_mission
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
-REVIEW_ARCHIVE_DIR = PROJECT_ROOT / "data" / "reviews"
+LFS_DATA_DIR = PROJECT_ROOT / "data" / "lfs"
 
 
 def _checkpoint_path(purpose_name: str) -> Path:
@@ -175,7 +175,7 @@ def main() -> None:
         args.as_of,
         selected_purposes,
         output_dir=OUTPUT_DIR,
-        archive_root=REVIEW_ARCHIVE_DIR,
+        archive_root=LFS_DATA_DIR,
         final_contract_version=FINAL_CONTRACT_VERSION,
     )
     for path in archived:

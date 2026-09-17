@@ -102,7 +102,7 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | 
     selected formation remains valid evidence; absence of an achievability
     return must not make the review surface fail.
     """
-    review_dir = data_dir / "reviews" / as_of
+    review_dir = data_dir / "lfs"
     output_dir = data_dir.parent / "output"
     result: dict[str, tuple[str, float | None]] = {}
     for summary in sorted(review_dir.glob("*_summary.csv")):
@@ -126,7 +126,7 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | 
 
 def refresh_review_surface(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     date.fromisoformat(as_of)
-    directory = data_dir / "reviews" / as_of / "purpose_staging"
+    directory = data_dir.parent / "output" / "purpose_staging" / as_of
     staged_path = directory / "purposes_staged.csv"
     rows = _read_csv(staged_path)
     if not rows or set(rows[0]) != set(PURPOSE_FIELDS):

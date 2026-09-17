@@ -160,7 +160,7 @@ def _purpose(row: dict[str, str], as_of: date) -> Purpose:
 
 
 def _directory(data_dir: Path, as_of: str) -> Path:
-    return data_dir / "reviews" / as_of / "purpose_staging"
+    return data_dir.parent / "output" / "purpose_staging" / as_of
 
 
 def initialize_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
