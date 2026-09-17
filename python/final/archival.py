@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import os
 from datetime import date
 from pathlib import Path
@@ -28,6 +29,16 @@ def _atomic_write(path: Path, fields: list[str], rows: list[dict[str, str]]) -> 
         handle.flush()
         os.fsync(handle.fileno())
     temporary.replace(path)
+
+
+def _read_checkpoint(path: Path) -> dict[str, object]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Invalid FINAL checkpoint: {path}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"Invalid FINAL checkpoint payload: {path}")
+    return payload
 
 
 def archive_final_summaries(
@@ -58,7 +69,8 @@ def archive_final_summaries(
         unknown = requested - set(summaries)
         if unknown:
             raise FileNotFoundError(
-                "FINAL summary missing for requested Purpose(s): " + ", ".join(sorted(unknown))
+                "FINAL summary missing for requested Purpose(s): "
+                + ", ".join(sorted(unknown))
             )
         summaries = {name: summaries[name] for name in sorted(requested)}
     else:
@@ -68,34 +80,45 @@ def archive_final_summaries(
         raise FileNotFoundError(f"No FINAL summary files found in {output_dir}")
 
     existing_path = archive_root / SUMMARY_FILENAME
-    existing = {row["purpose"]: row for row in _read_rows(existing_path) if row.get("purpose")}
+    existing = {
+        row["purpose"]: row
+        for row in _read_rows(existing_path)
+        if row.get("purpose")
+    }
 
-    fields: list[str] | None = None
     for purpose, source in summaries.items():
         rows = _read_rows(source)
+        if not rows:
+            raise FileNotFoundError(f"FINAL summary is empty: {source}")
         if len(rows) != 1:
             raise ValueError(f"FINAL summary must contain exactly one row: {source}")
         row = dict(rows[0])
         if row.get("purpose") != purpose:
             raise ValueError(f"FINAL summary Purpose mismatch: {source}")
+
         checkpoint = output_dir / f"final_{purpose}_checkpoint.json"
         if not checkpoint.is_file():
             raise FileNotFoundError(f"FINAL checkpoint missing for {purpose}: {checkpoint}")
+        checkpoint_payload = _read_checkpoint(checkpoint)
+        if checkpoint_payload.get("contract_version") != final_contract_version:
+            raise ValueError(
+                f"FINAL checkpoint contract mismatch for {purpose}: "
+                f"{checkpoint_payload.get('contract_version')!r} != {final_contract_version!r}"
+            )
+        if checkpoint_payload.get("purpose") != purpose:
+            raise ValueError(f"FINAL checkpoint Purpose mismatch: {checkpoint}")
+
         existing[purpose] = {"as_of": as_of, **row}
-        fields = ["as_of", *[key for key in row if key != "as_of"]]
 
-    if fields is None:
-        raise ValueError("No FINAL summaries selected")
-
-    # Preserve a stable union if older rows carry the same schema.
     all_fields = ["as_of"]
     for row in existing.values():
         for key in row:
             if key not in all_fields:
                 all_fields.append(key)
+
     rows_out = []
     for purpose in sorted(existing):
-        row = {field: existing[purpose].get(field, "") for field in all_fields}
-        rows_out.append(row)
+        rows_out.append({field: existing[purpose].get(field, "") for field in all_fields})
+
     _atomic_write(existing_path, all_fields, rows_out)
     return [existing_path]
