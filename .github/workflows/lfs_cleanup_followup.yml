@@ -1,0 +1,92 @@
+name: LFS cleanup follow-up
+
+on:
+  push:
+    branches:
+      - feat/lfs-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  followup:
+    if: ${{ !contains(github.event.head_commit.message, 'LFS cleanup follow-up complete') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: feat/lfs-cleanup
+
+      - name: Fix remaining LFS path consumers and tests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path.cwd()
+
+          # Purpose Staging's observed terrain comes from the durable LFS summary.
+          staging = root / 'python' / 'family' / 'staging.py'
+          text = staging.read_text(encoding='utf-8')
+          text = text.replace('review_dir = data_dir / "reviews" / as_of', 'review_dir = data_dir / "lfs"')
+          old = '''    result: dict[str, float] = {}\n    for summary in sorted(review_dir.glob("*_summary.csv")):\n'''
+          new = '''    result: dict[str, float] = {}\n    summary_files = []\n    consolidated = review_dir / "purpose_summaries.csv"\n    if consolidated.is_file():\n        summary_files = [consolidated]\n    else:\n        summary_files = sorted(review_dir.glob("*_summary.csv"))\n    for summary in summary_files:\n'''
+          text = text.replace(old, new)
+          staging.write_text(text, encoding='utf-8')
+
+          # Review surface reads the consolidated LFS summary, while staging remains generated output.
+          review = root / 'python' / 'family' / 'review_surface.py'
+          text = review.read_text(encoding='utf-8')
+          text = text.replace('review_dir = data_dir / "reviews" / as_of', 'review_dir = data_dir / "lfs"')
+          review.write_text(text, encoding='utf-8')
+
+          sim = root / 'python' / 'run_purpose_simulation.py'
+          if sim.exists():
+              text = sim.read_text(encoding='utf-8')
+              text = text.replace('DATA_DIR / "reviews" / as_of / "purpose_staging"', 'PROJECT_ROOT / "output" / "purpose_staging" / as_of')
+              sim.write_text(text, encoding='utf-8')
+
+          # Test fixtures may use one-row-per-purpose files as a convenient LFS fixture.
+          # Keep those fixtures under data/lfs, while staging workspaces live under output.
+          for path in (root / 'python' / 'tests').glob('test_*.py'):
+              text = path.read_text(encoding='utf-8')
+              text = text.replace('data / "reviews" / as_of / "purpose_staging"', 'data.parent / "output" / "purpose_staging" / as_of')
+              text = text.replace('data / "reviews" / "2026-09-06" / "purpose_staging"', 'data.parent / "output" / "purpose_staging" / "2026-09-06"')
+              text = text.replace('data / "reviews" / as_of', 'data / "lfs"')
+              text = text.replace('data / "reviews" / "2026-09-06"', 'data / "lfs"')
+              path.write_text(text, encoding='utf-8')
+
+          # Keep repository documentation aligned with the durable/runtime boundary.
+          for path in [root / 'README.md', *(root / 'docs').glob('*.md')]:
+              text = path.read_text(encoding='utf-8')
+              text = text.replace('data/fund/', 'data/lps/')
+              text = text.replace('data/reviews/<as-of>/', 'data/lfs/')
+              text = text.replace('data/reviews/YYYY-MM-DD/purpose_staging/', 'output/purpose_staging/YYYY-MM-DD/')
+              text = text.replace('data/reviews/', 'data/lfs/')
+              text = text.replace('data/fingerprints/composition/', 'output/fingerprints/composition/')
+              path.write_text(text, encoding='utf-8')
+
+          workflow = root / '.github' / 'workflows' / 'lfs_cleanup_followup.yml'
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Run tests before commit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+          python -m pytest -q
+
+      - name: Commit follow-up
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No follow-up changes required."
+            exit 0
+          fi
+          git commit -m "Complete LFS cleanup follow-up"
+          git push origin HEAD:feat/lfs-cleanup
