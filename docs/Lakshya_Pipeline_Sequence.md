@@ -251,7 +251,7 @@ The formation fund universe has two sources:
 
 The second source covers funds not represented by existing Positions. The reviewer is responsible for bringing only admissible candidates into `potential_funds_in_scope`; LFS does not contain a separate admissibility gate.
 
-The legacy `data/fund/funds_in_scope.csv` mechanism is an implementation artifact to be replaced as this contract is implemented. NAV acquisition should ultimately derive ISINs from Positions plus reviewer-selected potential funds.
+The legacy `data/lps/funds_in_scope.csv` mechanism is an implementation artifact to be replaced as this contract is implemented. NAV acquisition should ultimately derive ISINs from Positions plus reviewer-selected potential funds.
 
 Formation Evidence contains no Position attribution, transaction history, transition information, or Fund Fingerprints.
 
@@ -588,9 +588,9 @@ Historical Snapshot is a human-controlled Git persistence boundary. There is no 
 The durable record includes appropriate reviewed material under:
 
 ```text
-data/fund/
+data/lps/
 data/purpose/
-data/reviews/<as-of>/
+data/lfs/
 ```
 
 Runtime output and forensic logs remain disposable where configured.

@@ -329,10 +329,16 @@ def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, 
 
 
 def _observed_upper_returns(data_dir: Path, as_of: str, required_purposes: set[str] | None = None) -> dict[str, float]:
-    review_dir = data_dir / "reviews" / as_of
+    review_dir = data_dir / "lfs"
     output_dir = data_dir.parent / "output"
     result: dict[str, float] = {}
-    for summary in sorted(review_dir.glob("*_summary.csv")):
+    summary_files = []
+    consolidated = review_dir / "purpose_summaries.csv"
+    if consolidated.is_file():
+        summary_files = [consolidated]
+    else:
+        summary_files = sorted(review_dir.glob("*_summary.csv"))
+    for summary in summary_files:
         rows = _read_csv(summary)
         if len(rows) != 1:
             continue

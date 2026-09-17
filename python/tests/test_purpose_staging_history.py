@@ -31,7 +31,7 @@ def _fixture(tmp_path: Path) -> Path:
         + "Amma,F2,PB,1,200,200,B\n",
         encoding="utf-8",
     )
-    review = data / "reviews" / "2026-09-06"
+    review = data / "lfs"
     review.mkdir(parents=True)
     for name in ("A", "B"):
         (review / f"{name}_summary.csv").write_text(

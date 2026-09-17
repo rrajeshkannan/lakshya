@@ -146,9 +146,9 @@ No capital or SIP may be silently created. The authoritative `purposes.csv` chan
 The annual snapshot is a human-controlled Git persistence boundary. After Purpose Staging is committed, the reviewer inspects intended changes and commits the reviewed state.
 
 ```text
-data/fund/
+data/lps/
 data/purpose/
-data/reviews/<as-of>/
+data/lfs/
 ```
 
 Runtime output and forensic logs remain disposable/Git-ignored where configured. Historical memory is not a transaction ledger and does not prove current holdings.

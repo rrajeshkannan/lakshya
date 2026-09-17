@@ -611,9 +611,9 @@ Historical Snapshot is a human-controlled Git persistence boundary. It is memory
 The durable record includes appropriate reviewed material under:
 
 ```text
-data/fund/
+data/lps/
 data/purpose/
-data/reviews/<as-of>/
+data/lfs/
 ```
 
 Generated runtime output and forensic logs remain disposable/Git-ignored where configured.

@@ -25,7 +25,7 @@ cd /path/to/lakshya
 python -m pip install -r python/requirements.txt
 ```
 
-Do not edit generated files under `output/` or `data/reviews/` by hand.
+Do not edit generated files under `output/` or `data/lfs/` by hand.
 
 ## 1A. LPS — annual source acquisition and factual evidence
 
@@ -173,7 +173,7 @@ python python/run_purpose_staging.py init --as-of 2026-09-06
 Workspace:
 
 ```text
-data/reviews/YYYY-MM-DD/purpose_staging/
+output/purpose_staging/YYYY-MM-DD/
 ```
 
 Structured state:
@@ -248,10 +248,10 @@ Changing `desired` or the horizon is outside the staging lever set; such a chang
 After every turn, inspect:
 
 ```text
-data/reviews/YYYY-MM-DD/purpose_staging/purposes_staged.csv
-data/reviews/YYYY-MM-DD/purpose_staging/reconciliation_ledger.csv
-data/reviews/YYYY-MM-DD/purpose_staging/achievability_latest.csv
-data/reviews/YYYY-MM-DD/purpose_staging/staging_state.json
+output/purpose_staging/YYYY-MM-DD/purposes_staged.csv
+output/purpose_staging/YYYY-MM-DD/reconciliation_ledger.csv
+output/purpose_staging/YYYY-MM-DD/achievability_latest.csv
+output/purpose_staging/YYYY-MM-DD/staging_state.json
 ```
 
 Check:
@@ -346,7 +346,7 @@ git status --short
 Do not archive generated runtime material such as:
 
 - `data/cache/`;
-- `data/fingerprints/composition/`;
+- `output/fingerprints/composition/`;
 - `staging.log`;
 - runtime contents under `output/`.
 
@@ -454,7 +454,7 @@ If a command fails:
 Do not casually delete or overwrite annual review archives under:
 
 ```text
-data/reviews/YYYY-MM-DD/
+data/lfs/YYYY-MM-DD/
 ```
 
 Common issues:

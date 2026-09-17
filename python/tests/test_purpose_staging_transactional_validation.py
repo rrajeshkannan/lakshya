@@ -13,7 +13,7 @@ POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 
 def _write_review(data: Path, as_of: str, purpose: str, winner: str = "X|X=1.0000") -> None:
-    review = data / "reviews" / as_of
+    review = data / "lfs"
     review.mkdir(parents=True, exist_ok=True)
     (review / f"{purpose}_summary.csv").write_text(
         "purpose,purpose_horizon_years,primary_winner,contract_version\n"
