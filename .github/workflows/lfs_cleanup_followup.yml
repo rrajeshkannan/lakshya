@@ -19,15 +19,18 @@ jobs:
           fetch-depth: 0
           ref: feat/lfs-cleanup
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
       - name: Fix remaining LFS path consumers and tests
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
 
           root = Path.cwd()
 
-          # Purpose Staging's observed terrain comes from the durable LFS summary.
           staging = root / 'python' / 'family' / 'staging.py'
           text = staging.read_text(encoding='utf-8')
           text = text.replace('review_dir = data_dir / "reviews" / as_of', 'review_dir = data_dir / "lfs"')
@@ -36,7 +39,6 @@ jobs:
           text = text.replace(old, new)
           staging.write_text(text, encoding='utf-8')
 
-          # Review surface reads the consolidated LFS summary, while staging remains generated output.
           review = root / 'python' / 'family' / 'review_surface.py'
           text = review.read_text(encoding='utf-8')
           text = text.replace('review_dir = data_dir / "reviews" / as_of', 'review_dir = data_dir / "lfs"')
@@ -48,8 +50,6 @@ jobs:
               text = text.replace('DATA_DIR / "reviews" / as_of / "purpose_staging"', 'PROJECT_ROOT / "output" / "purpose_staging" / as_of')
               sim.write_text(text, encoding='utf-8')
 
-          # Test fixtures may use one-row-per-purpose files as a convenient LFS fixture.
-          # Keep those fixtures under data/lfs, while staging workspaces live under output.
           for path in (root / 'python' / 'tests').glob('test_*.py'):
               text = path.read_text(encoding='utf-8')
               text = text.replace('data / "reviews" / as_of / "purpose_staging"', 'data.parent / "output" / "purpose_staging" / as_of')
@@ -58,7 +58,6 @@ jobs:
               text = text.replace('data / "reviews" / "2026-09-06"', 'data / "lfs"')
               path.write_text(text, encoding='utf-8')
 
-          # Keep repository documentation aligned with the durable/runtime boundary.
           for path in [root / 'README.md', *(root / 'docs').glob('*.md')]:
               text = path.read_text(encoding='utf-8')
               text = text.replace('data/fund/', 'data/lps/')
