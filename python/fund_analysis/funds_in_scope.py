@@ -8,7 +8,7 @@ from lakshya_core.models import Fund
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-FUNDS_IN_SCOPE_PATH = PROJECT_ROOT / "data" / "fund" / "funds_in_scope.csv"
+FUNDS_IN_SCOPE_PATH = PROJECT_ROOT / "data" / "lps" / "funds_in_scope.csv"
 
 
 def load_funds_in_scope(
