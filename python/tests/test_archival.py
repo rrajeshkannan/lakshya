@@ -117,6 +117,7 @@ def test_archival_requires_requested_summary_and_valid_contract(tmp_path: Path):
             "2026-09-06", ["Retirement"], output_dir=output, archive_root=archive, final_contract_version="1"
         )
 
+    _write_summary(output, "Retirement", "purpose,metric\nRetirement,value\n")
     _write_checkpoint(output, "Retirement")
     checkpoint = output / "final_Retirement_checkpoint.json"
     checkpoint.write_text(
