@@ -51,10 +51,13 @@ class TrajectoryJobStage:
     def prepare_jobs(self, purposes) -> TrajectoryJobPreparation:
         jobs: list[tuple[Any, list[str]]] = []
         for purpose in purposes:
-            if purpose.horizon_years is None:
-                self._deps.log(f"  {purpose.name}: no finite horizon; skipping trajectory")
+            # Every Purpose has an analytical trajectory horizon. Finite
+            # Purposes use their business horizon; open-ended Purposes use the
+            # model's fixed seven-year analytical horizon.
+            if purpose.trajectory_horizon_years is None:
+                self._deps.log(f"  {purpose.name}: no analytical horizon; skipping trajectory")
                 self._deps.detail(
-                    f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_finite_horizon"
+                    f"TRAJECTORY_SKIPPED purpose={purpose.name} reason=no_analytical_horizon"
                 )
                 continue
             if self._deps.trajectory_checkpoint_valid(purpose):
