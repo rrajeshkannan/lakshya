@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from lps.positions import Position, PositionId
-from lts.models import FormationIntentRow, PositionReconciliation, TargetFormation
+from lts.models import EconomicReconciliation, FormationIntentRow, PositionReconciliation, TargetFormation
 from lts.position_bridge import LtsPosition, LtsPositionId, bridge_positions
 from lts.reconciliation import reconcile_economically, reconcile_positions
 from lts.treatments import TransitionTreatment, classify_position_treatment
@@ -265,12 +265,13 @@ def test_position_reconciliation_rejects_unvalued_position():
     with pytest.raises(ValueError, match="unvalued Position"):
         reconcile_positions(
             current,
-            [PositionReconciliation(
-                LtsPositionId("Amma", "F1", "A", "Slice-1"),
+            [EconomicReconciliation(
                 "Retirement",
                 "A",
                 Decimal("100"),
                 Decimal("100"),
+                Decimal("100"),
+                Decimal("0"),
                 Decimal("0"),
             )],
         )
@@ -279,20 +280,22 @@ def test_position_reconciliation_rejects_unvalued_position():
 def test_position_reconciliation_consumes_duplicate_economic_rows_by_key():
     current = lts_positions(position("Amma", "F1", "A", "300"))
     economic = [
-        PositionReconciliation(
-            LtsPositionId("Appanna", "F2", "A", "Slice-1"),
+        EconomicReconciliation(
             "Retirement",
             "A",
             Decimal("0"),
             Decimal("100"),
+            Decimal("100"),
+            Decimal("0"),
             Decimal("0"),
         ),
-        PositionReconciliation(
-            LtsPositionId("Appanna", "F3", "A", "Slice-1"),
+        EconomicReconciliation(
             "Retirement",
             "A",
             Decimal("0"),
             Decimal("200"),
+            Decimal("200"),
+            Decimal("0"),
             Decimal("0"),
         ),
     ]
