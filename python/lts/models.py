@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from lps.positions import PositionId
+from .position_bridge import LtsPositionId
 
 
 @dataclass(frozen=True)
@@ -52,9 +52,9 @@ class EconomicReconciliation:
 
 @dataclass(frozen=True)
 class PositionReconciliation:
-    """How one factual Position contributes to economic TARGET."""
+    """How one LTS Position contributes to economic TARGET."""
 
-    position_id: PositionId
+    position_id: LtsPositionId
     target_purpose: str
     target_isin: str
     current_value: Decimal
