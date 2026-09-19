@@ -16,7 +16,7 @@ from datetime import date
 from decimal import Decimal
 
 from .lots import HoldingLot, fifo_holding_lots
-from .position_bridge import LtsPosition, LtsPositionId
+from lps.positions import Position, PositionId
 from lps.transactions import Transaction
 
 ZERO = Decimal("0")
@@ -54,7 +54,7 @@ class LotTaxAnalysis:
 class HoldingConstraintAnalysis:
     """Constraint analysis for one holding line / LTS Position."""
 
-    position_id: LtsPositionId
+    holding_id: PositionId
     as_of: date
     lots: tuple[LotTaxAnalysis, ...]
     total_gain: Decimal | None
@@ -90,7 +90,7 @@ def _lot_cost_basis(lot: HoldingLot) -> Decimal | None:
 
 
 def analyze_holding(
-    position: LtsPosition,
+    position: Position,
     transactions: list[Transaction] | tuple[Transaction, ...],
     as_of: date,
     constraint: HoldingTaxConstraint,
@@ -112,7 +112,7 @@ def analyze_holding(
 
     if not lots:
         return HoldingConstraintAnalysis(
-            position_id=position.id,
+            holding_id=position.id,
             as_of=as_of,
             lots=(),
             total_gain=ZERO,
@@ -193,7 +193,7 @@ def analyze_holding(
     total_gain = sum(gains, ZERO) if len(gains) == len(lots) else None
 
     return HoldingConstraintAnalysis(
-        position_id=position.id,
+        holding_id=position.id,
         as_of=as_of,
         lots=tuple(analyses),
         total_gain=total_gain,
