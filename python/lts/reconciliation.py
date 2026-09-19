@@ -11,7 +11,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from .models import EconomicReconciliation, FormationIntentRow, PositionReconciliation, TargetFormation
-from .position_bridge import LtsPosition
+from .position_bridge import LtsPosition, validate_slice_percentages
 
 ZERO = Decimal("0")
 ONE_HUNDRED = Decimal("100")
@@ -49,6 +49,8 @@ def reconcile_economically(
     Matching is performed independently for each Purpose × ISIN pair. Each
     LTS Position contributes only to its accepted Purpose.
     """
+    validate_slice_percentages(positions)
+
     current: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
     for position in positions:
         if position.purpose is None:
@@ -89,6 +91,8 @@ def reconcile_positions(
     This allocation is analytical only. It never mutates the bridge or LPS
     state. Positions are consumed deterministically in identity order.
     """
+    validate_slice_percentages(positions)
+
     remaining: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
     for row in economic:
         if row.matched_value < ZERO:
