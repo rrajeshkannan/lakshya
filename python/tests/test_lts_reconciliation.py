@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from lps.positions import Position, PositionId
-from lts.models import FormationIntentRow, PositionReconciliation
+from lts.models import FormationIntentRow, PositionReconciliation, TargetFormation
 from lts.reconciliation import reconcile_economically, reconcile_positions
 from lts.treatments import TransitionTreatment, classify_position_treatment
 
@@ -23,7 +23,7 @@ def test_economic_reconciliation_matches_before_excess_and_gap():
     current = [position("Amma", "F1", "A", "500")]
     intent = [FormationIntentRow("Retirement", "A", Decimal("800"), Decimal("0.75"))]
 
-    row = reconcile_economically(current, intent)[0]
+    row = reconcile_economically(current, TargetFormation(rows=tuple(intent)))[0]
 
     assert row.current_value == Decimal("500")
     assert row.target_value == Decimal("600")
@@ -94,3 +94,61 @@ def test_treatments_distinguish_retain_partial_switch_and_exit():
     assert classify_position_treatment(
         PositionReconciliation(p, "Retirement", "A", Decimal("100"), Decimal("0"), Decimal("100"))
     ) == TransitionTreatment.EXIT
+
+
+def test_economic_reconciliation_reports_current_excess():
+    current = [position("Amma", "F1", "A", "900")]
+    intent = [FormationIntentRow("Retirement", "A", Decimal("800"), Decimal("1"))]
+
+    row = reconcile_economically(current, TargetFormation(rows=tuple(intent)))[0]
+
+    assert row.current_value == Decimal("900")
+    assert row.target_value == Decimal("800")
+    assert row.matched_value == Decimal("800")
+    assert row.current_excess == Decimal("100")
+    assert row.target_gap == Decimal("0")
+
+
+def test_economic_reconciliation_reports_target_only_gap():
+    current = []
+    intent = [FormationIntentRow("Retirement", "A", Decimal("800"), Decimal("1"))]
+
+    row = reconcile_economically(current, TargetFormation(rows=tuple(intent)))[0]
+
+    assert row.current_value == Decimal("0")
+    assert row.target_value == Decimal("800")
+    assert row.matched_value == Decimal("0")
+    assert row.current_excess == Decimal("0")
+    assert row.target_gap == Decimal("800")
+
+
+def test_economic_reconciliation_ignores_unattributed_positions():
+    current = [position("Amma", "F1", "A", "500", purpose=None)]
+    intent = [FormationIntentRow("Retirement", "A", Decimal("500"), Decimal("1"))]
+
+    row = reconcile_economically(current, TargetFormation(rows=tuple(intent)))[0]
+
+    assert row.current_value == Decimal("0")
+    assert row.target_value == Decimal("500")
+    assert row.matched_value == Decimal("0")
+    assert row.target_gap == Decimal("500")
+
+
+def test_economic_reconciliation_rejects_non_finite_target_values():
+    current = []
+    intent = [FormationIntentRow("Retirement", "A", Decimal("100"), Decimal("NaN"))]
+
+    with pytest.raises(ValueError, match="finite and non-negative"):
+        reconcile_economically(current, TargetFormation(rows=tuple(intent)))
+
+
+def test_position_reconciliation_leaves_target_gap_for_later():
+    current = [position("Amma", "F1", "A", "500")]
+    intent = [FormationIntentRow("Retirement", "A", Decimal("800"), Decimal("1"))]
+
+    economic = reconcile_economically(current, TargetFormation(rows=tuple(intent)))
+    rows = reconcile_positions(current, economic)
+
+    assert rows[0].matched_value == Decimal("500")
+    assert rows[0].unmatched_current_value == Decimal("0")
+    assert economic[0].target_gap == Decimal("300")
