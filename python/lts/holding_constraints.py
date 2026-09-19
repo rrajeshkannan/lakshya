@@ -52,7 +52,7 @@ class LotTaxAnalysis:
 
 @dataclass(frozen=True)
 class HoldingConstraintAnalysis:
-    """Constraint analysis for one holding line / LTS Position."""
+    """Constraint analysis for one factual LPS holding."""
 
     holding_id: PositionId
     as_of: date
