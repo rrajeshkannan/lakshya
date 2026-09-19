@@ -140,3 +140,30 @@ def test_transition_evidence_preserves_transactions_as_history():
 
     assert evidence.transactions == (older, newer)
     assert evidence.transactions[0].event_type == "Purchase"
+
+
+def test_transition_evidence_exposes_persisted_fund_metadata(tmp_path):
+    store = NavEvidenceStore(tmp_path / "INF001.json")
+    store.create(
+        isin="INF001",
+        scheme_code=1001,
+        source="test",
+        nav=pd.DataFrame({
+            "date": pd.to_datetime(["2026-08-18"]),
+            "nav": [Decimal("109.06")],
+        }),
+        retrieved_at="2026-08-18T10:00:00+05:30",
+        scheme_metadata={
+            "schemeName": "Example ELSS Fund",
+            "schemeCategory": "Equity Scheme - ELSS",
+            "schemeType": "Open Ended Schemes",
+        },
+    )
+    evidence = build_transition_evidence(
+        [position()], [], {"INF001": store}, date(2026, 8, 18)
+    )
+    assert evidence.fund_metadata == (
+        __import__("lts.fund_metadata", fromlist=["TransitionFundMetadata"]).TransitionFundMetadata(
+            "INF001", "Example ELSS Fund", "Equity Scheme - ELSS", "Open Ended Schemes"
+        ),
+    )
