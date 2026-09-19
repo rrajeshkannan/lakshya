@@ -127,6 +127,7 @@ class NavEvidenceStore:
         nav: pd.DataFrame,
         retrieved_at: str,
         isin: str | None = None,
+        scheme_metadata: dict | None = None,
     ) -> None:
         """Incrementally extend an existing NAV evidence artifact."""
         if not self.path.exists():
@@ -163,6 +164,8 @@ class NavEvidenceStore:
         new_observations = self._serialize_observations(nav)
         payload["artifact_version"] += 1
         payload["retrieved_at"] = retrieved_at
+        if scheme_metadata is not None:
+            payload["scheme_metadata"] = dict(scheme_metadata)
         payload["observations"] = new_observations + existing_observations
         self._write(payload)
 
