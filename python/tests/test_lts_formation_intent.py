@@ -79,6 +79,13 @@ def test_missing_purpose_capital_is_not_invented(tmp_path):
         "Home,2030-01-01,1000000,10000\n",
         encoding="utf-8",
     )
+    summaries.write_text(
+        'purpose,primary_winner\n'
+        'Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n'
+        'Edu_A,CCC|CCC=1.0000\n'
+        'Home,CCC|CCC=1.0000\n',
+        encoding="utf-8",
+    )
 
     with pytest.raises(ValueError, match="no valued Position capital"):
         build_formation_intent(
