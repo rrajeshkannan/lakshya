@@ -152,3 +152,98 @@ def test_position_reconciliation_leaves_target_gap_for_later():
     assert rows[0].matched_value == Decimal("500")
     assert rows[0].unmatched_current_value == Decimal("0")
     assert economic[0].target_gap == Decimal("300")
+
+
+def test_position_reconciliation_reports_full_current_excess():
+    current = [position("Amma", "F1", "A", "900")]
+    intent = [FormationIntentRow("Retirement", "A", Decimal("800"), Decimal("1"))]
+
+    rows = reconcile_positions(current, reconcile_economically(current, TargetFormation(rows=tuple(intent))))
+
+    assert rows[0].current_value == Decimal("900")
+    assert rows[0].matched_value == Decimal("800")
+    assert rows[0].unmatched_current_value == Decimal("100")
+
+
+def test_position_reconciliation_keeps_zero_unit_position_as_zero_value():
+    current = [Position(
+        id=PositionId("Amma", "F1", "A"),
+        units=Decimal("0"),
+        market_value=None,
+        purpose="Retirement",
+    )]
+    economic = [
+        FormationIntentRow("Retirement", "A", Decimal("0"), Decimal("1"))
+    ]
+
+    rows = reconcile_positions(
+        current,
+        reconcile_economically(current, TargetFormation(rows=tuple(economic))),
+    )
+
+    assert rows[0].current_value == Decimal("0")
+    assert rows[0].matched_value == Decimal("0")
+    assert rows[0].unmatched_current_value == Decimal("0")
+
+
+def test_position_reconciliation_does_not_allocate_unattributed_position():
+    current = [position("Amma", "F1", "A", "500", purpose=None)]
+    economic = [
+        FormationIntentRow("Retirement", "A", Decimal("500"), Decimal("1"))
+    ]
+
+    rows = reconcile_positions(
+        current,
+        reconcile_economically(current, TargetFormation(rows=tuple(economic))),
+    )
+
+    assert rows == []
+
+
+def test_position_reconciliation_rejects_unvalued_position():
+    current = [Position(
+        id=PositionId("Amma", "F1", "A"),
+        units=Decimal("10"),
+        market_value=None,
+        purpose="Retirement",
+    )]
+
+    with pytest.raises(ValueError, match="unvalued Position"):
+        reconcile_positions(
+            current,
+            [PositionReconciliation(
+                PositionId("Amma", "F1", "A"),
+                "Retirement",
+                "A",
+                Decimal("100"),
+                Decimal("100"),
+                Decimal("0"),
+            )],
+        )
+
+
+def test_position_reconciliation_consumes_duplicate_economic_rows_by_key():
+    current = [position("Amma", "F1", "A", "300")]
+    economic = [
+        PositionReconciliation(
+            PositionId("Appanna", "F2", "A"),
+            "Retirement",
+            "A",
+            Decimal("0"),
+            Decimal("100"),
+            Decimal("0"),
+        ),
+        PositionReconciliation(
+            PositionId("Appanna", "F3", "A"),
+            "Retirement",
+            "A",
+            Decimal("0"),
+            Decimal("200"),
+            Decimal("0"),
+        ),
+    ]
+
+    rows = reconcile_positions(current, economic)
+
+    assert rows[0].matched_value == Decimal("300")
+    assert rows[0].unmatched_current_value == Decimal("0")
