@@ -42,7 +42,7 @@ def run_nav_pipeline(
                 new_nav = nav[nav["date"] > latest_date]
 
                 if not new_nav.empty:
-                    store.update(nav=new_nav, retrieved_at=retrieved_at)
+                    store.update(\n                        nav=new_nav,\n                        retrieved_at=retrieved_at,\n                        scheme_metadata=scheme_entry,\n                    )
                     nav_action = "updated"
                 else:
                     nav_action = "unchanged"
