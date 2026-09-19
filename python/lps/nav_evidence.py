@@ -40,6 +40,7 @@ class NavEvidenceStore:
         source: str,
         nav: pd.DataFrame,
         retrieved_at: str,
+        scheme_metadata: dict | None = None,
     ) -> None:
         """Create a new NAV evidence artifact."""
         if self.path.exists():
@@ -55,9 +56,16 @@ class NavEvidenceStore:
             "scheme_code": int(scheme_code),
             "source": source,
             "retrieved_at": retrieved_at,
+            "scheme_metadata": scheme_metadata or {},
             "observations": self._serialize_observations(nav),
         }
         self._write(payload)
+
+    def scheme_metadata(self) -> dict:
+        """Return persisted source-derived scheme metadata."""
+        if not self.path.exists():
+            raise ValueError(f"NAV evidence artifact does not exist: {self.path}")
+        return dict(self._read().get("scheme_metadata", {}))
 
     def latest_date(self) -> pd.Timestamp:
         """Return the date of the newest persisted NAV observation."""
