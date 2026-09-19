@@ -2,6 +2,7 @@
 
 from .evidence import TransitionEvidence, TransitionEvidencePosition, build_transition_evidence
 from .formation_intent import build_formation_intent
+from .fund_metadata import FundClassification, TransitionFundMetadata, classify_fund, project_fund_metadata
 from .models import EconomicReconciliation, FormationIntentRow, PositionReconciliation, TargetFormation
 from .position_bridge import LtsPosition, LtsPositionId, bridge_positions, validate_slice_percentages
 from .reconciliation import reconcile_economically, reconcile_positions
@@ -19,5 +20,6 @@ __all__ = [
     "build_formation_intent", "reconcile_economically", "reconcile_positions",
     "transactions_for_holding", "HoldingHistory", "holding_history",
     "HoldingLot", "fifo_holding_lots",
+    "FundClassification", "TransitionFundMetadata", "classify_fund", "project_fund_metadata",
     "HoldingConstraintAnalysis", "HoldingTaxConstraint", "LotTaxAnalysis", "analyze_holding",
 ]
