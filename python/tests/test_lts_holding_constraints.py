@@ -7,12 +7,12 @@ from lts.holding_constraints import (
     LotTaxAnalysis,
     analyze_holding,
 )
-from lts.position_bridge import LtsPosition, LtsPositionId
+from lps.positions import Position, PositionId
 from lps.transactions import Transaction
 
 
-POSITION = LtsPosition(
-    id=LtsPositionId("Amma", "F1", "A", "Slice-1"),
+POSITION = Position(
+    id=PositionId("Amma", "F1", "A"),
     units=Decimal("10"),
     nav=Decimal("150"),
     market_value=Decimal("1500"),
@@ -47,7 +47,7 @@ def test_analysis_is_per_holding_line_and_exposes_gain_and_wait_until():
         ),
     )
 
-    assert result.position_id == POSITION.id
+    assert result.holding_id == POSITION.id
     assert result.total_gain == Decimal("500")
     assert result.classification == "LTCG"
     assert result.wait_until is None
