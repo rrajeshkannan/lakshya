@@ -216,9 +216,9 @@ def test_position_reconciliation_reports_full_current_excess():
 
     rows = reconcile_positions(current, reconcile_economically(current, TargetFormation(rows=tuple(intent))))
 
-    assert rows[0].current_value == Decimal("800")
+    assert rows[0].current_value == Decimal("900")
     assert rows[0].matched_value == Decimal("800")
-    assert rows[0].unmatched_current_value == Decimal("0")
+    assert rows[0].unmatched_current_value == Decimal("100")
 
 
 def test_position_reconciliation_keeps_zero_unit_position_as_zero_value():
