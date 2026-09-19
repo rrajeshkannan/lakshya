@@ -202,3 +202,41 @@ def test_nav_evidence_store_as_of_rejects_date_before_first_observation(tmp_path
 
     with pytest.raises(ValueError, match="on or before"):
         store.as_of(pd.Timestamp("2026-08-13"))
+
+
+def test_nav_evidence_store_persists_scheme_metadata(tmp_path):
+    path = tmp_path / "INFTEST123.json"
+    store = NavEvidenceStore(path)
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=pd.DataFrame({"date": pd.to_datetime(["2026-08-03"]), "nav": [103.0]}),
+        retrieved_at="2026-08-04T16:00:00+05:30",
+        scheme_metadata={"schemeCategory": "Equity Scheme - Large Cap"},
+    )
+    assert store.scheme_metadata() == {"schemeCategory": "Equity Scheme - Large Cap"}
+
+
+def test_nav_evidence_store_updates_scheme_metadata_without_rewriting_history(tmp_path):
+    path = tmp_path / "INFTEST123.json"
+    store = NavEvidenceStore(path)
+    store.create(
+        isin="INFTEST123",
+        scheme_code=12345,
+        source="mfapi.in",
+        nav=pd.DataFrame({"date": pd.to_datetime(["2026-08-03"]), "nav": [103.0]}),
+        retrieved_at="2026-08-04T16:00:00+05:30",
+        scheme_metadata={"schemeCategory": "Equity Scheme - Large Cap"},
+    )
+    store.update(
+        nav=pd.DataFrame({"date": pd.to_datetime(["2026-08-04"]), "nav": [104.0]}),
+        retrieved_at="2026-08-05T16:00:00+05:30",
+        scheme_metadata={"schemeCategory": "Equity Scheme - ELSS"},
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["observations"] == [
+        {"date": "2026-08-04", "nav": 104.0},
+        {"date": "2026-08-03", "nav": 103.0},
+    ]
+    assert store.scheme_metadata() == {"schemeCategory": "Equity Scheme - ELSS"}
