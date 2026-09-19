@@ -12,7 +12,7 @@ from decimal import Decimal
 
 from lps.positions import Position
 
-from .models import EconomicReconciliation, FormationIntentRow, PositionReconciliation
+from .models import EconomicReconciliation, FormationIntentRow, PositionReconciliation, TargetFormation
 
 ZERO = Decimal("0")
 
@@ -36,7 +36,7 @@ def _active_value(position: Position) -> Decimal:
 
 def reconcile_economically(
     positions: list[Position],
-    formation_intent: list[FormationIntentRow],
+    formation_intent: TargetFormation | list[FormationIntentRow],
 ) -> list[EconomicReconciliation]:
     """Reconcile established Purpose-attributed capital against TARGET.
 
@@ -51,11 +51,12 @@ def reconcile_economically(
         current[(position.purpose, position.id.isin)] += _active_value(position)
 
     target: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
-    for row in formation_intent:
-        if row.target_capital < ZERO:
-            raise ValueError("Target capital cannot be negative.")
-        if row.target_weight < ZERO:
-            raise ValueError("Target weight cannot be negative.")
+    rows = formation_intent.rows if isinstance(formation_intent, TargetFormation) else formation_intent
+    for row in rows:
+        if not row.target_capital.is_finite() or row.target_capital < ZERO:
+            raise ValueError("Target capital must be finite and non-negative.")
+        if not row.target_weight.is_finite() or row.target_weight < ZERO:
+            raise ValueError("Target weight must be finite and non-negative.")
         target[(row.purpose, row.isin)] += row.target_value
 
     keys = sorted(set(current) | set(target))
