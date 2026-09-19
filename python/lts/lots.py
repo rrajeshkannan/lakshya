@@ -17,7 +17,7 @@ from datetime import date
 from decimal import Decimal
 
 from lps.transactions import Transaction
-from .position_bridge import LtsPositionId
+from lps.positions import PositionId
 from .physical_transaction_history import transactions_for_holding
 
 ZERO = Decimal("0")
@@ -42,7 +42,7 @@ class HoldingLot:
 
 def fifo_holding_lots(
     transactions: list[Transaction] | tuple[Transaction, ...],
-    position_id: LtsPositionId,
+    position_id: PositionId,
     as_of: date | None = None,
 ) -> tuple[HoldingLot, ...]:
     """Derive FIFO acquisition lots through an observation date.
