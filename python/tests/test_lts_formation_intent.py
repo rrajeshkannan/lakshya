@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 
 from lts.formation_intent import build_formation_intent
+from lts.models import FormationIntentRow
 
 
 PURPOSES = """name,due,desired,monthly_plan
@@ -14,11 +15,6 @@ POSITIONS = """investor,folio,isin,units,nav,market_value,purpose
 Amma,F1,AAA,10,60,600,Retirement
 Appanna,F2,BBB,5,200,1000,Retirement
 Amma,F3,CCC,20,100,2000,Edu_A
-"""
-
-SUMMARIES = """purpose,primary_winner
-Retirement,AAA,AAA=0.6000,BBB=0.4000
-Edu_A,CCC,CCC=1.0000
 """
 
 
@@ -39,6 +35,12 @@ def write_files(tmp_path):
 
 def test_build_formation_intent_uses_lps_capital_and_final_weights(tmp_path):
     purposes, positions, summaries = write_files(tmp_path)
+    summaries.write_text(
+        "purpose,primary_winner\n"
+        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n"
+        "Edu_A,CCC|CCC=1.0000\n",
+        encoding="utf-8",
+    )
 
     formation = build_formation_intent(
         purposes_path=purposes,
@@ -47,18 +49,9 @@ def test_build_formation_intent_uses_lps_capital_and_final_weights(tmp_path):
     )
 
     assert formation.rows == (
-        # sorted by Purpose, then ISIN
-        # Edu_A capital comes from its LPS Positions: 2000
-        # Retirement capital comes from its LPS Positions: 1600
-        __import__("lts.models", fromlist=["FormationIntentRow"]).FormationIntentRow(
-            "Edu_A", "CCC", Decimal("2000"), Decimal("1.0000")
-        ),
-        __import__("lts.models", fromlist=["FormationIntentRow"]).FormationIntentRow(
-            "Retirement", "AAA", Decimal("1600"), Decimal("0.6000")
-        ),
-        __import__("lts.models", fromlist=["FormationIntentRow"]).FormationIntentRow(
-            "Retirement", "BBB", Decimal("1600"), Decimal("0.4000")
-        ),
+        FormationIntentRow("Edu_A", "CCC", Decimal("2000"), Decimal("1.0000")),
+        FormationIntentRow("Retirement", "AAA", Decimal("1600"), Decimal("0.6000")),
+        FormationIntentRow("Retirement", "BBB", Decimal("1600"), Decimal("0.4000")),
     )
 
 
@@ -104,7 +97,8 @@ def test_missing_purpose_capital_is_not_invented(tmp_path):
 def test_purpose_and_final_must_match(tmp_path):
     purposes, positions, summaries = write_files(tmp_path)
     summaries.write_text(
-        "purpose,primary_winner\nRetirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n",
+        "purpose,primary_winner\n"
+        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n",
         encoding="utf-8",
     )
 
