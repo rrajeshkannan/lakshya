@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from lps.positions import Position, PositionId
-from lts.position_bridge import LtsPositionId, bridge_positions
+from lts.position_bridge import LtsPositionId, LtsPosition, bridge_positions
 
 
 def test_bridge_projects_legacy_position_to_slice_one_at_100_percent():
@@ -16,16 +16,15 @@ def test_bridge_projects_legacy_position_to_slice_one_at_100_percent():
     projected = bridge_positions([source])
 
     assert projected == [
-        projected[0]
+        LtsPosition(
+            id=LtsPositionId("Amma", "F1", "INF001", "Slice-1"),
+            units=Decimal("10"),
+            nav=Decimal("100"),
+            market_value=Decimal("1000"),
+            purpose="Retirement",
+            percentage=Decimal("100"),
+        )
     ]
-    assert projected[0].id == LtsPositionId(
-        "Amma", "F1", "INF001", "Slice-1"
-    )
-    assert projected[0].units == Decimal("10")
-    assert projected[0].nav == Decimal("100")
-    assert projected[0].market_value == Decimal("1000")
-    assert projected[0].purpose == "Retirement"
-    assert projected[0].percentage == Decimal("100")
 
 
 def test_bridge_preserves_unattributed_position():
