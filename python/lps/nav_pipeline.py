@@ -29,7 +29,8 @@ def run_nav_pipeline(
         nav_evidence_path = data_root / "lps" / "nav" / f"{isin}.json"
 
         try:
-            scheme_code = nav_source.resolve_scheme_code(isin)
+            scheme_entry = nav_source.resolve_scheme(isin) if hasattr(nav_source, "resolve_scheme") else None
+            scheme_code = int(scheme_entry["schemeCode"]) if scheme_entry is not None else nav_source.resolve_scheme_code(isin)
             raw_nav = nav_source.fetch_nav_history(scheme_code)
             nav = normalize_nav_history(raw_nav)
 
@@ -52,6 +53,7 @@ def run_nav_pipeline(
                     source="mfapi.in",
                     nav=nav,
                     retrieved_at=retrieved_at,
+                    scheme_metadata=scheme_entry or {},
                 )
                 nav_action = "created"
 
