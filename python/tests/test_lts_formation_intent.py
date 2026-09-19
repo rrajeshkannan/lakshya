@@ -26,7 +26,7 @@ def write_files(tmp_path):
     positions.write_text(POSITIONS, encoding="utf-8")
     summaries.write_text(
         "purpose,primary_winner\n"
-        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n"
+        "Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n"
         "Edu_A,CCC|CCC=1.0000\n",
         encoding="utf-8",
     )
@@ -37,7 +37,7 @@ def test_build_formation_intent_uses_lps_capital_and_final_weights(tmp_path):
     purposes, positions, summaries = write_files(tmp_path)
     summaries.write_text(
         "purpose,primary_winner\n"
-        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n"
+        "Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n"
         "Edu_A,CCC|CCC=1.0000\n",
         encoding="utf-8",
     )
@@ -59,8 +59,8 @@ def test_formation_intent_preserves_purpose_level_mapping(tmp_path):
     purposes, positions, summaries = write_files(tmp_path)
     summaries.write_text(
         "purpose,primary_winner\n"
-        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n"
-        "Edu_A,AAA,BBB|AAA=0.6000,BBB=0.4000\n",
+        "Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n"
+        "Edu_A,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n",
         encoding="utf-8",
     )
 
@@ -98,7 +98,7 @@ def test_purpose_and_final_must_match(tmp_path):
     purposes, positions, summaries = write_files(tmp_path)
     summaries.write_text(
         "purpose,primary_winner\n"
-        "Retirement,AAA,BBB|AAA=0.6000,BBB=0.4000\n",
+        "Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n",
         encoding="utf-8",
     )
 
