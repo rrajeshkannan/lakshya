@@ -41,6 +41,7 @@ def test_run_nav_pipeline_creates_evidence(tmp_path):
 
     store = NavEvidenceStore(nav_path(tmp_path, "ISIN_A"))
     assert store.latest_date().date().isoformat() == "2026-08-03"
+    assert store.scheme_metadata() == {}
 
 
 def test_run_nav_pipeline_updates_only_new_observations(tmp_path):
