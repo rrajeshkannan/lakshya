@@ -84,7 +84,12 @@ def reconcile_positions(
     This allocation is analytical only. It never splits or mutates an LPS
     Position. Positions are consumed deterministically in identity order.
     """
-    remaining = {(row.purpose, row.isin): row.matched_value for row in economic}
+    remaining: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
+    for row in economic:
+        if row.matched_value < ZERO:
+            raise ValueError("Matched economic value cannot be negative.")
+        remaining[(row.purpose, row.isin)] += row.matched_value
+
     result = []
 
     for position in sorted(
