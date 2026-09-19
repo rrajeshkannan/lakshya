@@ -2,7 +2,7 @@
 
 This module deliberately stops before tax, transaction mechanics, and
 proposal construction. It answers only what CURRENT already satisfies of
-TARGET and which factual Positions supply that matched capital.
+TARGET and which LTS Positions supply that matched capital.
 """
 
 from __future__ import annotations
@@ -10,20 +10,26 @@ from __future__ import annotations
 from collections import defaultdict
 from decimal import Decimal
 
-from lps.positions import Position
-
 from .models import EconomicReconciliation, FormationIntentRow, PositionReconciliation, TargetFormation
+from .position_bridge import LtsPosition
 
 ZERO = Decimal("0")
+ONE_HUNDRED = Decimal("100")
 
 
-def _active_value(position: Position) -> Decimal:
-    """Return an established Position's observed market value.
+def _active_value(position: LtsPosition) -> Decimal:
+    """Return this LTS Position's Purpose-attributed observed value.
 
-    Missing valuation is unknown, not zero. LTS cannot reconcile an unvalued
-    Position economically, so fail explicitly rather than silently treating
-    it as having no value.
+    The bridge currently gives every legacy Position 100%. Future Slice-based
+    LPS state may partition a physical Investor + Folio + ISIN across several
+    LTS Positions, so the percentage is applied here rather than changing
+    the underlying observed market value.
     """
+    if not position.percentage.is_finite() or not ZERO <= position.percentage <= ONE_HUNDRED:
+        raise ValueError(
+            f"Position percentage must be finite and between 0 and 100: "
+            f"{position.id} -> {position.percentage}"
+        )
     if position.units == 0:
         return ZERO
     if position.market_value is None:
@@ -31,18 +37,17 @@ def _active_value(position: Position) -> Decimal:
             "Cannot perform economic reconciliation for unvalued Position "
             f"{position.id}."
         )
-    return position.market_value
+    return position.market_value * position.percentage / ONE_HUNDRED
 
 
 def reconcile_economically(
-    positions: list[Position],
+    positions: list[LtsPosition],
     formation_intent: TargetFormation | list[FormationIntentRow],
 ) -> list[EconomicReconciliation]:
-    """Reconcile established Purpose-attributed capital against TARGET.
+    """Reconcile Purpose-attributed capital against TARGET.
 
-    Matching is performed independently for each Purpose × ISIN pair. A
-    Position contributes only to its accepted current Purpose; changing that
-    attribution is a separate transition concern.
+    Matching is performed independently for each Purpose × ISIN pair. Each
+    LTS Position contributes only to its accepted Purpose.
     """
     current: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
     for position in positions:
@@ -76,13 +81,13 @@ def reconcile_economically(
 
 
 def reconcile_positions(
-    positions: list[Position],
+    positions: list[LtsPosition],
     economic: list[EconomicReconciliation],
 ) -> list[PositionReconciliation]:
-    """Allocate matched economic capital back to factual Positions.
+    """Allocate matched economic capital back to LTS Positions.
 
-    This allocation is analytical only. It never splits or mutates an LPS
-    Position. Positions are consumed deterministically in identity order.
+    This allocation is analytical only. It never mutates the bridge or LPS
+    state. Positions are consumed deterministically in identity order.
     """
     remaining: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
     for row in economic:
@@ -93,7 +98,8 @@ def reconcile_positions(
     result = []
 
     for position in sorted(
-        positions, key=lambda p: (p.id.investor, p.id.folio, p.id.isin)
+        positions,
+        key=lambda p: (p.id.investor, p.id.folio, p.id.isin, p.id.slice),
     ):
         if position.purpose is None:
             continue
