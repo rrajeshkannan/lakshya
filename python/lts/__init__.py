@@ -8,6 +8,7 @@ from .reconciliation import reconcile_economically, reconcile_positions
 from .physical_transaction_history import transactions_for_holding
 from .holding_history import HoldingHistory, holding_history
 from .lots import HoldingLot, fifo_holding_lots
+from .holding_constraints import HoldingConstraintAnalysis, HoldingTaxConstraint, LotTaxAnalysis, analyze_holding
 from .treatments import TransitionTreatment, classify_position_treatment
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "build_formation_intent", "reconcile_economically", "reconcile_positions",
     "transactions_for_holding", "HoldingHistory", "holding_history",
     "HoldingLot", "fifo_holding_lots",
+    "HoldingConstraintAnalysis", "HoldingTaxConstraint", "LotTaxAnalysis", "analyze_holding",
 ]
