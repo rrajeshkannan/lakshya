@@ -97,6 +97,64 @@ def test_partial_slice_percentage_contributes_only_its_allocated_value():
     }
 
 
+
+
+def test_slice_percentages_must_sum_to_100_per_physical_holding():
+    current = [
+        LtsPosition(
+            id=LtsPositionId("Amma", "F1", "A", "Slice-1"),
+            units=Decimal("1"),
+            market_value=Decimal("600"),
+            purpose="Retirement",
+            percentage=Decimal("60"),
+        ),
+        LtsPosition(
+            id=LtsPositionId("Amma", "F1", "A", "Slice-2"),
+            units=Decimal("1"),
+            market_value=Decimal("400"),
+            purpose="Education",
+            percentage=Decimal("30"),
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="sum to exactly 100%"):
+        reconcile_economically(
+            current,
+            [
+                FormationIntentRow("Retirement", "A", Decimal("600"), Decimal("1")),
+                FormationIntentRow("Education", "A", Decimal("400"), Decimal("1")),
+            ],
+        )
+
+
+def test_duplicate_slice_identity_is_rejected():
+    current = [
+        LtsPosition(
+            id=LtsPositionId("Amma", "F1", "A", "Slice-1"),
+            units=Decimal("1"),
+            market_value=Decimal("600"),
+            purpose="Retirement",
+            percentage=Decimal("50"),
+        ),
+        LtsPosition(
+            id=LtsPositionId("Amma", "F1", "A", "Slice-1"),
+            units=Decimal("1"),
+            market_value=Decimal("400"),
+            purpose="Education",
+            percentage=Decimal("50"),
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="Duplicate LTS Position identity"):
+        reconcile_economically(
+            current,
+            [
+                FormationIntentRow("Retirement", "A", Decimal("500"), Decimal("1")),
+                FormationIntentRow("Education", "A", Decimal("500"), Decimal("1")),
+            ],
+        )
+
+
 def test_invalid_slice_percentage_is_rejected():
     current = [
         LtsPosition(
