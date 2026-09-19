@@ -51,21 +51,22 @@ class MfapiNavSource:
         self.scheme_catalog = scheme_catalog or []
         self.transport = transport
 
-    def resolve_scheme_code(self, isin: str) -> int:
-        """Resolve a Lakshya Fund ISIN to the MFAPI scheme code."""
+    def resolve_scheme(self, isin: str) -> dict:
+        """Resolve a Lakshya Fund ISIN to its MFAPI scheme entry."""
         matches = [
-            scheme
-            for scheme in self.scheme_catalog
+            scheme for scheme in self.scheme_catalog
             if scheme.get("isinGrowth") == isin
             or scheme.get("isinDivReinvestment") == isin
         ]
-
         if not matches:
             raise ValueError(
                 f"ISIN could not be resolved through MFAPI scheme catalog: {isin}"
             )
+        return dict(matches[0])
 
-        scheme_code = matches[0].get("schemeCode")
+    def resolve_scheme_code(self, isin: str) -> int:
+        """Resolve a Lakshya Fund ISIN to the MFAPI scheme code."""
+        scheme_code = self.resolve_scheme(isin).get("schemeCode")
 
         if scheme_code is None:
             raise ValueError(
