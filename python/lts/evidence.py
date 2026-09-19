@@ -15,6 +15,7 @@ from typing import Mapping
 from lps.nav_evidence import NavEvidenceStore
 from lps.positions import Position, PositionId
 from lps.transactions import Transaction
+from lts.fund_metadata import TransitionFundMetadata, project_fund_metadata
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,7 @@ class TransitionEvidence:
 
     positions: tuple[TransitionEvidencePosition, ...]
     transactions: tuple[Transaction, ...]
+    fund_metadata: tuple[TransitionFundMetadata, ...]
 
 
 def build_transition_evidence(
@@ -98,6 +100,13 @@ def build_transition_evidence(
             )
         )
 
+    ordered_isins = sorted({position.id.isin for position in positions})
+    fund_metadata = tuple(
+        project_fund_metadata(isin, nav_stores[isin].scheme_metadata())
+        for isin in ordered_isins
+        if isin in nav_stores
+    )
+
     ordered_transactions = tuple(
         sorted(
             transactions,
@@ -115,6 +124,7 @@ def build_transition_evidence(
     return TransitionEvidence(
         positions=tuple(projected),
         transactions=ordered_transactions,
+        fund_metadata=fund_metadata,
     )
 
 
