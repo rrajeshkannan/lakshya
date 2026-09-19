@@ -139,3 +139,21 @@ def test_nav_source_does_not_calculate_behavioural_evidence():
     assert "return" not in nav.columns
     assert "drawdown" not in nav.columns
     assert "recovery" not in nav.columns
+
+def test_nav_source_resolves_full_scheme_metadata_by_isin():
+    source = MfapiNavSource(
+        scheme_catalog=[
+            {
+                "schemeCode": 12345,
+                "schemeName": "Test ELSS Fund - Growth",
+                "schemeType": "Open Ended Schemes",
+                "schemeCategory": "ELSS",
+                "isinGrowth": "TEST123",
+            }
+        ]
+    )
+
+    scheme = source.resolve_scheme("TEST123")
+
+    assert scheme["schemeCode"] == 12345
+    assert scheme["schemeCategory"] == "ELSS"
