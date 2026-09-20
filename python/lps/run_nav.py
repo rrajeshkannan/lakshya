@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import csv
 from datetime import datetime
 from pathlib import Path
 
+from fund_analysis.funds_in_scope import load_fund_scope_rows
 from lps.nav_pipeline import run_nav_pipeline
 from lps.nav_source import MfapiNavSource, mfapi_http_transport
 
@@ -14,15 +14,9 @@ SCOPE_PATH = PROJECT_ROOT / "data" / "lps" / "funds_in_scope.csv"
 
 
 def load_in_scope_isins(path: Path = SCOPE_PATH) -> list[str]:
-    """Load the reviewer-maintained ISIN scope without interpreting fund attributes."""
-    with path.open(newline="", encoding="utf-8") as handle:
-        rows = csv.DictReader(handle)
-        isins = [row["isin"].strip() for row in rows if row.get("isin", "").strip()]
-
-    if not isins:
-        raise ValueError(f"No ISINs found in scope file: {path}")
-
-    return list(dict.fromkeys(isins))
+    """Validate and load reviewer-maintained scope ISINs."""
+    rows = load_fund_scope_rows(path)
+    return [row["isin"] for row in rows]
 
 
 def main() -> None:
