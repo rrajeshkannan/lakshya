@@ -10,6 +10,7 @@ from .physical_transaction_history import transactions_for_holding
 from .holding_history import HoldingHistory, holding_history
 from .lots import HoldingLot, fifo_holding_lots
 from .holding_constraints import HoldingConstraintAnalysis, HoldingTaxConstraint, LotTaxAnalysis, analyze_holding
+from .constraint_factory import holding_constraint_for_fund
 from .treatments import TransitionTreatment, classify_position_treatment
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "HoldingLot", "fifo_holding_lots",
     "FundClassification", "TransitionFundMetadata", "classify_fund", "project_fund_metadata",
     "HoldingConstraintAnalysis", "HoldingTaxConstraint", "LotTaxAnalysis", "analyze_holding",
+    "holding_constraint_for_fund",
 ]
