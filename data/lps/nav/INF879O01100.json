@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF879O01100",
   "scheme_code": 147481,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 31.3729
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 31.1736
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 31.1268
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 31.0064
+    },
     {
       "date": "2026-09-11",
       "nav": 31.1997
@@ -7033,5 +7049,11 @@
       "date": "2019-07-26",
       "nav": 10.0129
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 147481,
+    "schemeName": "Parag Parikh ELSS Tax Saver Fund - Direct Plan - Growth",
+    "isinGrowth": "INF879O01100",
+    "isinDivReinvestment": null
+  }
 }

@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF109K01BL4",
   "scheme_code": 108466,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 105.33
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 104.79
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 104.25
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 103.85
+    },
     {
       "date": "2026-09-11",
       "nav": 105.3
@@ -18017,5 +18033,11 @@
       "date": "2008-05-26",
       "nav": 10.02
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 108466,
+    "schemeName": "ICICI Prudential Large Cap Fund (erstwhile Bluechip Fund) - Regular Plan - Growth",
+    "isinGrowth": "INF109K01BL4",
+    "isinDivReinvestment": null
+  }
 }

@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF179K01426",
   "scheme_code": 101764,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 784.845
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 779.142
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 775.523
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 772.625
+    },
     {
       "date": "2026-09-11",
       "nav": 784.479
@@ -20141,5 +20157,11 @@
       "date": "2006-04-03",
       "nav": 61.222
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 101764,
+    "schemeName": "HDFC Value Fund - Regular Plan - Growth Option",
+    "isinGrowth": "INF179K01426",
+    "isinDivReinvestment": null
+  }
 }

@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF966L01614",
   "scheme_code": 120823,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:44:24+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 729.9886
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 720.4029
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 714.612
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 716.3526
+    },
     {
       "date": "2026-09-11",
       "nav": 729.9659
@@ -13501,5 +13517,11 @@
       "date": "2013-01-07",
       "nav": 73.8977
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 120823,
+    "schemeName": "Quant Multi Cap Fund - Direct Plan - Growth Option",
+    "isinGrowth": "INF966L01614",
+    "isinDivReinvestment": null
+  }
 }

@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF769K01DM9",
   "scheme_code": 135781,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 56.753
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 56.481
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 56.215
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 55.932
+    },
     {
       "date": "2026-09-11",
       "nav": 56.742
@@ -10561,5 +10577,11 @@
       "date": "2015-12-29",
       "nav": 10.03
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 135781,
+    "schemeName": "Mirae Asset ELSS Tax Saver Fund - Direct Plan - Growth",
+    "isinGrowth": "INF769K01DM9",
+    "isinDivReinvestment": null
+  }
 }

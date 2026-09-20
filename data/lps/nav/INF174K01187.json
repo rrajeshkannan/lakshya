@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF174K01187",
   "scheme_code": 103234,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 346.697
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 342.997
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 340.092
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 339.846
+    },
     {
       "date": "2026-09-11",
       "nav": 346.608
@@ -20137,5 +20153,11 @@
       "date": "2006-04-03",
       "nav": 26.498
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 103234,
+    "schemeName": "Kotak Large & Mid Cap Fund - Regular Plan - Growth",
+    "isinGrowth": "INF174K01187",
+    "isinDivReinvestment": null
+  }
 }

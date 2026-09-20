@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF663L01DV3",
   "scheme_code": 125307,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 77.33
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 76.08
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 75.42
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 75.28
+    },
     {
       "date": "2026-09-11",
       "nav": 77.09
@@ -12577,5 +12593,11 @@
       "date": "2013-12-05",
       "nav": 10.01
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 125307,
+    "schemeName": "PGIM India Midcap Fund - Direct Plan - Direct Growth",
+    "isinGrowth": "INF663L01DV3",
+    "isinDivReinvestment": null
+  }
 }

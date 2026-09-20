@@ -1,10 +1,26 @@
 {
-  "artifact_version": 1,
+  "artifact_version": 2,
   "isin": "INF174K01LT0",
   "scheme_code": 119775,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-14T19:34:20+05:30",
+  "retrieved_at": "2026-09-20T16:50:26+05:30",
   "observations": [
+    {
+      "date": "2026-09-18",
+      "nav": 169.708
+    },
+    {
+      "date": "2026-09-17",
+      "nav": 167.273
+    },
+    {
+      "date": "2026-09-16",
+      "nav": 165.669
+    },
+    {
+      "date": "2026-09-15",
+      "nav": 165.887
+    },
     {
       "date": "2026-09-11",
       "nav": 169.773
@@ -13481,5 +13497,11 @@
       "date": "2013-01-03",
       "nav": 14.052
     }
-  ]
+  ],
+  "scheme_metadata": {
+    "schemeCode": 119775,
+    "schemeName": "Kotak Mid Cap Fund - Direct Plan - Growth",
+    "isinGrowth": "INF174K01LT0",
+    "isinDivReinvestment": null
+  }
 }
