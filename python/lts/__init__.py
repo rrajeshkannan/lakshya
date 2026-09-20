@@ -17,9 +17,12 @@ from .availability_report import build_holding_availability_report
 from .treatments import TransitionTreatment, classify_position_treatment
 from .purpose_allocation import validate_purpose_target_allocation
 from .purpose_transition import (
+    PurposeTransitionBalance,
     PurposeTransitionPlan,
     PurposeTransitionRow,
     TransitionDisposition,
+    TransitionMapping,
+    TransitionSourceKind,
     build_purpose_transition_plan,
 )
 
@@ -38,6 +41,7 @@ __all__ = [
     "HoldingAvailability", "LockedLotAvailability", "summarize_holding_availability",
     "build_holding_availability_report",
     "validate_purpose_target_allocation",
-    "PurposeTransitionPlan", "PurposeTransitionRow", "TransitionDisposition",
+    "PurposeTransitionBalance", "PurposeTransitionPlan", "PurposeTransitionRow",
+    "TransitionDisposition", "TransitionMapping", "TransitionSourceKind",
     "build_purpose_transition_plan",
 ]
