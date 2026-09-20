@@ -15,6 +15,7 @@ from .constraint_factory import holding_constraint_for_fund
 from .holding_availability import HoldingAvailability, LockedLotAvailability, summarize_holding_availability
 from .availability_report import build_holding_availability_report
 from .treatments import TransitionTreatment, classify_position_treatment
+from .purpose_allocation import validate_purpose_target_allocation
 
 __all__ = [
     "EconomicReconciliation", "FormationIntentRow", "PositionReconciliation",
@@ -30,4 +31,5 @@ __all__ = [
     "holding_constraint_for_fund",
     "HoldingAvailability", "LockedLotAvailability", "summarize_holding_availability",
     "build_holding_availability_report",
+    "validate_purpose_target_allocation",
 ]
