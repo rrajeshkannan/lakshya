@@ -15,6 +15,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from lts.models import FormationIntentRow, TargetFormation
+from lts.purpose_allocation import validate_purpose_target_allocation
 
 
 PURPOSE_FIELDS = {"name", "due", "desired", "monthly_plan"}
@@ -150,7 +151,9 @@ def build_formation_intent(
                 )
             )
 
-    return TargetFormation(rows=tuple(rows))
+    formation = TargetFormation(rows=tuple(rows))
+    validate_purpose_target_allocation(formation)
+    return formation
 
 
 __all__ = ["build_formation_intent"]
