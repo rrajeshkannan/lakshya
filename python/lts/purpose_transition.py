@@ -12,11 +12,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
 
-from .formation_intent import TargetFormation
+from .models import TargetFormation
 from .position_bridge import LtsPosition, LtsPositionId, validate_slice_percentages
 from .purpose_allocation import validate_purpose_target_allocation
 
 ZERO = Decimal("0")
+ONE_HUNDRED = Decimal("100")
 
 
 class TransitionDisposition(str, Enum):
@@ -83,7 +84,7 @@ def build_purpose_transition_plan(
             raise ValueError(f"Cannot plan transition for unvalued Position {position.id}.")
         if position.market_value < ZERO:
             raise ValueError(f"Position market value cannot be negative: {position.id}.")
-        value = position.market_value * position.percentage / Decimal("100")
+        value = position.market_value * position.percentage / ONE_HUNDRED
         key = (position.purpose, position.id.isin)
         current[key] = current.get(key, ZERO) + value
 
@@ -93,7 +94,7 @@ def build_purpose_transition_plan(
     for position in sorted(positions, key=lambda item: (item.purpose or "", item.id.investor, item.id.folio, item.id.isin, item.id.slice)):
         if position.purpose is None:
             continue
-        value = position.market_value * position.percentage / Decimal("100") if position.market_value is not None else ZERO
+        value = position.market_value * position.percentage / ONE_HUNDRED if position.market_value is not None else ZERO
         key = (position.purpose, position.id.isin)
         retain = min(value, matched_remaining.get(key, ZERO))
         matched_remaining[key] = matched_remaining.get(key, ZERO) - retain
