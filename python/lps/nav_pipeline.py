@@ -29,8 +29,16 @@ def run_nav_pipeline(
         nav_evidence_path = data_root / "lps" / "nav" / f"{isin}.json"
 
         try:
-            scheme_entry = nav_source.resolve_scheme(isin) if hasattr(nav_source, "resolve_scheme") else None
-            scheme_code = int(scheme_entry["schemeCode"]) if scheme_entry is not None else nav_source.resolve_scheme_code(isin)
+            scheme_entry = (
+                nav_source.resolve_scheme(isin)
+                if hasattr(nav_source, "resolve_scheme")
+                else None
+            )
+            scheme_code = (
+                int(scheme_entry["schemeCode"])
+                if scheme_entry is not None
+                else nav_source.resolve_scheme_code(isin)
+            )
             raw_nav = nav_source.fetch_nav_history(scheme_code)
             nav = normalize_nav_history(raw_nav)
 
@@ -42,7 +50,11 @@ def run_nav_pipeline(
                 new_nav = nav[nav["date"] > latest_date]
 
                 if not new_nav.empty:
-                    store.update(\n                        nav=new_nav,\n                        retrieved_at=retrieved_at,\n                        scheme_metadata=scheme_entry,\n                    )
+                    store.update(
+                        nav=new_nav,
+                        retrieved_at=retrieved_at,
+                        scheme_metadata=scheme_entry,
+                    )
                     nav_action = "updated"
                 else:
                     nav_action = "unchanged"
