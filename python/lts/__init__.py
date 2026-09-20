@@ -11,6 +11,7 @@ from .holding_history import HoldingHistory, holding_history
 from .lots import HoldingLot, fifo_holding_lots
 from .holding_constraints import HoldingConstraintAnalysis, HoldingTaxConstraint, LotTaxAnalysis, analyze_holding
 from .constraint_factory import holding_constraint_for_fund
+from .holding_availability import HoldingAvailability, LockedLotAvailability, summarize_holding_availability
 from .treatments import TransitionTreatment, classify_position_treatment
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "FundClassification", "TransitionFundMetadata", "classify_fund", "project_fund_metadata",
     "HoldingConstraintAnalysis", "HoldingTaxConstraint", "LotTaxAnalysis", "analyze_holding",
     "holding_constraint_for_fund",
+    "HoldingAvailability", "LockedLotAvailability", "summarize_holding_availability",
 ]
