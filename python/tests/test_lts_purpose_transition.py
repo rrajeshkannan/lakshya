@@ -4,6 +4,7 @@ from lts.models import FormationIntentRow, TargetFormation
 from lts.position_bridge import LtsPosition, LtsPositionId
 from lts.purpose_transition import (
     TransitionDisposition,
+    TransitionSourceKind,
     build_purpose_transition_plan,
 )
 
@@ -30,39 +31,43 @@ def row(purpose, isin, capital, weight):
     )
 
 
-def test_retain_and_invest_selected_target_gap():
+def test_retention_and_released_capital_are_mapped_to_target_gap():
     plan = build_purpose_transition_plan(
-        [position("I1", "F1", "AAA", "60")],
+        [
+            position("I1", "F1", "AAA", "60"),
+            position("I1", "F2", "CCC", "40"),
+        ],
         formation(
-            row("Edu_A", "AAA", "100", "0.5"),
-            row("Edu_A", "BBB", "100", "0.5"),
+            row("Edu_A", "AAA", "100", "0.6"),
+            row("Edu_A", "BBB", "100", "0.4"),
         ),
     )
 
+    assert plan.is_balanced is True
     assert [(item.disposition, item.amount, item.destination_isin) for item in plan.rows] == [
-        (TransitionDisposition.RETAIN, Decimal("50.0"), "AAA"),
-        (TransitionDisposition.REDEEM, Decimal("10.0"), "AAA"),
-        (TransitionDisposition.INVEST, Decimal("50.0"), "BBB"),
+        (TransitionDisposition.RETAIN, Decimal("60.0"), "AAA"),
+        (TransitionDisposition.REDEEM, Decimal("40"), "CCC"),
+        (TransitionDisposition.INVEST, Decimal("40"), "BBB"),
     ]
+    assert plan.mappings[-1].source_kind is TransitionSourceKind.REDEMPTION_PROCEEDS
+    assert plan.mappings[-1].destination_isin == "BBB"
 
 
-def test_non_selected_capital_is_redeemable_and_purpose_owned():
+def test_non_selected_capital_is_mapped_without_cross_purpose_subsidy():
     plan = build_purpose_transition_plan(
-        [position("I1", "F1", "CCC", "80")],
+        [position("I1", "F1", "CCC", "100")],
         formation(row("Edu_A", "AAA", "100", "1")),
     )
 
-    assert len(plan.rows) == 2
-    assert plan.rows[0].purpose == "Edu_A"
-    assert plan.rows[0].disposition is TransitionDisposition.REDEEM
-    assert plan.rows[0].amount == Decimal("80")
-    assert plan.rows[1].disposition is TransitionDisposition.INVEST
-    assert plan.rows[1].destination_isin == "AAA"
-    assert plan.rows[1].amount == Decimal("100")
+    assert plan.is_balanced is True
+    assert plan.mappings[0].source_kind is TransitionSourceKind.REDEMPTION_PROCEEDS
+    assert plan.mappings[0].source_isin == "CCC"
+    assert plan.mappings[0].destination_isin == "AAA"
+    assert plan.mappings[0].amount == Decimal("100")
 
 
-def test_locked_excess_is_preserved_as_locked_redemption():
-    source = position("I1", "F1", "CCC", "80")
+def test_locked_released_capital_remains_tagged_through_target_mapping():
+    source = position("I1", "F1", "CCC", "100")
     plan = build_purpose_transition_plan(
         [source],
         formation(row("Edu_A", "AAA", "100", "1")),
@@ -71,22 +76,37 @@ def test_locked_excess_is_preserved_as_locked_redemption():
 
     assert plan.rows[0].disposition is TransitionDisposition.REDEEM_LOCKED
     assert plan.rows[0].locked is True
-    assert plan.rows[0].purpose == "Edu_A"
+    assert plan.mappings[0].source_kind is TransitionSourceKind.LOCKED_REDEMPTION_PROCEEDS
+    assert plan.mappings[0].locked is True
+
+
+def test_purpose_capital_mismatch_is_rejected():
+    try:
+        build_purpose_transition_plan(
+            [position("I1", "F1", "AAA", "90")],
+            formation(row("Edu_A", "AAA", "100", "1")),
+        )
+    except ValueError as error:
+        assert "must be conserved" in str(error)
+    else:
+        raise AssertionError("Expected Purpose capital mismatch to be rejected")
 
 
 def test_purposes_are_not_cross_subsidized():
     plan = build_purpose_transition_plan(
-        [position("I1", "F1", "AAA", "100", "Edu_A")],
+        [
+            position("I1", "F1", "AAA", "100", "Edu_A"),
+            position("I1", "F2", "CCC", "100", "Retirement"),
+        ],
         formation(
             row("Edu_A", "AAA", "100", "1"),
             row("Retirement", "BBB", "100", "1"),
         ),
     )
 
-    investment = [item for item in plan.rows if item.disposition is TransitionDisposition.INVEST]
-    assert len(investment) == 1
-    assert investment[0].purpose == "Retirement"
-    assert investment[0].destination_isin == "BBB"
+    assert plan.is_balanced is True
+    assert all(item.purpose == "Retirement" for item in plan.mappings if item.source_isin == "CCC")
+    assert all(item.purpose == "Edu_A" for item in plan.mappings if item.source_isin == "AAA")
 
 
 def test_unvalued_position_is_rejected():
