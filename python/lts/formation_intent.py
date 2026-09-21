@@ -13,7 +13,9 @@ from __future__ import annotations
 import csv
 from decimal import Decimal
 from pathlib import Path
+from typing import Sequence
 
+from lps.positions import Position
 from lts.models import FormationIntentRow, TargetFormation
 from lts.purpose_allocation import validate_purpose_target_allocation
 
@@ -34,6 +36,26 @@ SUMMARY_FIELDS = {"purpose", "primary_winner"}
 def _read_csv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
         return list(csv.DictReader(handle))
+
+
+def _purpose_capital_from_positions(
+    positions: Sequence[Position],
+) -> dict[str, Decimal]:
+    result: dict[str, Decimal] = {}
+    for position in positions:
+        purpose = (position.purpose or "").strip()
+        if not purpose:
+            continue
+        if position.market_value is None:
+            raise ValueError(
+                f"Position assigned to Purpose {purpose!r} has no market value: "
+                f"{position.id.investor}/{position.id.folio}/{position.id.isin}"
+            )
+        value = position.market_value
+        if not value.is_finite() or value < 0:
+            raise ValueError(f"Invalid market value for Position: {position.id}")
+        result[purpose] = result.get(purpose, Decimal("0")) + value
+    return result
 
 
 def _purpose_capital(positions_path: Path) -> dict[str, Decimal]:
@@ -118,16 +140,21 @@ def build_formation_intent(
     purposes_path: Path,
     positions_path: Path,
     purpose_summaries_path: Path,
+    current_positions: Sequence[Position] | None = None,
 ) -> TargetFormation:
     """Build Formation Intent without re-solving FINAL.
 
     Capital is the factual Purpose capital observed by LPS at the transition
-    boundary. The committed Purpose file supplies the reviewed LFS Purpose set;
-    FINAL summaries supply the already-selected Composition for each Purpose.
+    boundary. When supplied, ``current_positions`` must be the validated CURRENT
+    population; otherwise the legacy CSV-based capital reader is used.
     """
 
     purposes = _purpose_state(purposes_path)
-    capital = _purpose_capital(positions_path)
+    capital = (
+        _purpose_capital_from_positions(current_positions)
+        if current_positions is not None
+        else _purpose_capital(positions_path)
+    )
     winners = _selected_compositions(purpose_summaries_path)
 
     if set(winners) != set(purposes):
