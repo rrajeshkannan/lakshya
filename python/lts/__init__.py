@@ -36,17 +36,34 @@ from .transition_export import (
 )
 
 
-_RUNNER_EXPORTS = {"LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition"}
+_RUNNER_EXPORTS = {
+    "DEFAULT_LTS_CANONICAL_ROOT",
+    "DEFAULT_LTS_OUTPUT_ROOT",
+    "LtsRunResult",
+    "persist_lts_run_artifacts",
+    "promote_lts_run_artifacts",
+    "run_lts_transition",
+}
 
 
 def __getattr__(name: str):
     """Load runner exports lazily so ``python -m lts.runner`` stays warning-free."""
     if name in _RUNNER_EXPORTS:
-        from .runner import LtsRunResult, persist_lts_run_artifacts, run_lts_transition
+        from .runner import (
+            DEFAULT_LTS_CANONICAL_ROOT,
+            DEFAULT_LTS_OUTPUT_ROOT,
+            LtsRunResult,
+            persist_lts_run_artifacts,
+            promote_lts_run_artifacts,
+            run_lts_transition,
+        )
 
         return {
+            "DEFAULT_LTS_CANONICAL_ROOT": DEFAULT_LTS_CANONICAL_ROOT,
+            "DEFAULT_LTS_OUTPUT_ROOT": DEFAULT_LTS_OUTPUT_ROOT,
             "LtsRunResult": LtsRunResult,
             "persist_lts_run_artifacts": persist_lts_run_artifacts,
+            "promote_lts_run_artifacts": promote_lts_run_artifacts,
             "run_lts_transition": run_lts_transition,
         }[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
@@ -74,5 +91,6 @@ __all__ = [
     "PurposeTransitionReport", "build_purpose_transition_report",
     "DEFAULT_TEMPORAL_ROOT", "export_transition_mapping_csv",
     "persist_transition_mapping_csv", "write_transition_mapping_csv",
-    "LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition",
+    "DEFAULT_LTS_CANONICAL_ROOT", "DEFAULT_LTS_OUTPUT_ROOT",
+    "LtsRunResult", "persist_lts_run_artifacts", "promote_lts_run_artifacts", "run_lts_transition",
 ]
