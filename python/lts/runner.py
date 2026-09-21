@@ -6,7 +6,6 @@ import argparse
 import csv
 import json
 from dataclasses import dataclass
-from decimal import Decimal
 from pathlib import Path
 
 from lps.position_persistence import read_positions
@@ -18,7 +17,11 @@ from .position_bridge import LtsPosition, bridge_positions
 from .purpose_transition import PurposeTransitionPlan, build_purpose_transition_plan
 from .purpose_transition_report import PurposeTransitionReport, build_purpose_transition_report
 from .transition_audit import audit_transition_mapping
-from .transition_export import persist_transition_mapping_csv
+from .transition_export import write_transition_mapping_csv
+
+
+DEFAULT_LTS_OUTPUT_ROOT = Path("output/lts")
+DEFAULT_LTS_CANONICAL_ROOT = Path("data/lts")
 
 
 @dataclass(frozen=True)
@@ -118,30 +121,63 @@ def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str, run_
     destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def persist_lts_run_artifacts(
-    result: LtsRunResult,
-    *,
-    as_of: str,
-    run_id: str,
-    temporal_root: Path,
-) -> tuple[Path, Path, Path]:
-    """Persist the mapping, Purpose report, and run manifest for one LTS run."""
+def _validate_identity(as_of: str, run_id: str) -> None:
     if not as_of.strip() or not run_id.strip():
         raise ValueError("as_of and run_id must be non-blank.")
     if Path(as_of).name != as_of or Path(run_id).name != run_id:
         raise ValueError("as_of and run_id must be single path-safe components.")
 
-    mapping_path = persist_transition_mapping_csv(
-        result.plan,
-        as_of=as_of,
-        run_id=run_id,
-        root=temporal_root,
-    )
-    report_path = temporal_root / "purpose_reports" / f"{as_of}_{run_id}.csv"
-    manifest_path = temporal_root / "manifests" / f"{as_of}_{run_id}.json"
+
+def persist_lts_run_artifacts(
+    result: LtsRunResult,
+    *,
+    as_of: str,
+    run_id: str,
+    output_root: Path = DEFAULT_LTS_OUTPUT_ROOT,
+) -> tuple[Path, Path, Path]:
+    """Persist one run beneath ``output/lts/run-<run_id>``.
+
+    These are execution artifacts, not the accepted canonical snapshot.
+    Promotion to ``data/lts`` is explicit and separate.
+    """
+    _validate_identity(as_of, run_id)
+    run_root = output_root / f"run-{run_id}"
+    mapping_path = run_root / "transition_mappings.csv"
+    report_path = run_root / "purpose_reports.csv"
+    manifest_path = run_root / "manifest.json"
+
+    write_transition_mapping_csv(result.plan, mapping_path)
     _write_reports_csv(result.reports, report_path)
     _write_manifest(result, manifest_path, as_of=as_of, run_id=run_id)
     return mapping_path, report_path, manifest_path
+
+
+def promote_lts_run_artifacts(
+    *,
+    run_id: str,
+    output_root: Path = DEFAULT_LTS_OUTPUT_ROOT,
+    canonical_root: Path = DEFAULT_LTS_CANONICAL_ROOT,
+) -> tuple[Path, Path, Path]:
+    """Promote one validated run into the canonical ``data/lts`` snapshot.
+
+    This function performs only the explicit file promotion. Validation and
+    human acceptance remain the caller's responsibility.
+    """
+    if not run_id.strip() or Path(run_id).name != run_id:
+        raise ValueError("run_id must be one non-blank, path-safe component.")
+
+    run_root = output_root / f"run-{run_id}"
+    source_names = ("manifest.json", "purpose_reports.csv", "transition_mappings.csv")
+    sources = tuple(run_root / name for name in source_names)
+    missing = [str(path) for path in sources if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"LTS run is incomplete; missing: {', '.join(missing)}")
+
+    destinations = tuple(canonical_root / name for name in source_names)
+    for source, destination in zip(sources, destinations):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    return destinations
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -151,7 +187,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--purpose-summaries", type=Path, required=True)
     parser.add_argument("--as-of", required=True)
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--temporal-root", type=Path, default=Path("data/lts"))
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_LTS_OUTPUT_ROOT)
     return parser
 
 
@@ -166,7 +202,7 @@ def main() -> None:
         result,
         as_of=args.as_of,
         run_id=args.run_id,
-        temporal_root=args.temporal_root,
+        output_root=args.output_root,
     )
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
@@ -179,4 +215,11 @@ if __name__ == "__main__":
     main()
 
 
-__all__ = ["LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition"]
+__all__ = [
+    "DEFAULT_LTS_CANONICAL_ROOT",
+    "DEFAULT_LTS_OUTPUT_ROOT",
+    "LtsRunResult",
+    "persist_lts_run_artifacts",
+    "promote_lts_run_artifacts",
+    "run_lts_transition",
+]
