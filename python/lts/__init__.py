@@ -34,7 +34,23 @@ from .transition_export import (
     persist_transition_mapping_csv,
     write_transition_mapping_csv,
 )
-from .runner import LtsRunResult, persist_lts_run_artifacts, run_lts_transition
+
+
+_RUNNER_EXPORTS = {"LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition"}
+
+
+def __getattr__(name: str):
+    """Load runner exports lazily so ``python -m lts.runner`` stays warning-free."""
+    if name in _RUNNER_EXPORTS:
+        from .runner import LtsRunResult, persist_lts_run_artifacts, run_lts_transition
+
+        return {
+            "LtsRunResult": LtsRunResult,
+            "persist_lts_run_artifacts": persist_lts_run_artifacts,
+            "run_lts_transition": run_lts_transition,
+        }[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "CurrentInput", "CurrentInputDiagnostics", "classify_current_positions",
