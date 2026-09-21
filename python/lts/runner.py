@@ -48,6 +48,7 @@ def run_lts_transition(
         purposes_path=purposes_path,
         positions_path=positions_path,
         purpose_summaries_path=purpose_summaries_path,
+        current_positions=current_input.active_positions,
     )
     plan = build_purpose_transition_plan(current_positions, formation)
     audit_transition_mapping(current_positions, formation, plan)
