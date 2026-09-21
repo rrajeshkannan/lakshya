@@ -8,6 +8,7 @@ from pathlib import Path
 
 from lps.position_persistence import read_positions
 
+from .current_input import CurrentInput, classify_current_positions
 from .formation_intent import build_formation_intent
 from .models import TargetFormation
 from .position_bridge import LtsPosition, bridge_positions
@@ -22,6 +23,7 @@ class LtsRunResult:
     """Validated analytical result produced by one LTS runner invocation."""
 
     positions: tuple[LtsPosition, ...]
+    current_input: CurrentInput
     formation: TargetFormation
     plan: PurposeTransitionPlan
     reports: tuple[PurposeTransitionReport, ...]
@@ -38,10 +40,9 @@ def run_lts_transition(
     The runner consumes existing LFS/FINAL evidence. It does not rerun FINAL,
     calculate tax, execute transactions, or mutate persisted portfolio state.
     """
-    current_positions = bridge_positions(read_positions(positions_path))
-    for position in current_positions:
-        if position.purpose is None:
-            raise ValueError(f"Position has no Purpose attribution: {position.id}")
+    persisted_positions = read_positions(positions_path)
+    current_input = classify_current_positions(persisted_positions)
+    current_positions = bridge_positions(list(current_input.active_positions))
 
     formation = build_formation_intent(
         purposes_path=purposes_path,
@@ -53,9 +54,10 @@ def run_lts_transition(
     reports = build_purpose_transition_report(current_positions, formation, plan)
     return LtsRunResult(
         positions=tuple(current_positions),
+        current_input=current_input,
         formation=formation,
         plan=plan,
-        reports=reports,
+        reports=tuple(reports),
     )
 
 
