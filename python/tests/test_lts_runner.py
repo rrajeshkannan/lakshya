@@ -40,6 +40,36 @@ def test_runner_composes_existing_lts_components(tmp_path):
     assert all(report.is_balanced for report in result.reports)
     assert result.plan.portfolio_current_amount == Decimal("3600")
     assert result.plan.portfolio_target_amount == Decimal("3600")
+    assert result.current_input.diagnostics.total_records == 3
+    assert result.current_input.diagnostics.active_records == 3
+    assert result.current_input.diagnostics.inactive_records == 0
+
+
+def test_runner_excludes_zero_unit_inactive_records(tmp_path):
+    purposes = tmp_path / "purposes.csv"
+    positions = tmp_path / "positions.csv"
+    summaries = tmp_path / "purpose_summaries.csv"
+    purposes.write_text(PURPOSES, encoding="utf-8")
+    positions.write_text(
+        POSITIONS.replace(
+            "Amma,F3,CCC,20,100,2000,Edu_A",
+            "Amma,F3,CCC,20,100,2000,Edu_A\nAmma,F4,DDD,0,,,",
+        ),
+        encoding="utf-8",
+    )
+    summaries.write_text(SUMMARIES, encoding="utf-8")
+
+    result = run_lts_transition(
+        purposes_path=purposes,
+        positions_path=positions,
+        purpose_summaries_path=summaries,
+    )
+
+    assert result.plan.is_balanced
+    assert result.current_input.diagnostics.total_records == 4
+    assert result.current_input.diagnostics.active_records == 3
+    assert result.current_input.diagnostics.inactive_records == 1
+    assert [position.id.isin for position in result.positions] == ["AAA", "BBB", "CCC"]
 
 
 def test_runner_does_not_reconcile_unattributed_positions(tmp_path):
