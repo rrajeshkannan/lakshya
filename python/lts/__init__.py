@@ -26,6 +26,7 @@ from .purpose_transition import (
     build_purpose_transition_plan,
 )
 from .transition_audit import audit_transition_mapping
+from .purpose_transition_report import PurposeTransitionReport, build_purpose_transition_report
 
 __all__ = [
     "EconomicReconciliation", "FormationIntentRow", "PositionReconciliation",
@@ -45,4 +46,5 @@ __all__ = [
     "PurposeTransitionBalance", "PurposeTransitionPlan", "PurposeTransitionRow",
     "TransitionDisposition", "TransitionMapping", "TransitionSourceKind",
     "build_purpose_transition_plan", "audit_transition_mapping",
+    "PurposeTransitionReport", "build_purpose_transition_report",
 ]
