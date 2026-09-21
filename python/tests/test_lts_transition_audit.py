@@ -98,3 +98,21 @@ def test_audit_rejects_inconsistent_lock_annotation():
 
     with pytest.raises(ValueError, match="Locked redemption source"):
         audit_transition_mapping([source], target, tampered)
+
+
+def test_audit_rejects_source_isin_mismatch():
+    source = position("I1", "F1", "CCC", "100")
+    target = formation(row("Edu_A", "AAA", "100", "1"))
+    plan = build_purpose_transition_plan([source], target)
+    tampered = replace(plan, mappings=(replace(plan.mappings[0], source_isin="WRONG"),))
+
+    with pytest.raises(ValueError, match="source ISIN"):
+        audit_transition_mapping([source], target, tampered)
+
+
+def test_audit_rejects_duplicate_physical_sources():
+    source = position("I1", "F1", "CCC", "100")
+    target = formation(row("Edu_A", "AAA", "100", "1"))
+    plan = build_purpose_transition_plan([source], target)
+    with pytest.raises(ValueError, match="Duplicate physical source"):
+        audit_transition_mapping([source, source], target, plan)
