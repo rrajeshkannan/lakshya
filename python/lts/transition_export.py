@@ -1,10 +1,11 @@
-"""Human-readable exports for conservation-balanced transition mappings."""
+"""Human-readable exports and persistence for transition mappings."""
 
 from __future__ import annotations
 
 import csv
-from io import StringIO
 from decimal import Decimal
+from io import StringIO
+from pathlib import Path
 
 from .purpose_transition import PurposeTransitionPlan
 
@@ -45,8 +46,22 @@ def export_transition_mapping_csv(plan: PurposeTransitionPlan) -> str:
     return output.getvalue()
 
 
+def write_transition_mapping_csv(
+    plan: PurposeTransitionPlan,
+    destination: Path,
+) -> None:
+    """Write a selected transition mapping export to a caller-chosen path.
+
+    The caller decides whether the destination belongs to temporary run output
+    or to a deliberately retained temporal artifact under ``data/lts``.
+    Parent directories are created when needed.
+    """
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(export_transition_mapping_csv(plan), encoding="utf-8")
+
+
 def _decimal_text(value: Decimal) -> str:
     return format(value, "f")
 
 
-__all__ = ["export_transition_mapping_csv"]
+__all__ = ["export_transition_mapping_csv", "write_transition_mapping_csv"]
