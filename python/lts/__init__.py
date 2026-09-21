@@ -34,7 +34,7 @@ from .transition_export import (
     persist_transition_mapping_csv,
     write_transition_mapping_csv,
 )
-from .runner import LtsRunResult, run_lts_transition
+from .runner import LtsRunResult, persist_lts_run_artifacts, run_lts_transition
 
 __all__ = [
     "CurrentInput", "CurrentInputDiagnostics", "classify_current_positions",
@@ -58,5 +58,5 @@ __all__ = [
     "PurposeTransitionReport", "build_purpose_transition_report",
     "DEFAULT_TEMPORAL_ROOT", "export_transition_mapping_csv",
     "persist_transition_mapping_csv", "write_transition_mapping_csv",
-    "LtsRunResult", "run_lts_transition",
+    "LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition",
 ]
