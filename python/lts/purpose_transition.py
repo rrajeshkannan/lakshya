@@ -128,6 +128,11 @@ def build_purpose_transition_plan(
     Released capacity is then allocated to remaining target gaps within the
     same Purpose. The function rejects Purpose-level capital imbalance instead
     of silently creating or losing money.
+
+    A locked position cannot be treated as redeemable capacity. If its current
+    value exceeds the target requirement for that ISIN, the transition is
+    rejected until the caller supplies a separate, explicit treatment for the
+    locked excess.
     """
     validate_slice_percentages(positions)
     validate_purpose_target_allocation(formation)
@@ -205,23 +210,21 @@ def build_purpose_transition_plan(
 
         if excess > ZERO:
             is_locked = position.id in locked
-            disposition = TransitionDisposition.REDEEM_LOCKED if is_locked else TransitionDisposition.REDEEM
-            source_kind = (
-                TransitionSourceKind.LOCKED_REDEMPTION_PROCEEDS
-                if is_locked else TransitionSourceKind.REDEMPTION_PROCEEDS
-            )
+            if is_locked:
+                raise ValueError(
+                    "Locked Position has excess capital that cannot be redeemed: "
+                    f"{position.id}, amount={excess}"
+                )
             rows.append(PurposeTransitionRow(
                 purpose=position.purpose,
                 source_position_id=position.id,
                 source_isin=position.id.isin,
                 destination_isin=position.id.isin,
-                disposition=disposition,
+                disposition=TransitionDisposition.REDEEM,
                 amount=excess,
-                locked=is_locked,
             ))
-            released.append((position, excess, is_locked))
+            released.append((position, excess, False))
 
-    # Retained mappings have already consumed the direct target demand.
     gaps: list[tuple[str, str, Decimal]] = [
         (purpose, isin, amount)
         for (purpose, isin), amount in sorted(target_remaining.items())
@@ -231,10 +234,7 @@ def build_purpose_transition_plan(
     gap_index = 0
     for position, released_amount, is_locked in released:
         remaining_source = released_amount
-        source_kind = (
-            TransitionSourceKind.LOCKED_REDEMPTION_PROCEEDS
-            if is_locked else TransitionSourceKind.REDEMPTION_PROCEEDS
-        )
+        source_kind = TransitionSourceKind.REDEMPTION_PROCEEDS
         while remaining_source > ZERO and gap_index < len(gaps):
             purpose, destination_isin, gap_amount = gaps[gap_index]
             if purpose != position.purpose:
