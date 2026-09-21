@@ -9,6 +9,7 @@ from pathlib import Path
 from lps.position_persistence import read_positions
 
 from .formation_intent import build_formation_intent
+from .models import TargetFormation
 from .position_bridge import LtsPosition, bridge_positions
 from .purpose_transition import PurposeTransitionPlan, build_purpose_transition_plan
 from .purpose_transition_report import PurposeTransitionReport, build_purpose_transition_report
@@ -21,7 +22,7 @@ class LtsRunResult:
     """Validated analytical result produced by one LTS runner invocation."""
 
     positions: tuple[LtsPosition, ...]
-    formation: object
+    formation: TargetFormation
     plan: PurposeTransitionPlan
     reports: tuple[PurposeTransitionReport, ...]
 
