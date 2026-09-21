@@ -32,12 +32,29 @@ def _is_inactive(position: Position) -> bool:
     return position.units == Decimal("0")
 
 
+def _validate_active_position(position: Position) -> None:
+    """Validate the factual fields required by the LTS CURRENT contract."""
+    if not position.units.is_finite():
+        raise ValueError(f"Active Position has non-finite units: {position.id}")
+    if position.units < 0:
+        raise ValueError(f"Active Position has negative units: {position.id}")
+    if position.market_value is None:
+        raise ValueError(f"Active Position has no market value: {position.id}")
+    if not position.market_value.is_finite():
+        raise ValueError(f"Active Position has non-finite market value: {position.id}")
+    if position.market_value < 0:
+        raise ValueError(f"Active Position has negative market value: {position.id}")
+    if not position.purpose or not position.purpose.strip():
+        raise ValueError(f"Active Position has no Purpose attribution: {position.id}")
+
+
 def classify_current_positions(positions: list[Position]) -> CurrentInput:
     """Classify persisted LPS positions without changing their factual values.
 
     Zero-unit records are retained as excluded inactive evidence. Every active
-    position must have nonnegative units, a market value, and accepted Purpose
-    attribution. No tax, transaction, or target logic is applied here.
+    position must have finite, nonnegative units, a finite, nonnegative market
+    value, and accepted Purpose attribution. No tax, transaction, or target
+    logic is applied here.
     """
     active: list[Position] = []
     inactive: list[Position] = []
@@ -47,15 +64,7 @@ def classify_current_positions(positions: list[Position]) -> CurrentInput:
             inactive.append(position)
             continue
 
-        if position.units < 0:
-            raise ValueError(f"Active Position has negative units: {position.id}")
-        if position.market_value is None:
-            raise ValueError(f"Active Position has no market value: {position.id}")
-        if position.market_value < 0:
-            raise ValueError(f"Active Position has negative market value: {position.id}")
-        if not position.purpose or not position.purpose.strip():
-            raise ValueError(f"Active Position has no Purpose attribution: {position.id}")
-
+        _validate_active_position(position)
         active.append(position)
 
     diagnostics = CurrentInputDiagnostics(
