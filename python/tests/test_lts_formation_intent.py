@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 
+from lps.positions import Position, PositionId
 from lts.formation_intent import build_formation_intent
 from lts.models import FormationIntentRow
 
@@ -126,3 +127,46 @@ def test_invalid_composition_identity_is_rejected(tmp_path):
             positions_path=positions,
             purpose_summaries_path=summaries,
         )
+
+
+def test_supplied_current_population_overrides_raw_csv_capital(tmp_path):
+    purposes, positions, summaries = write_files(tmp_path)
+    positions.write_text(
+        POSITIONS
+        + "Amma,F4,DDD,0,,,Retirement\n",
+        encoding="utf-8",
+    )
+
+    current_positions = (
+        Position(
+            id=PositionId(investor="Amma", folio="F1", isin="AAA"),
+            units=Decimal("10"),
+            market_value=Decimal("600"),
+            purpose="Retirement",
+        ),
+        Position(
+            id=PositionId(investor="Appanna", folio="F2", isin="BBB"),
+            units=Decimal("5"),
+            market_value=Decimal("1000"),
+            purpose="Retirement",
+        ),
+        Position(
+            id=PositionId(investor="Amma", folio="F3", isin="CCC"),
+            units=Decimal("20"),
+            market_value=Decimal("2000"),
+            purpose="Edu_A",
+        ),
+    )
+
+    formation = build_formation_intent(
+        purposes_path=purposes,
+        positions_path=positions,
+        purpose_summaries_path=summaries,
+        current_positions=current_positions,
+    )
+
+    assert formation.rows == (
+        FormationIntentRow("Edu_A", "CCC", Decimal("2000"), Decimal("1.0000")),
+        FormationIntentRow("Retirement", "AAA", Decimal("1600"), Decimal("0.6000")),
+        FormationIntentRow("Retirement", "BBB", Decimal("1600"), Decimal("0.4000")),
+    )
