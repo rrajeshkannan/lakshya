@@ -1,5 +1,6 @@
 """Lakshya Transition System domain and analytical components."""
 
+from .current_input import CurrentInput, CurrentInputDiagnostics, classify_current_positions
 from .evidence import TransitionEvidence, TransitionEvidencePosition, build_transition_evidence
 from .formation_intent import build_formation_intent
 from .fund_metadata import FundClassification, TransitionFundMetadata, classify_fund, project_fund_metadata
@@ -36,6 +37,7 @@ from .transition_export import (
 from .runner import LtsRunResult, run_lts_transition
 
 __all__ = [
+    "CurrentInput", "CurrentInputDiagnostics", "classify_current_positions",
     "EconomicReconciliation", "FormationIntentRow", "PositionReconciliation",
     "TransitionEvidence", "TransitionEvidencePosition", "build_transition_evidence",
     "LtsPosition", "LtsPositionId", "bridge_positions", "validate_slice_percentages",
