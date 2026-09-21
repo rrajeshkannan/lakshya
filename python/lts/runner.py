@@ -1,10 +1,11 @@
-"""Complete LTS orchestration boundary for a known LFS evidence set."""
+"""Run the LTS transition slice from the repository's canonical inputs."""
 
 from __future__ import annotations
 
 import argparse
 import csv
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,8 +21,11 @@ from .transition_audit import audit_transition_mapping
 from .transition_export import write_transition_mapping_csv
 
 
-DEFAULT_LTS_OUTPUT_ROOT = Path("output/lts")
-DEFAULT_LTS_CANONICAL_ROOT = Path("data/lts")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PURPOSES_PATH = PROJECT_ROOT / "data" / "purpose" / "purposes.csv"
+DEFAULT_POSITIONS_PATH = PROJECT_ROOT / "data" / "lps" / "positions.csv"
+DEFAULT_PURPOSE_SUMMARIES_PATH = PROJECT_ROOT / "data" / "lfs" / "purpose_summaries.csv"
+DEFAULT_LTS_ROOT = PROJECT_ROOT / "data" / "lts"
 
 
 @dataclass(frozen=True)
@@ -37,14 +41,15 @@ class LtsRunResult:
 
 def run_lts_transition(
     *,
-    purposes_path: Path,
-    positions_path: Path,
-    purpose_summaries_path: Path,
+    purposes_path: Path = DEFAULT_PURPOSES_PATH,
+    positions_path: Path = DEFAULT_POSITIONS_PATH,
+    purpose_summaries_path: Path = DEFAULT_PURPOSE_SUMMARIES_PATH,
 ) -> LtsRunResult:
     """Run the complete in-memory LTS transition slice.
 
-    The runner consumes existing LFS/FINAL evidence. It does not rerun FINAL,
-    calculate tax, execute transactions, or mutate persisted portfolio state.
+    The runner consumes the repository's existing LFS/FINAL evidence. It does
+    not rerun FINAL, calculate tax, execute transactions, or mutate persisted
+    portfolio state.
     """
     persisted_positions = read_positions(positions_path)
     current_input = classify_current_positions(persisted_positions)
@@ -103,13 +108,12 @@ def _write_reports_csv(reports: tuple[PurposeTransitionReport, ...], destination
             )
 
 
-def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str, run_id: str) -> None:
+def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "contract": "LTS_TRANSITION",
-        "contract_version": 1,
+        "contract_version": 2,
         "as_of": as_of,
-        "run_id": run_id,
         "position_count": len(result.positions),
         "purpose_report_count": len(result.reports),
         "portfolio_current_amount": format(result.plan.portfolio_current_amount, "f"),
@@ -118,97 +122,92 @@ def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str, run_
         "is_balanced": result.plan.is_balanced,
         "all_purpose_reports_balanced": all(report.is_balanced for report in result.reports),
     }
-    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(destination)
 
 
-def _validate_identity(as_of: str, run_id: str) -> None:
-    if not as_of.strip() or not run_id.strip():
-        raise ValueError("as_of and run_id must be non-blank.")
-    if Path(as_of).name != as_of or Path(run_id).name != run_id:
-        raise ValueError("as_of and run_id must be single path-safe components.")
+def _infer_as_of(purpose_summaries_path: Path) -> str:
+    """Read the single analytical boundary recorded by the LFS summaries."""
+    with purpose_summaries_path.open("r", encoding="utf-8", newline="") as handle:
+        rows = csv.DictReader(handle)
+        values = {str(row.get("as_of", "")).strip() for row in rows}
+
+    values.discard("")
+    if len(values) != 1:
+        raise ValueError(
+            "Expected exactly one non-blank as_of value in "
+            f"{purpose_summaries_path}; found {sorted(values)}."
+        )
+    return values.pop()
 
 
-def persist_lts_run_artifacts(
+def _write_atomic_mapping(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    write_transition_mapping_csv(result.plan, temporary)
+    temporary.replace(destination)
+
+
+def _write_atomic_reports(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    _write_reports_csv(result.reports, temporary)
+    temporary.replace(destination)
+
+
+def persist_lts_artifacts(
     result: LtsRunResult,
     *,
     as_of: str,
-    run_id: str,
-    output_root: Path = DEFAULT_LTS_OUTPUT_ROOT,
+    lts_root: Path = DEFAULT_LTS_ROOT,
 ) -> tuple[Path, Path, Path]:
-    """Persist one run beneath ``output/lts/run-<run_id>``.
+    """Overwrite the latest canonical LTS snapshot in ``data/lts``.
 
-    These are execution artifacts, not the accepted canonical snapshot.
-    Promotion to ``data/lts`` is explicit and separate.
+    The files are written through temporary siblings before replacement so a
+    failed write does not truncate an existing artifact in place.
     """
-    _validate_identity(as_of, run_id)
-    run_root = output_root / f"run-{run_id}"
-    mapping_path = run_root / "transition_mappings.csv"
-    report_path = run_root / "purpose_reports.csv"
-    manifest_path = run_root / "manifest.json"
+    if not as_of.strip():
+        raise ValueError("as_of must be non-blank.")
 
-    write_transition_mapping_csv(result.plan, mapping_path)
-    _write_reports_csv(result.reports, report_path)
-    _write_manifest(result, manifest_path, as_of=as_of, run_id=run_id)
+    mapping_path = lts_root / "transition_mappings.csv"
+    report_path = lts_root / "purpose_reports.csv"
+    manifest_path = lts_root / "manifest.json"
+
+    _write_atomic_mapping(result, mapping_path)
+    _write_atomic_reports(result, report_path)
+    _write_manifest(result, manifest_path, as_of=as_of)
     return mapping_path, report_path, manifest_path
-
-
-def promote_lts_run_artifacts(
-    *,
-    run_id: str,
-    output_root: Path = DEFAULT_LTS_OUTPUT_ROOT,
-    canonical_root: Path = DEFAULT_LTS_CANONICAL_ROOT,
-) -> tuple[Path, Path, Path]:
-    """Promote one validated run into the canonical ``data/lts`` snapshot.
-
-    This function performs only the explicit file promotion. Validation and
-    human acceptance remain the caller's responsibility.
-    """
-    if not run_id.strip() or Path(run_id).name != run_id:
-        raise ValueError("run_id must be one non-blank, path-safe component.")
-
-    run_root = output_root / f"run-{run_id}"
-    source_names = ("manifest.json", "purpose_reports.csv", "transition_mappings.csv")
-    sources = tuple(run_root / name for name in source_names)
-    missing = [str(path) for path in sources if not path.is_file()]
-    if missing:
-        raise FileNotFoundError(f"LTS run is incomplete; missing: {', '.join(missing)}")
-
-    destinations = tuple(canonical_root / name for name in source_names)
-    for source, destination in zip(sources, destinations):
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(source.read_bytes())
-    return destinations
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--purposes", type=Path, required=True)
-    parser.add_argument("--positions", type=Path, required=True)
-    parser.add_argument("--purpose-summaries", type=Path, required=True)
-    parser.add_argument("--as-of", required=True)
-    parser.add_argument("--run-id", required=True)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_LTS_OUTPUT_ROOT)
+    parser.add_argument(
+        "--as-of",
+        help="Optional override; normally inferred from data/lfs/purpose_summaries.csv.",
+    )
     return parser
 
 
 def main() -> None:
     args = _parser().parse_args()
-    result = run_lts_transition(
-        purposes_path=args.purposes,
-        positions_path=args.positions,
-        purpose_summaries_path=args.purpose_summaries,
-    )
-    mapping_path, report_path, manifest_path = persist_lts_run_artifacts(
+    inferred_as_of = _infer_as_of(DEFAULT_PURPOSE_SUMMARIES_PATH)
+    if args.as_of is not None and args.as_of != inferred_as_of:
+        raise ValueError(
+            f"Explicit --as-of {args.as_of} disagrees with the LFS summary boundary "
+            f"{inferred_as_of}."
+        )
+
+    result = run_lts_transition()
+    mapping_path, report_path, manifest_path = persist_lts_artifacts(
         result,
-        as_of=args.as_of,
-        run_id=args.run_id,
-        output_root=args.output_root,
+        as_of=inferred_as_of,
     )
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
-    print(f"Transition mapping: {mapping_path}")
-    print(f"Purpose reports CSV: {report_path}")
-    print(f"Run manifest: {manifest_path}")
+    print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
+    print(f"Purpose reports CSV: {report_path.relative_to(PROJECT_ROOT)}")
+    print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":
@@ -216,10 +215,11 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "DEFAULT_LTS_CANONICAL_ROOT",
-    "DEFAULT_LTS_OUTPUT_ROOT",
+    "DEFAULT_LTS_ROOT",
+    "DEFAULT_POSITIONS_PATH",
+    "DEFAULT_PURPOSES_PATH",
+    "DEFAULT_PURPOSE_SUMMARIES_PATH",
     "LtsRunResult",
-    "persist_lts_run_artifacts",
-    "promote_lts_run_artifacts",
+    "persist_lts_artifacts",
     "run_lts_transition",
 ]
