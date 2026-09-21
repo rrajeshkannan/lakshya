@@ -40,6 +40,6 @@ def test_transition_mapping_csv_export_is_deterministic_and_escaped():
 
     assert export_transition_mapping_csv(plan) == (
         "purpose,source_position_id,source_isin,source_kind,destination_isin,amount,locked\n"
-        "Edu_A,LtsPositionId(investor='I1', folio='F1', isin='AAA', slice='Slice-1'),AAA,"
+        'Edu_A,"LtsPositionId(investor=\'I1\', folio=\'F1\', isin=\'AAA\', slice=\'Slice-1\')",AAA,'
         "LOCKED_REDEMPTION_PROCEEDS,BBB,40.5000,true\n"
     )
