@@ -1,9 +1,12 @@
-"""Thin LTS orchestration boundary for a known LFS evidence set."""
+"""Complete LTS orchestration boundary for a known LFS evidence set."""
 
 from __future__ import annotations
 
 import argparse
+import csv
+import json
 from dataclasses import dataclass
+from decimal import Decimal
 from pathlib import Path
 
 from lps.position_persistence import read_positions
@@ -35,7 +38,7 @@ def run_lts_transition(
     positions_path: Path,
     purpose_summaries_path: Path,
 ) -> LtsRunResult:
-    """Run the smallest complete LTS transition slice.
+    """Run the complete in-memory LTS transition slice.
 
     The runner consumes existing LFS/FINAL evidence. It does not rerun FINAL,
     calculate tax, execute transactions, or mutate persisted portfolio state.
@@ -62,6 +65,85 @@ def run_lts_transition(
     )
 
 
+def _write_reports_csv(reports: tuple[PurposeTransitionReport, ...], destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(
+            [
+                "purpose",
+                "current_amount",
+                "target_amount",
+                "retained_amount",
+                "redemption_amount",
+                "locked_redemption_amount",
+                "investment_by_destination",
+                "is_balanced",
+            ]
+        )
+        for report in reports:
+            destinations = ";".join(
+                f"{isin}={format(amount, 'f')}"
+                for isin, amount in report.investment_by_destination
+            )
+            writer.writerow(
+                [
+                    report.purpose,
+                    format(report.current_amount, "f"),
+                    format(report.target_amount, "f"),
+                    format(report.retained_amount, "f"),
+                    format(report.redemption_amount, "f"),
+                    format(report.locked_redemption_amount, "f"),
+                    destinations,
+                    str(report.is_balanced).lower(),
+                ]
+            )
+
+
+def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str, run_id: str) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "contract": "LTS_TRANSITION",
+        "contract_version": 1,
+        "as_of": as_of,
+        "run_id": run_id,
+        "position_count": len(result.positions),
+        "purpose_report_count": len(result.reports),
+        "portfolio_current_amount": format(result.plan.portfolio_current_amount, "f"),
+        "portfolio_target_amount": format(result.plan.portfolio_target_amount, "f"),
+        "mapping_count": len(result.plan.mappings),
+        "is_balanced": result.plan.is_balanced,
+        "all_purpose_reports_balanced": all(report.is_balanced for report in result.reports),
+    }
+    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def persist_lts_run_artifacts(
+    result: LtsRunResult,
+    *,
+    as_of: str,
+    run_id: str,
+    temporal_root: Path,
+) -> tuple[Path, Path, Path]:
+    """Persist the mapping, Purpose report, and run manifest for one LTS run."""
+    if not as_of.strip() or not run_id.strip():
+        raise ValueError("as_of and run_id must be non-blank.")
+    if Path(as_of).name != as_of or Path(run_id).name != run_id:
+        raise ValueError("as_of and run_id must be single path-safe components.")
+
+    mapping_path = persist_transition_mapping_csv(
+        result.plan,
+        as_of=as_of,
+        run_id=run_id,
+        root=temporal_root,
+    )
+    report_path = temporal_root / "purpose_reports" / f"{as_of}_{run_id}.csv"
+    manifest_path = temporal_root / "manifests" / f"{as_of}_{run_id}.json"
+    _write_reports_csv(result.reports, report_path)
+    _write_manifest(result, manifest_path, as_of=as_of, run_id=run_id)
+    return mapping_path, report_path, manifest_path
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--purposes", type=Path, required=True)
@@ -80,19 +162,21 @@ def main() -> None:
         positions_path=args.positions,
         purpose_summaries_path=args.purpose_summaries,
     )
-    artifact = persist_transition_mapping_csv(
-        result.plan,
+    mapping_path, report_path, manifest_path = persist_lts_run_artifacts(
+        result,
         as_of=args.as_of,
         run_id=args.run_id,
-        root=args.temporal_root,
+        temporal_root=args.temporal_root,
     )
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
-    print(f"Transition mapping: {artifact}")
+    print(f"Transition mapping: {mapping_path}")
+    print(f"Purpose reports CSV: {report_path}")
+    print(f"Run manifest: {manifest_path}")
 
 
 if __name__ == "__main__":
     main()
 
 
-__all__ = ["LtsRunResult", "run_lts_transition"]
+__all__ = ["LtsRunResult", "persist_lts_run_artifacts", "run_lts_transition"]
