@@ -39,6 +39,10 @@ def run_lts_transition(
     calculate tax, execute transactions, or mutate persisted portfolio state.
     """
     current_positions = bridge_positions(read_positions(positions_path))
+    for position in current_positions:
+        if position.purpose is None:
+            raise ValueError(f"Position has no Purpose attribution: {position.id}")
+
     formation = build_formation_intent(
         purposes_path=purposes_path,
         positions_path=positions_path,
