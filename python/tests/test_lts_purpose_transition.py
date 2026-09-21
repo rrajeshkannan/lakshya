@@ -66,18 +66,19 @@ def test_non_selected_capital_is_mapped_without_cross_purpose_subsidy():
     assert plan.mappings[0].amount == Decimal("100")
 
 
-def test_locked_released_capital_remains_tagged_through_target_mapping():
+def test_locked_excess_is_rejected_instead_of_marked_as_redeemable():
     source = position("I1", "F1", "CCC", "100")
-    plan = build_purpose_transition_plan(
-        [source],
-        formation(row("Edu_A", "AAA", "100", "1")),
-        locked_position_ids={source.id},
-    )
 
-    assert plan.rows[0].disposition is TransitionDisposition.REDEEM_LOCKED
-    assert plan.rows[0].locked is True
-    assert plan.mappings[0].source_kind is TransitionSourceKind.LOCKED_REDEMPTION_PROCEEDS
-    assert plan.mappings[0].locked is True
+    try:
+        build_purpose_transition_plan(
+            [source],
+            formation(row("Edu_A", "AAA", "100", "1")),
+            locked_position_ids={source.id},
+        )
+    except ValueError as error:
+        assert "Locked Position has excess capital" in str(error)
+    else:
+        raise AssertionError("Expected locked excess to be rejected")
 
 
 def test_purpose_capital_mismatch_is_rejected():
