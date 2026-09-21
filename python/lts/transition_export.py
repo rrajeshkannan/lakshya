@@ -9,6 +9,8 @@ from pathlib import Path
 
 from .purpose_transition import PurposeTransitionPlan
 
+DEFAULT_TEMPORAL_ROOT = Path("data/lts")
+
 
 def export_transition_mapping_csv(plan: PurposeTransitionPlan) -> str:
     """Return a deterministic CSV representation of every mapping edge.
@@ -60,8 +62,37 @@ def write_transition_mapping_csv(
     destination.write_text(export_transition_mapping_csv(plan), encoding="utf-8")
 
 
+def persist_transition_mapping_csv(
+    plan: PurposeTransitionPlan,
+    *,
+    as_of: str,
+    run_id: str,
+    root: Path = DEFAULT_TEMPORAL_ROOT,
+) -> Path:
+    """Persist a selected transition mapping as a temporal artifact.
+
+    The default location is ``data/lts/transition_mappings``. The caller must
+    provide the run identity and as-of date so the artifact remains attributable
+    to a specific analytical run. This writes only the selected CSV; it does
+    not imply human acceptance of the broader Historical Snapshot.
+    """
+    if not as_of.strip() or not run_id.strip():
+        raise ValueError("as_of and run_id must be non-blank.")
+    if Path(as_of).name != as_of or Path(run_id).name != run_id:
+        raise ValueError("as_of and run_id must be single path-safe components.")
+
+    destination = root / "transition_mappings" / f"{as_of}_{run_id}.csv"
+    write_transition_mapping_csv(plan, destination)
+    return destination
+
+
 def _decimal_text(value: Decimal) -> str:
     return format(value, "f")
 
 
-__all__ = ["export_transition_mapping_csv", "write_transition_mapping_csv"]
+__all__ = [
+    "DEFAULT_TEMPORAL_ROOT",
+    "export_transition_mapping_csv",
+    "persist_transition_mapping_csv",
+    "write_transition_mapping_csv",
+]
