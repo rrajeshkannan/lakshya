@@ -51,4 +51,8 @@ def test_bridge_does_not_mutate_source_identity():
     projected = bridge_positions([source])
 
     assert source.id == PositionId("Amma", "F1", "INF001")
-    assert projected[0].id != source.id
+    assert projected[0].id == LtsPositionId("Amma", "F1", "INF001", "Slice-1")
+    assert projected[0].id.slice == "Slice-1"
+    assert projected[0].id.investor == source.id.investor
+    assert projected[0].id.folio == source.id.folio
+    assert projected[0].id.isin == source.id.isin
