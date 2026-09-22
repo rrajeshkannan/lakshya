@@ -7,8 +7,7 @@ its own Position semantics:
 
 This bridge projects each current LPS Position into the simplest valid
 Slice-based representation: Slice-1 at 100%. It is transient and is not
-authoritative LPS state. The bridge can be removed once LPS adopts the
-Slice-based Position contract natively.
+authoritative LPS state.
 """
 
 from __future__ import annotations
@@ -16,6 +15,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Any
 
 from lps.positions import Position
 
@@ -24,14 +24,50 @@ ZERO = Decimal("0")
 ONE_HUNDRED = Decimal("100")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class LtsPositionId:
-    """Identity of a Position inside the LTS model."""
+    """Identity of a Position inside the LTS model.
+
+    ``Slice-1`` is the bridge's one-to-one projection of an LPS Position.
+    During the transition period, availability evidence is still keyed by the
+    legacy three-field LPS ``PositionId``. Equality and hashing therefore
+    deliberately make only the bridge's ``Slice-1`` identity compatible with
+    that legacy identity. Other LTS slices remain distinct.
+    """
 
     investor: str
     folio: str
     isin: str
     slice: str
+
+    def __hash__(self) -> int:
+        if self.slice == "Slice-1":
+            return hash((self.investor, self.folio, self.isin))
+        return hash((self.investor, self.folio, self.isin, self.slice))
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, LtsPositionId):
+            return (
+                self.investor,
+                self.folio,
+                self.isin,
+                self.slice,
+            ) == (
+                other.investor,
+                other.folio,
+                other.isin,
+                other.slice,
+            )
+        if self.slice != "Slice-1":
+            return False
+        return (
+            hasattr(other, "investor")
+            and hasattr(other, "folio")
+            and hasattr(other, "isin")
+            and not hasattr(other, "slice")
+            and (self.investor, self.folio, self.isin)
+            == (other.investor, other.folio, other.isin)
+        )
 
 
 @dataclass(frozen=True)
