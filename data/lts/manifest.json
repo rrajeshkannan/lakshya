@@ -1,0 +1,21 @@
+{
+  "all_purpose_reports_balanced": true,
+  "artifacts": {
+    "holding_availability": "holding_availability.csv",
+    "holding_availability_summary": "holding_availability_summary.csv",
+    "purpose_reports": "purpose_reports.csv",
+    "transition_mappings": "transition_mappings.csv"
+  },
+  "as_of": "2026-09-06",
+  "availability_count": 34,
+  "availability_lot_count": 696,
+  "contract": "LTS_TRANSITION",
+  "contract_version": 4,
+  "is_balanced": true,
+  "locked_position_count": 6,
+  "mapping_count": 46,
+  "portfolio_current_amount": "15205711.0790837",
+  "portfolio_target_amount": "15205711.07908370000",
+  "position_count": 34,
+  "purpose_report_count": 6
+}
