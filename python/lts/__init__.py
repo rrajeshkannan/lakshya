@@ -15,6 +15,11 @@ from .position_bridge import (
     validate_slice_percentages,
 )
 from .slice_materialization import MaterializedSlice, materialize_transition_slices
+from .materialized_runner import (
+    MaterializedLtsRunResult,
+    persist_materialized_lts_artifacts,
+    run_lts_transition_materialized,
+)
 from .reconciliation import reconcile_economically, reconcile_positions
 from .physical_transaction_history import transactions_for_holding
 from .holding_history import HoldingHistory, holding_history
@@ -94,6 +99,8 @@ __all__ = [
     "DEFAULT_SLICE", "LtsPosition", "LtsPositionId", "SliceOwnership",
     "bridge_positions", "build_owned_positions", "validate_slice_percentages",
     "MaterializedSlice", "materialize_transition_slices",
+    "MaterializedLtsRunResult", "persist_materialized_lts_artifacts",
+    "run_lts_transition_materialized",
     "TargetFormation", "TransitionTreatment", "classify_position_treatment",
     "build_formation_intent", "reconcile_economically", "reconcile_positions",
     "transactions_for_holding", "HoldingHistory", "holding_history",
