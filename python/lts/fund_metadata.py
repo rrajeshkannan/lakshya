@@ -48,8 +48,7 @@ def classify_fund(metadata: TransitionFundMetadata) -> FundClassification:
 
     MFAPI's scheme category is treated as source evidence. ELSS is explicit
     only when the category identifies it. Unknown or unavailable metadata
-    deliberately falls back to Equity, Non-ELSS, except for the explicit
-    synthetic ``ELSS`` identifier used by isolated LTS fixtures.
+    deliberately falls back to Equity, Non-ELSS.
     """
     category = (metadata.scheme_category or "").strip().lower()
 
@@ -59,8 +58,6 @@ def classify_fund(metadata: TransitionFundMetadata) -> FundClassification:
         return FundClassification(metadata.isin, "Equity", False, "MFAPI")
     if "debt" in category:
         return FundClassification(metadata.isin, "Debt", False, "MFAPI")
-    if metadata.isin.strip().upper() == "ELSS":
-        return FundClassification(metadata.isin, "Equity", True, "EXPLICIT_FIXTURE")
 
     return FundClassification(metadata.isin, "Equity", False, "DEFAULT")
 
