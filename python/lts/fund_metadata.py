@@ -17,7 +17,7 @@ class TransitionFundMetadata:
 
 @dataclass(frozen=True)
 class FundClassification:
-    """Transition-relevant classification supplied by the reviewer scope."""
+    """Transition-relevant fund classification."""
 
     isin: str
     asset_class: str
@@ -47,18 +47,20 @@ def classify_scope_row(row: dict[str, str]) -> FundClassification:
 
 
 def classify_fund(metadata: TransitionFundMetadata) -> FundClassification:
-    """Retain the source-metadata projection for compatibility only.
+    """Classify persisted source metadata for compatibility-level tests.
 
-    Production LTS classification must use ``classify_scope_row`` and the
-    reviewer-maintained fund scope, not external scheme metadata inference.
+    The production LTS runner does not use this inference path. Production
+    transition constraints are sourced from the reviewer-maintained
+    ``funds_in_scope.csv`` through ``classify_scope_row``.
     """
     category = (metadata.scheme_category or "").strip().lower()
-    return FundClassification(
-        metadata.isin,
-        "Debt" if "debt" in category else "Equity",
-        "elss" in category,
-        "LEGACY_METADATA",
-    )
+    if "elss" in category:
+        return FundClassification(metadata.isin, "Equity", True, "MFAPI")
+    if "equity" in category:
+        return FundClassification(metadata.isin, "Equity", False, "MFAPI")
+    if "debt" in category:
+        return FundClassification(metadata.isin, "Debt", False, "MFAPI")
+    return FundClassification(metadata.isin, "Equity", False, "DEFAULT")
 
 
 __all__ = [
