@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from fund_analysis.funds_in_scope import load_fund_scope_rows
 from lps.nav_evidence import NavEvidenceStore
 from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions
@@ -18,7 +19,7 @@ from .constraint_factory import holding_constraint_for_fund
 from .current_input import CurrentInput, classify_current_positions
 from .evidence import TransitionEvidence, build_transition_evidence
 from .formation_intent import build_formation_intent
-from .fund_metadata import classify_fund
+from .fund_metadata import classify_scope_row
 from .models import TargetFormation
 from .position_bridge import LtsPosition, bridge_positions
 from .purpose_transition import PurposeTransitionPlan, build_purpose_transition_plan
@@ -33,6 +34,7 @@ DEFAULT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 DEFAULT_TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
 DEFAULT_NAV_ROOT = DATA_DIR / "lps" / "nav"
 DEFAULT_PURPOSE_SUMMARIES_PATH = DATA_DIR / "lfs" / "purpose_summaries.csv"
+DEFAULT_FUND_SCOPE_PATH = DATA_DIR / "lps" / "funds_in_scope.csv"
 DEFAULT_LTS_ROOT = DATA_DIR / "lts"
 
 
@@ -51,24 +53,14 @@ def _nav_stores(isins: set[str], nav_root: Path) -> dict[str, NavEvidenceStore]:
     return {isin: NavEvidenceStore(nav_root / f"{isin}.json") for isin in sorted(isins)}
 
 
-def _evidence_inputs_available(
-    *,
-    active_isins: set[str],
-    transactions_path: Path,
-    nav_root: Path,
-) -> bool:
-    """Return whether the optional transaction/NAV evidence is complete."""
+def _evidence_inputs_available(*, active_isins: set[str], transactions_path: Path, nav_root: Path) -> bool:
     return transactions_path.is_file() and all(
         (nav_root / f"{isin}.json").is_file() for isin in active_isins
     )
 
 
 def _locked_position_ids(availability: tuple) -> set:
-    return {
-        report.holding_id
-        for report in availability
-        if report.locked_lots
-    }
+    return {report.holding_id for report in availability if report.locked_lots}
 
 
 def run_lts_transition(
@@ -78,16 +70,13 @@ def run_lts_transition(
     transactions_path: Path = DEFAULT_TRANSACTIONS_PATH,
     nav_root: Path = DEFAULT_NAV_ROOT,
     purpose_summaries_path: Path = DEFAULT_PURPOSE_SUMMARIES_PATH,
+    fund_scope_path: Path = DEFAULT_FUND_SCOPE_PATH,
     as_of: date | None = None,
-    transaction_through_date: date | None = None,
 ) -> LtsRunResult:
     persisted_positions = read_positions(positions_path)
     current_input = classify_current_positions(persisted_positions)
     current_positions = bridge_positions(list(current_input.active_positions))
-
-    active_isins = {
-        position.id.isin for position in current_input.active_positions
-    }
+    active_isins = {position.id.isin for position in current_input.active_positions}
     evidence_available = _evidence_inputs_available(
         active_isins=active_isins,
         transactions_path=transactions_path,
@@ -95,9 +84,7 @@ def run_lts_transition(
     )
 
     if evidence_available:
-        valuation_date = as_of or date.fromisoformat(
-            _infer_as_of(purpose_summaries_path)
-        )
+        valuation_date = as_of or date.fromisoformat(_infer_as_of(purpose_summaries_path))
         transactions = read_transactions(transactions_path)
         stores = _nav_stores(active_isins, nav_root)
         evidence = build_transition_evidence(
@@ -105,32 +92,28 @@ def run_lts_transition(
             transactions,
             stores,
             valuation_date,
-            transaction_through_date=transaction_through_date,
         )
+        scope_rows = load_fund_scope_rows(fund_scope_path)
+        scope_by_isin = {row["isin"]: row for row in scope_rows}
+        missing_scope = sorted(active_isins - set(scope_by_isin))
+        if missing_scope:
+            raise ValueError(
+                "Fund scope is missing active position ISINs: " + ", ".join(missing_scope)
+            )
         classifications = {
-            metadata.isin: classify_fund(metadata)
-            for metadata in evidence.fund_metadata
+            isin: classify_scope_row(scope_by_isin[isin])
+            for isin in sorted(active_isins)
         }
         constraints = {
             isin: holding_constraint_for_fund(classification)
             for isin, classification in classifications.items()
         }
-        availability_as_of = transaction_through_date or valuation_date
-        availability = build_holding_availability_report(
-            evidence,
-            availability_as_of,
-            constraints,
-        )
+        availability = build_holding_availability_report(evidence, valuation_date, constraints)
     else:
-        evidence = TransitionEvidence(
-            positions=(),
-            transactions=(),
-            fund_metadata=(),
-        )
+        evidence = TransitionEvidence(positions=(), transactions=(), fund_metadata=())
         availability = ()
 
     locked_ids = _locked_position_ids(availability)
-
     formation = build_formation_intent(
         purposes_path=purposes_path,
         positions_path=positions_path,
@@ -179,10 +162,7 @@ def _write_reports_csv(reports, destination: Path) -> None:
                 format(report.retained_amount, "f"),
                 format(report.redemption_amount, "f"),
                 format(report.locked_redemption_amount, "f"),
-                ";".join(
-                    f"{isin}={format(amount, 'f')}"
-                    for isin, amount in report.investment_by_destination
-                ),
+                ";".join(f"{isin}={format(amount, 'f')}" for isin, amount in report.investment_by_destination),
                 str(report.is_balanced).lower(),
             ])
 
@@ -201,15 +181,10 @@ def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str) -> N
         "portfolio_target_amount": format(result.plan.portfolio_target_amount, "f"),
         "mapping_count": len(result.plan.mappings),
         "is_balanced": result.plan.is_balanced,
-        "all_purpose_reports_balanced": all(
-            report.is_balanced for report in result.reports
-        ),
+        "all_purpose_reports_balanced": all(report.is_balanced for report in result.reports),
     }
     temporary = destination.with_suffix(destination.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     temporary.replace(destination)
 
 
@@ -220,8 +195,7 @@ def _infer_as_of(purpose_summaries_path: Path) -> str:
     values.discard("")
     if len(values) != 1:
         raise ValueError(
-            f"Expected exactly one non-blank as_of value in "
-            f"{purpose_summaries_path}; found {sorted(values)}."
+            f"Expected exactly one non-blank as_of value in {purpose_summaries_path}; found {sorted(values)}."
         )
     return values.pop()
 
@@ -240,12 +214,7 @@ def _write_atomic_reports(result, destination: Path) -> None:
     temporary.replace(destination)
 
 
-def persist_lts_artifacts(
-    result: LtsRunResult,
-    *,
-    as_of: str,
-    lts_root: Path = DEFAULT_LTS_ROOT,
-) -> tuple[Path, Path, Path]:
+def persist_lts_artifacts(result: LtsRunResult, *, as_of: str, lts_root: Path = DEFAULT_LTS_ROOT) -> tuple[Path, Path, Path]:
     if not as_of.strip():
         raise ValueError("as_of must be non-blank.")
     mapping_path = lts_root / "transition_mappings.csv"
@@ -259,17 +228,7 @@ def persist_lts_artifacts(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--as-of",
-        help="Optional valuation boundary; normally inferred from LFS summaries.",
-    )
-    parser.add_argument(
-        "--transaction-through-date",
-        help=(
-            "Optional historical transaction boundary (YYYY-MM-DD). "
-            "Transactions after this date are excluded from ELSS lock-in analysis."
-        ),
-    )
+    parser.add_argument("--as-of", help="Optional valuation boundary; normally inferred from LFS summaries.")
     return parser
 
 
@@ -278,31 +237,17 @@ def main() -> None:
     inferred_as_of = _infer_as_of(DEFAULT_PURPOSE_SUMMARIES_PATH)
     if args.as_of is not None and args.as_of != inferred_as_of:
         raise ValueError(
-            f"Explicit --as-of {args.as_of} disagrees with the LFS summary "
-            f"boundary {inferred_as_of}."
+            f"Explicit --as-of {args.as_of} disagrees with the LFS summary boundary {inferred_as_of}."
         )
-    transaction_through_date = (
-        date.fromisoformat(args.transaction_through_date)
-        if args.transaction_through_date is not None
-        else None
-    )
-    result = run_lts_transition(
-        as_of=date.fromisoformat(inferred_as_of),
-        transaction_through_date=transaction_through_date,
-    )
-    mapping_path, report_path, manifest_path = persist_lts_artifacts(
-        result,
-        as_of=inferred_as_of,
-    )
+    result = run_lts_transition(as_of=date.fromisoformat(inferred_as_of))
+    mapping_path, report_path, manifest_path = persist_lts_artifacts(result, as_of=inferred_as_of)
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
     print(f"Availability reports: {len(result.availability)}")
     for availability in result.availability:
         print(
-            f"Availability {availability.holding_id}: "
-            f"locked_units={availability.locked_units} "
-            f"unlocked_units={availability.unlocked_units} "
-            f"as_of={availability.as_of}"
+            f"Availability {availability.holding_id}: locked_units={availability.locked_units} "
+            f"unlocked_units={availability.unlocked_units} as_of={availability.as_of}"
         )
     print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
     print(f"Purpose reports CSV: {report_path.relative_to(PROJECT_ROOT)}")
@@ -313,10 +258,4 @@ if __name__ == "__main__":
     main()
 
 
-__all__ = [
-    "DEFAULT_LTS_ROOT",
-    "DEFAULT_POSITIONS_PATH",
-    "LtsRunResult",
-    "persist_lts_artifacts",
-    "run_lts_transition",
-]
+__all__ = ["DEFAULT_LTS_ROOT", "DEFAULT_POSITIONS_PATH", "LtsRunResult", "persist_lts_artifacts", "run_lts_transition"]
