@@ -142,6 +142,52 @@ def test_transition_evidence_preserves_transactions_as_history():
     assert evidence.transactions[0].event_type == "Purchase"
 
 
+def test_transition_evidence_applies_transaction_through_date():
+    older = Transaction(
+        transaction_date=date(2026, 1, 1),
+        event_type="Purchase",
+        investor="Amma",
+        folio="F1",
+        isin="INF001",
+        units=Decimal("10"),
+        amount=Decimal("1000"),
+        price=Decimal("100"),
+        source_description="older",
+    )
+    boundary = Transaction(
+        transaction_date=date(2026, 2, 1),
+        event_type="Switch In",
+        investor="Amma",
+        folio="F1",
+        isin="INF001",
+        units=Decimal("2"),
+        amount=Decimal("220"),
+        price=Decimal("110"),
+        source_description="boundary",
+    )
+    future = Transaction(
+        transaction_date=date(2026, 3, 1),
+        event_type="Purchase",
+        investor="Amma",
+        folio="F1",
+        isin="INF001",
+        units=Decimal("1"),
+        amount=Decimal("120"),
+        price=Decimal("120"),
+        source_description="future",
+    )
+
+    evidence = build_transition_evidence(
+        [],
+        [future, boundary, older],
+        {},
+        date(2026, 8, 18),
+        transaction_through_date=date(2026, 2, 1),
+    )
+
+    assert evidence.transactions == (older, boundary)
+
+
 def test_transition_evidence_exposes_persisted_fund_metadata(tmp_path):
     store = NavEvidenceStore(tmp_path / "INF001.json")
     store.create(
