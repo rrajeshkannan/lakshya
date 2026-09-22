@@ -57,12 +57,7 @@ def _evidence_inputs_available(
     transactions_path: Path,
     nav_root: Path,
 ) -> bool:
-    """Return whether the optional transaction/NAV evidence is complete.
-
-    LTS remains composable for focused unit tests and legacy callers that
-    provide only the existing CURRENT/TARGET inputs. Production runs use the
-    evidence path whenever its canonical inputs are present and complete.
-    """
+    """Return whether the optional transaction/NAV evidence is complete."""
     return transactions_path.is_file() and all(
         (nav_root / f"{isin}.json").is_file() for isin in active_isins
     )
@@ -84,6 +79,7 @@ def run_lts_transition(
     nav_root: Path = DEFAULT_NAV_ROOT,
     purpose_summaries_path: Path = DEFAULT_PURPOSE_SUMMARIES_PATH,
     as_of: date | None = None,
+    transaction_through_date: date | None = None,
 ) -> LtsRunResult:
     persisted_positions = read_positions(positions_path)
     current_input = classify_current_positions(persisted_positions)
@@ -109,6 +105,7 @@ def run_lts_transition(
             transactions,
             stores,
             valuation_date,
+            transaction_through_date=transaction_through_date,
         )
         classifications = {
             metadata.isin: classify_fund(metadata)
@@ -124,9 +121,6 @@ def run_lts_transition(
             constraints,
         )
     else:
-        # The analytical LTS composition contract predates the optional
-        # transaction/NAV evidence path. Preserve that contract when callers
-        # intentionally provide isolated CURRENT/TARGET fixtures.
         evidence = TransitionEvidence(
             positions=(),
             transactions=(),
