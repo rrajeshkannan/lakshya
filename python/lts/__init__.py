@@ -13,7 +13,13 @@ from .lots import HoldingLot, fifo_holding_lots
 from .redemption import FifoRedemptionAllocation, fifo_redemption_allocations
 from .holding_constraints import HoldingConstraintAnalysis, HoldingTaxConstraint, LotTaxAnalysis, analyze_holding
 from .constraint_factory import holding_constraint_for_fund
-from .holding_availability import HoldingAvailability, LockedLotAvailability, summarize_holding_availability
+from .holding_availability import (
+    ELSS_LOCK_IN_REASON,
+    HoldingAvailability,
+    LockedLotAvailability,
+    LotAvailability,
+    summarize_holding_availability,
+)
 from .availability_report import build_holding_availability_report
 from .treatments import TransitionTreatment, classify_position_treatment
 from .purpose_allocation import validate_purpose_target_allocation
@@ -85,8 +91,8 @@ __all__ = [
     "FundClassification", "TransitionFundMetadata", "classify_fund", "project_fund_metadata",
     "HoldingConstraintAnalysis", "HoldingTaxConstraint", "LotTaxAnalysis", "analyze_holding",
     "holding_constraint_for_fund",
-    "HoldingAvailability", "LockedLotAvailability", "summarize_holding_availability",
-    "build_holding_availability_report",
+    "ELSS_LOCK_IN_REASON", "HoldingAvailability", "LockedLotAvailability", "LotAvailability",
+    "summarize_holding_availability", "build_holding_availability_report",
     "validate_purpose_target_allocation",
     "PurposeTransitionBalance", "PurposeTransitionPlan", "PurposeTransitionRow",
     "TransitionDisposition", "TransitionMapping", "TransitionSourceKind",
