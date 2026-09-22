@@ -67,6 +67,7 @@ def test_runner_plumbs_transaction_through_date_into_lock_in_analysis(tmp_path):
         source="test",
         nav=pd.DataFrame([{"date": "2026-09-20", "nav": "100"}]),
         retrieved_at="2026-09-21T00:00:00Z",
+        scheme_metadata={"schemeCategory": "Equity Scheme - ELSS"},
     )
 
     result = run_lts_transition(
