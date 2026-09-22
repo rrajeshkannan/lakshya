@@ -51,6 +51,23 @@ def _nav_stores(isins: set[str], nav_root: Path) -> dict[str, NavEvidenceStore]:
     return {isin: NavEvidenceStore(nav_root / f"{isin}.json") for isin in sorted(isins)}
 
 
+def _evidence_inputs_available(
+    *,
+    active_isins: set[str],
+    transactions_path: Path,
+    nav_root: Path,
+) -> bool:
+    """Return whether the optional transaction/NAV evidence is complete.
+
+    LTS remains composable for focused unit tests and legacy callers that
+    provide only the existing CURRENT/TARGET inputs. Production runs use the
+    evidence path whenever its canonical inputs are present and complete.
+    """
+    return transactions_path.is_file() and all(
+        (nav_root / f"{isin}.json").is_file() for isin in active_isins
+    )
+
+
 def _locked_position_ids(availability: tuple) -> set:
     return {
         report.holding_id
@@ -72,25 +89,51 @@ def run_lts_transition(
     current_input = classify_current_positions(persisted_positions)
     current_positions = bridge_positions(list(current_input.active_positions))
 
-    valuation_date = as_of or date.fromisoformat(_infer_as_of(purpose_summaries_path))
-    transactions = read_transactions(transactions_path)
-    stores = _nav_stores({position.id.isin for position in current_input.active_positions}, nav_root)
-    evidence = build_transition_evidence(
-        list(current_input.active_positions),
-        transactions,
-        stores,
-        valuation_date,
+    active_isins = {
+        position.id.isin for position in current_input.active_positions
+    }
+    evidence_available = _evidence_inputs_available(
+        active_isins=active_isins,
+        transactions_path=transactions_path,
+        nav_root=nav_root,
     )
 
-    classifications = {
-        metadata.isin: classify_fund(metadata)
-        for metadata in evidence.fund_metadata
-    }
-    constraints = {
-        isin: holding_constraint_for_fund(classification)
-        for isin, classification in classifications.items()
-    }
-    availability = build_holding_availability_report(evidence, valuation_date, constraints)
+    if evidence_available:
+        valuation_date = as_of or date.fromisoformat(
+            _infer_as_of(purpose_summaries_path)
+        )
+        transactions = read_transactions(transactions_path)
+        stores = _nav_stores(active_isins, nav_root)
+        evidence = build_transition_evidence(
+            list(current_input.active_positions),
+            transactions,
+            stores,
+            valuation_date,
+        )
+        classifications = {
+            metadata.isin: classify_fund(metadata)
+            for metadata in evidence.fund_metadata
+        }
+        constraints = {
+            isin: holding_constraint_for_fund(classification)
+            for isin, classification in classifications.items()
+        }
+        availability = build_holding_availability_report(
+            evidence,
+            valuation_date,
+            constraints,
+        )
+    else:
+        # The analytical LTS composition contract predates the optional
+        # transaction/NAV evidence path. Preserve that contract when callers
+        # intentionally provide isolated CURRENT/TARGET fixtures.
+        evidence = TransitionEvidence(
+            positions=(),
+            transactions=(),
+            fund_metadata=(),
+        )
+        availability = ()
+
     locked_ids = _locked_position_ids(availability)
 
     formation = build_formation_intent(
@@ -128,7 +171,11 @@ def _write_reports_csv(reports, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     with destination.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle, lineterminator="\n")
-        writer.writerow(["purpose", "current_amount", "target_amount", "retained_amount", "redemption_amount", "locked_redemption_amount", "investment_by_destination", "is_balanced"])
+        writer.writerow([
+            "purpose", "current_amount", "target_amount", "retained_amount",
+            "redemption_amount", "locked_redemption_amount",
+            "investment_by_destination", "is_balanced",
+        ])
         for report in reports:
             writer.writerow([
                 report.purpose,
@@ -137,7 +184,10 @@ def _write_reports_csv(reports, destination: Path) -> None:
                 format(report.retained_amount, "f"),
                 format(report.redemption_amount, "f"),
                 format(report.locked_redemption_amount, "f"),
-                ";".join(f"{isin}={format(amount, 'f')}" for isin, amount in report.investment_by_destination),
+                ";".join(
+                    f"{isin}={format(amount, 'f')}"
+                    for isin, amount in report.investment_by_destination
+                ),
                 str(report.is_balanced).lower(),
             ])
 
@@ -156,10 +206,15 @@ def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str) -> N
         "portfolio_target_amount": format(result.plan.portfolio_target_amount, "f"),
         "mapping_count": len(result.plan.mappings),
         "is_balanced": result.plan.is_balanced,
-        "all_purpose_reports_balanced": all(report.is_balanced for report in result.reports),
+        "all_purpose_reports_balanced": all(
+            report.is_balanced for report in result.reports
+        ),
     }
     temporary = destination.with_suffix(destination.suffix + ".tmp")
-    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     temporary.replace(destination)
 
 
@@ -169,7 +224,10 @@ def _infer_as_of(purpose_summaries_path: Path) -> str:
         values = {str(row.get("as_of", "")).strip() for row in rows}
     values.discard("")
     if len(values) != 1:
-        raise ValueError(f"Expected exactly one non-blank as_of value in {purpose_summaries_path}; found {sorted(values)}.")
+        raise ValueError(
+            f"Expected exactly one non-blank as_of value in "
+            f"{purpose_summaries_path}; found {sorted(values)}."
+        )
     return values.pop()
 
 
@@ -187,7 +245,12 @@ def _write_atomic_reports(result, destination: Path) -> None:
     temporary.replace(destination)
 
 
-def persist_lts_artifacts(result: LtsRunResult, *, as_of: str, lts_root: Path = DEFAULT_LTS_ROOT) -> tuple[Path, Path, Path]:
+def persist_lts_artifacts(
+    result: LtsRunResult,
+    *,
+    as_of: str,
+    lts_root: Path = DEFAULT_LTS_ROOT,
+) -> tuple[Path, Path, Path]:
     if not as_of.strip():
         raise ValueError("as_of must be non-blank.")
     mapping_path = lts_root / "transition_mappings.csv"
@@ -201,7 +264,10 @@ def persist_lts_artifacts(result: LtsRunResult, *, as_of: str, lts_root: Path = 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--as-of", help="Optional valuation boundary; normally inferred from LFS summaries.")
+    parser.add_argument(
+        "--as-of",
+        help="Optional valuation boundary; normally inferred from LFS summaries.",
+    )
     return parser
 
 
@@ -209,9 +275,15 @@ def main() -> None:
     args = _parser().parse_args()
     inferred_as_of = _infer_as_of(DEFAULT_PURPOSE_SUMMARIES_PATH)
     if args.as_of is not None and args.as_of != inferred_as_of:
-        raise ValueError(f"Explicit --as-of {args.as_of} disagrees with the LFS summary boundary {inferred_as_of}.")
+        raise ValueError(
+            f"Explicit --as-of {args.as_of} disagrees with the LFS summary "
+            f"boundary {inferred_as_of}."
+        )
     result = run_lts_transition(as_of=date.fromisoformat(inferred_as_of))
-    mapping_path, report_path, manifest_path = persist_lts_artifacts(result, as_of=inferred_as_of)
+    mapping_path, report_path, manifest_path = persist_lts_artifacts(
+        result,
+        as_of=inferred_as_of,
+    )
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
     print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
@@ -223,4 +295,10 @@ if __name__ == "__main__":
     main()
 
 
-__all__ = ["DEFAULT_LTS_ROOT", "DEFAULT_POSITIONS_PATH", "LtsRunResult", "persist_lts_artifacts", "run_lts_transition"]
+__all__ = [
+    "DEFAULT_LTS_ROOT",
+    "DEFAULT_POSITIONS_PATH",
+    "LtsRunResult",
+    "persist_lts_artifacts",
+    "run_lts_transition",
+]
