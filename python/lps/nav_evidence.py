@@ -185,7 +185,11 @@ class NavEvidenceStore:
             raise ValueError("NAV evidence contains missing dates.")
         if nav["nav"].isna().any():
             raise ValueError("NAV evidence contains missing NAV values.")
-        if (nav["nav"] <= 0).any():
+
+        numeric_nav = pd.to_numeric(nav["nav"], errors="coerce")
+        if numeric_nav.isna().any():
+            raise ValueError("NAV evidence contains non-numeric NAV values.")
+        if (numeric_nav <= 0).any():
             raise ValueError("NAV values must be strictly positive.")
         if nav["date"].duplicated().any():
             raise ValueError("NAV evidence contains duplicate dates.")
