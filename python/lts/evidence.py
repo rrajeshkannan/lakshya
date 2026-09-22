@@ -48,6 +48,8 @@ def build_transition_evidence(
     transactions: list[Transaction],
     nav_stores: Mapping[str, NavEvidenceStore],
     valuation_as_of_date: date,
+    *,
+    transaction_through_date: date | None = None,
 ) -> TransitionEvidence:
     """Project LPS facts into the frozen Transition Evidence contract.
 
@@ -55,6 +57,11 @@ def build_transition_evidence(
     valuation_as_of_date. The actual NAV observation date is retained
     alongside the NAV so LTS never has to infer it from the requested
     valuation boundary.
+
+    When transaction_through_date is supplied, transactions after that
+    factual boundary are excluded. This keeps transaction chronology separate
+    from valuation timing and prevents future transactions from entering a
+    historical transition analysis.
 
     Zero-unit Positions remain represented, but have no valuation observation.
     Transactions are passed through as factual historical evidence and are
@@ -107,9 +114,18 @@ def build_transition_evidence(
         if isin in nav_stores
     )
 
+    eligible_transactions = (
+        transactions
+        if transaction_through_date is None
+        else [
+            transaction
+            for transaction in transactions
+            if transaction.transaction_date <= transaction_through_date
+        ]
+    )
     ordered_transactions = tuple(
         sorted(
-            transactions,
+            eligible_transactions,
             key=lambda transaction: (
                 transaction.transaction_date,
                 transaction.investor,
