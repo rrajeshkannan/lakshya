@@ -154,4 +154,5 @@ def test_runner_uses_transaction_and_nav_evidence_when_available(tmp_path):
     assert len(result.evidence.positions) == 3
     assert len(result.evidence.transactions) == 3
     assert len(result.availability) == 3
-    assert all(report.unlocked_units == report.units for report in result.availability)
+    assert all(report.locked_units == Decimal("0") for report in result.availability)
+    assert all(report.unlocked_units > Decimal("0") for report in result.availability)
