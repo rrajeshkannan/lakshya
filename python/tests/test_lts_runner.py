@@ -1,5 +1,12 @@
+from datetime import date
 from decimal import Decimal
 
+import pandas as pd
+
+from lps.nav_evidence import NavEvidenceStore
+from lps.position_persistence import read_positions
+from lps.transaction_persistence import write_transactions
+from lps.transactions import Transaction
 from lts.runner import run_lts_transition
 
 
@@ -91,3 +98,60 @@ def test_runner_does_not_reconcile_unattributed_positions(tmp_path):
             positions_path=positions,
             purpose_summaries_path=summaries,
         )
+
+
+def test_runner_uses_transaction_and_nav_evidence_when_available(tmp_path):
+    purposes = tmp_path / "purposes.csv"
+    positions = tmp_path / "positions.csv"
+    summaries = tmp_path / "purpose_summaries.csv"
+    transactions = tmp_path / "transactions.csv"
+    nav_root = tmp_path / "nav"
+
+    purposes.write_text(PURPOSES, encoding="utf-8")
+    positions.write_text(POSITIONS, encoding="utf-8")
+    summaries.write_text(SUMMARIES, encoding="utf-8")
+
+    persisted_positions = read_positions(positions)
+    write_transactions(
+        transactions,
+        [
+            Transaction(
+                transaction_date=date(2020, 1, 1),
+                event_type="Purchase",
+                investor=position.id.investor,
+                folio=position.id.folio,
+                isin=position.id.isin,
+                units=position.units,
+                amount=position.market_value,
+                price=position.nav,
+                source_description="test fixture",
+            )
+            for position in persisted_positions
+        ],
+    )
+
+    for position in persisted_positions:
+        store = NavEvidenceStore(nav_root / f"{position.id.isin}.json")
+        store.create(
+            isin=position.id.isin,
+            scheme_code=1,
+            source="test",
+            nav=pd.DataFrame(
+                [{"date": "2026-09-20", "nav": str(position.nav)}]
+            ),
+            retrieved_at="2026-09-21T00:00:00Z",
+        )
+
+    result = run_lts_transition(
+        purposes_path=purposes,
+        positions_path=positions,
+        transactions_path=transactions,
+        nav_root=nav_root,
+        purpose_summaries_path=summaries,
+        as_of=date(2026, 9, 20),
+    )
+
+    assert len(result.evidence.positions) == 3
+    assert len(result.evidence.transactions) == 3
+    assert len(result.availability) == 3
+    assert all(report.unlocked_units == report.units for report in result.availability)
