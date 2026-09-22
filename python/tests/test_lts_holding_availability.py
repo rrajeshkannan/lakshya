@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from lts.holding_availability import summarize_holding_availability
+from lts.holding_availability import ELSS_LOCK_IN_REASON, summarize_holding_availability
 from lts.holding_constraints import HoldingTaxConstraint, analyze_holding
 from lps.positions import Position, PositionId
 from lps.transactions import Transaction
@@ -44,6 +44,9 @@ def test_all_unlocked_lots_are_bundled():
     assert result.unlocked_value == Decimal("4500")
     assert result.unlocked_lot_count == 2
     assert result.locked_lots == ()
+    assert len(result.lots) == 2
+    assert all(lot.availability_status == "AVAILABLE" for lot in result.lots)
+    assert all(lot.retention_reason is None for lot in result.lots)
 
 
 def test_locked_lots_remain_individual_and_unlocked_units_are_bundled():
@@ -69,6 +72,13 @@ def test_locked_lots_remain_individual_and_unlocked_units_are_bundled():
     assert result.locked_lots[0].units == Decimal("20")
     assert result.locked_lots[0].current_value == Decimal("3000")
     assert result.locked_lots[0].locked_until == date(2028, 1, 1)
+    assert len(result.lots) == 2
+    locked = next(lot for lot in result.lots if lot.availability_status == "LOCKED")
+    available = next(lot for lot in result.lots if lot.availability_status == "AVAILABLE")
+    assert locked.retention_reason == ELSS_LOCK_IN_REASON
+    assert locked.locked_until == date(2028, 1, 1)
+    assert available.retention_reason is None
+    assert available.locked_until is None
 
 
 def test_missing_nav_keeps_values_unknown_without_losing_unit_visibility():
@@ -91,3 +101,5 @@ def test_missing_nav_keeps_values_unknown_without_losing_unit_visibility():
     assert result.unlocked_units == Decimal("10")
     assert result.unlocked_value is None
     assert result.locked_lots == ()
+    assert len(result.lots) == 1
+    assert result.lots[0].current_value is None
