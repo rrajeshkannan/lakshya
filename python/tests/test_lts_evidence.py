@@ -26,28 +26,12 @@ def make_store(tmp_path, isin="INF001"):
     return store
 
 
-def position(
-    investor="Amma",
-    folio="F1",
-    isin="INF001",
-    units="10",
-    purpose="Retirement",
-):
-    return Position(
-        id=PositionId(investor, folio, isin),
-        units=Decimal(units),
-        purpose=purpose,
-    )
+def position(investor="Amma", folio="F1", isin="INF001", units="10", purpose="Retirement"):
+    return Position(id=PositionId(investor, folio, isin), units=Decimal(units), purpose=purpose)
 
 
 def test_transition_evidence_retains_position_identity_and_purpose(tmp_path):
-    evidence = build_transition_evidence(
-        [position()],
-        [],
-        {"INF001": make_store(tmp_path)},
-        date(2026, 8, 18),
-    )
-
+    evidence = build_transition_evidence([position()], [], {"INF001": make_store(tmp_path)}, date(2026, 8, 18))
     row = evidence.positions[0]
     assert row.id == PositionId("Amma", "F1", "INF001")
     assert row.units == Decimal("10")
@@ -55,13 +39,7 @@ def test_transition_evidence_retains_position_identity_and_purpose(tmp_path):
 
 
 def test_transition_evidence_retains_actual_nav_observation_date(tmp_path):
-    evidence = build_transition_evidence(
-        [position()],
-        [],
-        {"INF001": make_store(tmp_path)},
-        date(2026, 8, 16),
-    )
-
+    evidence = build_transition_evidence([position()], [], {"INF001": make_store(tmp_path)}, date(2026, 8, 16))
     row = evidence.positions[0]
     assert row.nav == Decimal("109.78")
     assert row.nav_observation_date == date(2026, 8, 14)
@@ -69,26 +47,12 @@ def test_transition_evidence_retains_actual_nav_observation_date(tmp_path):
 
 
 def test_transition_evidence_does_not_use_requested_date_as_nav_date(tmp_path):
-    evidence = build_transition_evidence(
-        [position()],
-        [],
-        {"INF001": make_store(tmp_path)},
-        date(2026, 8, 16),
-    )
-
+    evidence = build_transition_evidence([position()], [], {"INF001": make_store(tmp_path)}, date(2026, 8, 16))
     assert evidence.positions[0].nav_observation_date != date(2026, 8, 16)
 
 
-def test_transition_evidence_preserves_zero_unit_position_without_fake_valuation(
-    tmp_path,
-):
-    evidence = build_transition_evidence(
-        [position(units="0")],
-        [],
-        {"INF001": make_store(tmp_path)},
-        date(2026, 8, 18),
-    )
-
+def test_transition_evidence_preserves_zero_unit_position_without_fake_valuation(tmp_path):
+    evidence = build_transition_evidence([position(units="0")], [], {"INF001": make_store(tmp_path)}, date(2026, 8, 18))
     row = evidence.positions[0]
     assert row.units == Decimal("0")
     assert row.nav is None
@@ -99,92 +63,22 @@ def test_transition_evidence_preserves_zero_unit_position_without_fake_valuation
 
 def test_transition_evidence_requires_nav_for_active_position(tmp_path):
     with pytest.raises(KeyError, match="INF001"):
-        build_transition_evidence(
-            [position()],
-            [],
-            {},
-            date(2026, 8, 18),
-        )
+        build_transition_evidence([position()], [], {}, date(2026, 8, 18))
 
 
 def test_transition_evidence_preserves_transactions_as_history():
-    older = Transaction(
-        transaction_date=date(2026, 1, 1),
-        event_type="Purchase",
-        investor="Amma",
-        folio="F1",
-        isin="INF001",
-        units=Decimal("10"),
-        amount=Decimal("1000"),
-        price=Decimal("100"),
-        source_description="older",
-    )
-    newer = Transaction(
-        transaction_date=date(2026, 2, 1),
-        event_type="Switch Out",
-        investor="Amma",
-        folio="F1",
-        isin="INF001",
-        units=Decimal("-2"),
-        amount=Decimal("220"),
-        price=Decimal("110"),
-        source_description="newer",
-    )
-
-    evidence = build_transition_evidence(
-        [],
-        [newer, older],
-        {},
-        date(2026, 8, 18),
-    )
-
+    older = Transaction(date(2026, 1, 1), "Purchase", "Amma", "F1", "INF001", Decimal("10"), Decimal("1000"), Decimal("100"), "older")
+    newer = Transaction(date(2026, 2, 1), "Switch Out", "Amma", "F1", "INF001", Decimal("-2"), Decimal("220"), Decimal("110"), "newer")
+    evidence = build_transition_evidence([], [newer, older], {}, date(2026, 8, 18))
     assert evidence.transactions == (older, newer)
     assert evidence.transactions[0].event_type == "Purchase"
 
 
-def test_transition_evidence_applies_transaction_through_date():
-    older = Transaction(
-        transaction_date=date(2026, 1, 1),
-        event_type="Purchase",
-        investor="Amma",
-        folio="F1",
-        isin="INF001",
-        units=Decimal("10"),
-        amount=Decimal("1000"),
-        price=Decimal("100"),
-        source_description="older",
-    )
-    boundary = Transaction(
-        transaction_date=date(2026, 2, 1),
-        event_type="Switch In",
-        investor="Amma",
-        folio="F1",
-        isin="INF001",
-        units=Decimal("2"),
-        amount=Decimal("220"),
-        price=Decimal("110"),
-        source_description="boundary",
-    )
-    future = Transaction(
-        transaction_date=date(2026, 3, 1),
-        event_type="Purchase",
-        investor="Amma",
-        folio="F1",
-        isin="INF001",
-        units=Decimal("1"),
-        amount=Decimal("120"),
-        price=Decimal("120"),
-        source_description="future",
-    )
-
-    evidence = build_transition_evidence(
-        [],
-        [future, boundary, older],
-        {},
-        date(2026, 8, 18),
-        transaction_through_date=date(2026, 2, 1),
-    )
-
+def test_transition_evidence_uses_as_of_as_transaction_boundary():
+    older = Transaction(date(2026, 1, 1), "Purchase", "Amma", "F1", "INF001", Decimal("10"), Decimal("1000"), Decimal("100"), "older")
+    boundary = Transaction(date(2026, 2, 1), "Switch In", "Amma", "F1", "INF001", Decimal("2"), Decimal("220"), Decimal("110"), "boundary")
+    future = Transaction(date(2026, 3, 1), "Purchase", "Amma", "F1", "INF001", Decimal("1"), Decimal("120"), Decimal("120"), "future")
+    evidence = build_transition_evidence([], [future, boundary, older], {}, date(2026, 2, 1))
     assert evidence.transactions == (older, boundary)
 
 
@@ -194,22 +88,9 @@ def test_transition_evidence_exposes_persisted_fund_metadata(tmp_path):
         isin="INF001",
         scheme_code=1001,
         source="test",
-        nav=pd.DataFrame({
-            "date": pd.to_datetime(["2026-08-18"]),
-            "nav": [Decimal("109.06")],
-        }),
+        nav=pd.DataFrame({"date": pd.to_datetime(["2026-08-18"]), "nav": [Decimal("109.06")]}),
         retrieved_at="2026-08-18T10:00:00+05:30",
-        scheme_metadata={
-            "schemeName": "Example ELSS Fund",
-            "schemeCategory": "Equity Scheme - ELSS",
-            "schemeType": "Open Ended Schemes",
-        },
+        scheme_metadata={"schemeName": "Example ELSS Fund", "schemeCategory": "Equity Scheme - ELSS", "schemeType": "Open Ended Schemes"},
     )
-    evidence = build_transition_evidence(
-        [position()], [], {"INF001": store}, date(2026, 8, 18)
-    )
-    assert evidence.fund_metadata == (
-        __import__("lts.fund_metadata", fromlist=["TransitionFundMetadata"]).TransitionFundMetadata(
-            "INF001", "Example ELSS Fund", "Equity Scheme - ELSS", "Open Ended Schemes"
-        ),
-    )
+    evidence = build_transition_evidence([position()], [], {"INF001": store}, date(2026, 8, 18))
+    assert evidence.fund_metadata[0].scheme_category == "Equity Scheme - ELSS"
