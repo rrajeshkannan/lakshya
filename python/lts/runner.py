@@ -115,9 +115,10 @@ def run_lts_transition(
             isin: holding_constraint_for_fund(classification)
             for isin, classification in classifications.items()
         }
+        availability_as_of = transaction_through_date or valuation_date
         availability = build_holding_availability_report(
             evidence,
-            valuation_date,
+            availability_as_of,
             constraints,
         )
     else:
