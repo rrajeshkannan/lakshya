@@ -167,21 +167,82 @@ def _write_reports_csv(reports, destination: Path) -> None:
             ])
 
 
-def _write_manifest(result: LtsRunResult, destination: Path, *, as_of: str) -> None:
+def _write_availability_lots_csv(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow([
+            "as_of", "investor", "folio", "isin", "acquired_on", "units",
+            "current_value", "availability_status", "locked_until", "retention_reason",
+        ])
+        for report in result.availability:
+            for lot in report.lots:
+                writer.writerow([
+                    report.as_of.isoformat(),
+                    report.holding_id.investor,
+                    report.holding_id.folio,
+                    report.holding_id.isin,
+                    lot.acquired_on.isoformat(),
+                    format(lot.units, "f"),
+                    "" if lot.current_value is None else format(lot.current_value, "f"),
+                    lot.availability_status,
+                    "" if lot.locked_until is None else lot.locked_until.isoformat(),
+                    lot.retention_reason or "",
+                ])
+
+
+def _write_availability_summary_csv(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow([
+            "as_of", "investor", "folio", "isin", "unlocked_units", "unlocked_value",
+            "unlocked_lot_count", "locked_units", "locked_value", "locked_lot_count",
+        ])
+        for report in result.availability:
+            writer.writerow([
+                report.as_of.isoformat(),
+                report.holding_id.investor,
+                report.holding_id.folio,
+                report.holding_id.isin,
+                format(report.unlocked_units, "f"),
+                "" if report.unlocked_value is None else format(report.unlocked_value, "f"),
+                report.unlocked_lot_count,
+                format(report.locked_units, "f"),
+                "" if report.locked_value is None else format(report.locked_value, "f"),
+                len(report.locked_lots),
+            ])
+
+
+def _write_manifest(
+    result: LtsRunResult,
+    destination: Path,
+    *,
+    as_of: str,
+    availability_lot_path: Path,
+    availability_summary_path: Path,
+) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "contract": "LTS_TRANSITION",
-        "contract_version": 3,
+        "contract_version": 4,
         "as_of": as_of,
         "position_count": len(result.positions),
         "purpose_report_count": len(result.reports),
         "availability_count": len(result.availability),
+        "availability_lot_count": sum(len(report.lots) for report in result.availability),
         "locked_position_count": len(_locked_position_ids(result.availability)),
         "portfolio_current_amount": format(result.plan.portfolio_current_amount, "f"),
         "portfolio_target_amount": format(result.plan.portfolio_target_amount, "f"),
         "mapping_count": len(result.plan.mappings),
         "is_balanced": result.plan.is_balanced,
         "all_purpose_reports_balanced": all(report.is_balanced for report in result.reports),
+        "artifacts": {
+            "transition_mappings": "transition_mappings.csv",
+            "purpose_reports": "purpose_reports.csv",
+            "holding_availability": availability_lot_path.name,
+            "holding_availability_summary": availability_summary_path.name,
+        },
     }
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -214,16 +275,51 @@ def _write_atomic_reports(result, destination: Path) -> None:
     temporary.replace(destination)
 
 
-def persist_lts_artifacts(result: LtsRunResult, *, as_of: str, lts_root: Path = DEFAULT_LTS_ROOT) -> tuple[Path, Path, Path]:
+def _write_atomic_availability_lots(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    _write_availability_lots_csv(result, temporary)
+    temporary.replace(destination)
+
+
+def _write_atomic_availability_summary(result: LtsRunResult, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    _write_availability_summary_csv(result, temporary)
+    temporary.replace(destination)
+
+
+def persist_lts_artifacts(
+    result: LtsRunResult,
+    *,
+    as_of: str,
+    lts_root: Path = DEFAULT_LTS_ROOT,
+) -> tuple[Path, Path, Path, Path, Path]:
     if not as_of.strip():
         raise ValueError("as_of must be non-blank.")
     mapping_path = lts_root / "transition_mappings.csv"
     report_path = lts_root / "purpose_reports.csv"
+    availability_lot_path = lts_root / "holding_availability.csv"
+    availability_summary_path = lts_root / "holding_availability_summary.csv"
     manifest_path = lts_root / "manifest.json"
     _write_atomic_mapping(result, mapping_path)
     _write_atomic_reports(result, report_path)
-    _write_manifest(result, manifest_path, as_of=as_of)
-    return mapping_path, report_path, manifest_path
+    _write_atomic_availability_lots(result, availability_lot_path)
+    _write_atomic_availability_summary(result, availability_summary_path)
+    _write_manifest(
+        result,
+        manifest_path,
+        as_of=as_of,
+        availability_lot_path=availability_lot_path,
+        availability_summary_path=availability_summary_path,
+    )
+    return (
+        mapping_path,
+        report_path,
+        availability_lot_path,
+        availability_summary_path,
+        manifest_path,
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -240,7 +336,13 @@ def main() -> None:
             f"Explicit --as-of {args.as_of} disagrees with the LFS summary boundary {inferred_as_of}."
         )
     result = run_lts_transition(as_of=date.fromisoformat(inferred_as_of))
-    mapping_path, report_path, manifest_path = persist_lts_artifacts(result, as_of=inferred_as_of)
+    (
+        mapping_path,
+        report_path,
+        availability_lot_path,
+        availability_summary_path,
+        manifest_path,
+    ) = persist_lts_artifacts(result, as_of=inferred_as_of)
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
     print(f"Availability reports: {len(result.availability)}")
@@ -251,6 +353,8 @@ def main() -> None:
         )
     print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
     print(f"Purpose reports CSV: {report_path.relative_to(PROJECT_ROOT)}")
+    print(f"Holding availability CSV: {availability_lot_path.relative_to(PROJECT_ROOT)}")
+    print(f"Holding availability summary CSV: {availability_summary_path.relative_to(PROJECT_ROOT)}")
     print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
 
 
