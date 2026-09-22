@@ -32,11 +32,7 @@ class TransitionEvidencePosition:
 
 @dataclass(frozen=True)
 class TransitionEvidence:
-    """Factual LPS evidence consumed by LTS.
-
-    The projection deliberately contains no TARGET, tax calculation,
-    transition treatment, or proposal information.
-    """
+    """Factual LPS evidence consumed by LTS."""
 
     positions: tuple[TransitionEvidencePosition, ...]
     transactions: tuple[Transaction, ...]
@@ -48,24 +44,12 @@ def build_transition_evidence(
     transactions: list[Transaction],
     nav_stores: Mapping[str, NavEvidenceStore],
     valuation_as_of_date: date,
-    *,
-    transaction_through_date: date | None = None,
 ) -> TransitionEvidence:
-    """Project LPS facts into the frozen Transition Evidence contract.
+    """Project LPS facts using one authoritative ``as_of`` boundary.
 
-    Active Positions are valued using the latest persisted NAV on or before
-    valuation_as_of_date. The actual NAV observation date is retained
-    alongside the NAV so LTS never has to infer it from the requested
-    valuation boundary.
-
-    When transaction_through_date is supplied, transactions after that
-    factual boundary are excluded. This keeps transaction chronology separate
-    from valuation timing and prevents future transactions from entering a
-    historical transition analysis.
-
-    Zero-unit Positions remain represented, but have no valuation observation.
-    Transactions are passed through as factual historical evidence and are
-    never transformed into LTS actions.
+    The same valuation boundary controls NAV observation and the historical
+    transaction set. Transactions after ``valuation_as_of_date`` are not
+    available to lock-in analysis for that run.
     """
     projected: list[TransitionEvidencePosition] = []
 
@@ -95,7 +79,6 @@ def build_transition_evidence(
 
         observation_timestamp, nav = store.as_of(valuation_as_of_date)
         nav_decimal = Decimal(str(nav))
-
         projected.append(
             TransitionEvidencePosition(
                 id=position.id,
@@ -113,19 +96,13 @@ def build_transition_evidence(
         for isin in ordered_isins
         if isin in nav_stores
     )
-
-    eligible_transactions = (
-        transactions
-        if transaction_through_date is None
-        else [
-            transaction
-            for transaction in transactions
-            if transaction.transaction_date <= transaction_through_date
-        ]
-    )
     ordered_transactions = tuple(
         sorted(
-            eligible_transactions,
+            (
+                transaction
+                for transaction in transactions
+                if transaction.transaction_date <= valuation_as_of_date
+            ),
             key=lambda transaction: (
                 transaction.transaction_date,
                 transaction.investor,
