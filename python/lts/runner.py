@@ -263,6 +263,13 @@ def _parser() -> argparse.ArgumentParser:
         "--as-of",
         help="Optional valuation boundary; normally inferred from LFS summaries.",
     )
+    parser.add_argument(
+        "--transaction-through-date",
+        help=(
+            "Optional historical transaction boundary (YYYY-MM-DD). "
+            "Transactions after this date are excluded from ELSS lock-in analysis."
+        ),
+    )
     return parser
 
 
@@ -274,13 +281,29 @@ def main() -> None:
             f"Explicit --as-of {args.as_of} disagrees with the LFS summary "
             f"boundary {inferred_as_of}."
         )
-    result = run_lts_transition(as_of=date.fromisoformat(inferred_as_of))
+    transaction_through_date = (
+        date.fromisoformat(args.transaction_through_date)
+        if args.transaction_through_date is not None
+        else None
+    )
+    result = run_lts_transition(
+        as_of=date.fromisoformat(inferred_as_of),
+        transaction_through_date=transaction_through_date,
+    )
     mapping_path, report_path, manifest_path = persist_lts_artifacts(
         result,
         as_of=inferred_as_of,
     )
     print(f"LTS transition balanced: {result.plan.is_balanced}")
     print(f"Purpose reports: {len(result.reports)}")
+    print(f"Availability reports: {len(result.availability)}")
+    for availability in result.availability:
+        print(
+            f"Availability {availability.holding_id}: "
+            f"locked_units={availability.locked_units} "
+            f"unlocked_units={availability.unlocked_units} "
+            f"as_of={availability.as_of}"
+        )
     print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
     print(f"Purpose reports CSV: {report_path.relative_to(PROJECT_ROOT)}")
     print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
