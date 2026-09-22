@@ -21,6 +21,12 @@ Appanna,F2,BBB,5,200,1000,Retirement
 Amma,F3,CCC,20,100,2000,Edu_A
 """
 
+FUND_SCOPE = """isin,asset_class,is_elss
+AAA,equity,no
+BBB,equity,no
+CCC,equity,no
+"""
+
 SUMMARIES = (
     "purpose,primary_winner\n"
     'Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n'
@@ -106,10 +112,12 @@ def test_runner_uses_transaction_and_nav_evidence_when_available(tmp_path):
     summaries = tmp_path / "purpose_summaries.csv"
     transactions = tmp_path / "transactions.csv"
     nav_root = tmp_path / "nav"
+    fund_scope = tmp_path / "funds_in_scope.csv"
 
     purposes.write_text(PURPOSES, encoding="utf-8")
     positions.write_text(POSITIONS, encoding="utf-8")
     summaries.write_text(SUMMARIES, encoding="utf-8")
+    fund_scope.write_text(FUND_SCOPE, encoding="utf-8")
 
     persisted_positions = read_positions(positions)
     write_transactions(
@@ -148,6 +156,7 @@ def test_runner_uses_transaction_and_nav_evidence_when_available(tmp_path):
         transactions_path=transactions,
         nav_root=nav_root,
         purpose_summaries_path=summaries,
+        fund_scope_path=fund_scope,
         as_of=date(2026, 9, 20),
     )
 
