@@ -1,11 +1,4 @@
-"""Transition-relevant fund metadata and classification.
-
-LPS retains source-derived MFAPI scheme metadata. LTS consumes only the
-small semantic projection it needs for transition constraints.
-
-When source metadata is unavailable or does not identify a category, LTS
-uses the explicit product default: Equity, Non-ELSS.
-"""
+"""Transition-relevant fund metadata and classification."""
 
 from __future__ import annotations
 
@@ -24,7 +17,7 @@ class TransitionFundMetadata:
 
 @dataclass(frozen=True)
 class FundClassification:
-    """Transition-relevant classification derived by LTS."""
+    """Transition-relevant classification supplied by the reviewer scope."""
 
     isin: str
     asset_class: str
@@ -43,28 +36,35 @@ def project_fund_metadata(isin: str, scheme_metadata: dict | None) -> Transition
     )
 
 
-def classify_fund(metadata: TransitionFundMetadata) -> FundClassification:
-    """Derive the small fund classification LTS currently needs.
+def classify_scope_row(row: dict[str, str]) -> FundClassification:
+    """Convert one human-maintained ``funds_in_scope.csv`` row into LTS facts."""
+    return FundClassification(
+        isin=str(row["isin"]).strip(),
+        asset_class=str(row["asset_class"]).strip().lower(),
+        is_elss=str(row["is_elss"]).strip().lower() == "yes",
+        source="HUMAN_SCOPE",
+    )
 
-    MFAPI's scheme category is treated as source evidence. ELSS is explicit
-    only when the category identifies it. Unknown or unavailable metadata
-    deliberately falls back to Equity, Non-ELSS.
+
+def classify_fund(metadata: TransitionFundMetadata) -> FundClassification:
+    """Retain the source-metadata projection for compatibility only.
+
+    Production LTS classification must use ``classify_scope_row`` and the
+    reviewer-maintained fund scope, not external scheme metadata inference.
     """
     category = (metadata.scheme_category or "").strip().lower()
-
-    if "elss" in category:
-        return FundClassification(metadata.isin, "Equity", True, "MFAPI")
-    if "equity" in category:
-        return FundClassification(metadata.isin, "Equity", False, "MFAPI")
-    if "debt" in category:
-        return FundClassification(metadata.isin, "Debt", False, "MFAPI")
-
-    return FundClassification(metadata.isin, "Equity", False, "DEFAULT")
+    return FundClassification(
+        metadata.isin,
+        "Debt" if "debt" in category else "Equity",
+        "elss" in category,
+        "LEGACY_METADATA",
+    )
 
 
 __all__ = [
     "FundClassification",
     "TransitionFundMetadata",
     "classify_fund",
+    "classify_scope_row",
     "project_fund_metadata",
 ]
