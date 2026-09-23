@@ -3,6 +3,7 @@
   "artifacts": {
     "holding_availability": "holding_availability.csv",
     "holding_availability_summary": "holding_availability_summary.csv",
+    "materialized_transition_slices": "materialized_transition_slices.csv",
     "purpose_reports": "purpose_reports.csv",
     "transition_mappings": "transition_mappings.csv"
   },
@@ -10,7 +11,7 @@
   "availability_count": 34,
   "availability_lot_count": 696,
   "contract": "LTS_TRANSITION",
-  "contract_version": 4,
+  "contract_version": 5,
   "is_balanced": true,
   "locked_position_count": 6,
   "mapping_count": 46,

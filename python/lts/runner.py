@@ -226,7 +226,7 @@ def _write_manifest(
     as_of: str,
     availability_lot_path: Path,
     availability_summary_path: Path,
-    materialized_slice_path: Path,
+    materialized_transition_slices_path: Path,
 ) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -246,7 +246,7 @@ def _write_manifest(
         "artifacts": {
             "transition_mappings": "transition_mappings.csv",
             "purpose_reports": "purpose_reports.csv",
-            "materialized_slices": materialized_slice_path.name,
+            "materialized_transition_slices": materialized_transition_slices_path.name,
             "holding_availability": availability_lot_path.name,
             "holding_availability_summary": availability_summary_path.name,
         },
@@ -306,13 +306,13 @@ def persist_lts_artifacts(
         raise ValueError("as_of must be non-blank.")
     mapping_path = lts_root / "transition_mappings.csv"
     report_path = lts_root / "purpose_reports.csv"
-    materialized_slice_path = lts_root / "materialized_slices.csv"
+    materialized_transition_slices_path = lts_root / "materialized_transition_slices.csv"
     availability_lot_path = lts_root / "holding_availability.csv"
     availability_summary_path = lts_root / "holding_availability_summary.csv"
     manifest_path = lts_root / "manifest.json"
     _write_atomic_mapping(result, mapping_path)
     _write_atomic_reports(result, report_path)
-    persist_materialized_slices_csv(result.materialized_slices, materialized_slice_path)
+    persist_materialized_slices_csv(result.materialized_slices, materialized_transition_slices_path)
     _write_atomic_availability_lots(result, availability_lot_path)
     _write_atomic_availability_summary(result, availability_summary_path)
     _write_manifest(
@@ -321,12 +321,12 @@ def persist_lts_artifacts(
         as_of=as_of,
         availability_lot_path=availability_lot_path,
         availability_summary_path=availability_summary_path,
-        materialized_slice_path=materialized_slice_path,
+        materialized_transition_slices_path=materialized_transition_slices_path,
     )
     return (
         mapping_path,
         report_path,
-        materialized_slice_path,
+        materialized_transition_slices_path,
         availability_lot_path,
         availability_summary_path,
         manifest_path,
@@ -350,7 +350,7 @@ def main() -> None:
     (
         mapping_path,
         report_path,
-        materialized_slice_path,
+        materialized_transition_slices_path,
         availability_lot_path,
         availability_summary_path,
         manifest_path,
@@ -365,7 +365,7 @@ def main() -> None:
         )
     print(f"Transition mapping: {mapping_path.relative_to(PROJECT_ROOT)}")
     print(f"Purpose reports CSV: {report_path.relative_to(PROJECT_ROOT)}")
-    print(f"Materialized slices CSV: {materialized_slice_path.relative_to(PROJECT_ROOT)}")
+    print(f"Materialized transition slices CSV: {materialized_transition_slices_path.relative_to(PROJECT_ROOT)}")
     print(f"Holding availability CSV: {availability_lot_path.relative_to(PROJECT_ROOT)}")
     print(f"Holding availability summary CSV: {availability_summary_path.relative_to(PROJECT_ROOT)}")
     print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
