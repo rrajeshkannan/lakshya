@@ -24,6 +24,7 @@ from .models import TargetFormation
 from .position_bridge import LtsPosition, bridge_positions
 from .purpose_transition import PurposeTransitionPlan, build_purpose_transition_plan
 from .purpose_transition_report import PurposeTransitionReport, build_purpose_transition_report
+from .slice_materialization import MaterializedSlice, materialize_transition_slices
 from .transition_audit import audit_transition_mapping
 from .transition_export import write_transition_mapping_csv
 
@@ -46,6 +47,7 @@ class LtsRunResult:
     availability: tuple
     formation: TargetFormation
     plan: PurposeTransitionPlan
+    materialized_slices: tuple[MaterializedSlice, ...]
     reports: tuple[PurposeTransitionReport, ...]
 
 
@@ -133,6 +135,7 @@ def run_lts_transition(
         },
     )
     audit_transition_mapping(current_positions, formation, plan)
+    materialized_slices = materialize_transition_slices(current_positions, plan)
     reports = build_purpose_transition_report(current_positions, formation, plan)
     return LtsRunResult(
         positions=tuple(current_positions),
@@ -141,6 +144,7 @@ def run_lts_transition(
         availability=availability,
         formation=formation,
         plan=plan,
+        materialized_slices=materialized_slices,
         reports=tuple(reports),
     )
 
