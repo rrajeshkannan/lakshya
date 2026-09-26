@@ -1,8 +1,0 @@
-{
-  "name": "Lakshya",
-  "user": "ubuntu",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "install": "python -m pip install -e \".[test]\""
-}
