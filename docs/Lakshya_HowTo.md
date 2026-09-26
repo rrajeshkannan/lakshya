@@ -2,7 +2,7 @@
 
 This is the practical operating guide for a Lakshya annual review. `docs/Lakshya_Architecture.md` defines the contracts; `docs/Lakshya_Pipeline_Sequence.md` defines execution and persistence boundaries.
 
-**As of:** 2026-09-14
+**As of:** 2026-09-26
 
 The three-system mental model is:
 
@@ -53,6 +53,12 @@ data/lps/positions.csv
 ```
 
 Each record retains investor identity. A Position is identified by `Investor + Folio + ISIN`.
+
+Run one import per investor from the repository root. Pass the same `--as-of` that LFS and LTS will use. The runner replaces that investor's transactions, acquires NAV, and rewrites `data/lps/positions.csv` for the whole family at that date. It keeps existing Purpose attribution. Do not empty `positions.csv` before import. The password is entered at the prompt and is not stored.
+
+```bash
+python -m cas_import_poc.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of YYYY-MM-DD
+```
 
 The LPS data model has **Transactions and Positions**. Do not introduce a `CurrentState` object or a Portfolio dimension merely to make a view convenient.
 
@@ -387,11 +393,30 @@ TARGET
 
 LPS supplies Economic CURRENT. LFS supplies the reviewed formation intent used to derive TARGET. LTS analyzes the path between them.
 
-## 11A. First task: source archaeology
+## 11A. Run LTS
 
-There is **no production transition command yet**.
+LTS has a production command. Run it after LPS and LFS have shared the same as-of. The date is read from `data/lfs/purpose_summaries.csv`.
 
-Before coding, inspect the actual portfolio/account source material and determine what it genuinely provides for:
+```bash
+python -m lts.runner
+```
+
+It writes:
+
+```text
+data/lts/transition_mappings.csv
+data/lts/purpose_reports.csv
+data/lts/materialized_transition_slices.csv
+data/lts/holding_availability.csv
+data/lts/holding_availability_summary.csv
+data/lts/manifest.json
+```
+
+The plan uses the market values already stored on `data/lps/positions.csv`. Availability reprices those units from the NAV files as of the LFS date. If those dates differ, the two totals will not match. Revalue positions with the CAS runner at the LFS as-of, then run LTS again.
+
+The artifacts are a human review plan. They do not place transactions.
+
+Source evidence still limits what LTS may conclude. Inspect what the statement genuinely provides for:
 
 - holding/scheme identity;
 - units;
@@ -413,29 +438,23 @@ Purpose data
 
 Do not manufacture cost basis, acquisition dates, tax lots, exit costs, account semantics, or transaction constraints.
 
-Only after source archaeology should the **minimum sufficient CURRENT contract** be defined.
-
-## 11B. Intended transition sequence
+## 11B. What the LTS run does
 
 ```text
-historical snapshot
+data/lps/positions.csv + transactions + NAV
         ↓
-source archaeology
+Economic CURRENT at the shared as-of
         ↓
-minimum sufficient CURRENT contract
+data/lfs/purpose_summaries.csv weights × Purpose capital
         ↓
-source-derived Economic CURRENT
+RETAIN / REDEEM / REDEEM_LOCKED / INVEST
         ↓
-TARGET from existing reviewed decisions
-        ↓
-CURRENT vs TARGET comparison
-        ↓
-source-derived constraints / feasibility
-        ↓
-human transition plan / execution
+materialized slices for human review
 ```
 
-Potential future constraints include ELSS lock-in, acquisition-date tax consequences, STCG/LTCG implications, exit loads, transaction costs, liquidity, minimum transaction constraints, SIP/STP/SWP sequencing, and retain/exit/stage/switch/redeem/invest alternatives — only where the source evidence genuinely supports them.
+`RETAIN` keeps capital already in the same Purpose and the same ISIN. The rest of a FINAL weight is funded by `INVEST` inside that Purpose. Locked ELSS lots stay explicit.
+
+ELSS lock-in is already classified. Acquisition-date tax consequences, STCG/LTCG labels, exit loads, transaction costs, liquidity, minimum transaction constraints, and SIP/STP/SWP sequencing stay unused until the source evidence supports them.
 
 LTS must not become a second portfolio optimizer and cannot execute transactions automatically.
 
@@ -451,10 +470,13 @@ If a command fails:
 4. do not continue to the next checkpoint;
 5. repair the input/checkpoint problem or ask for help.
 
-Do not casually delete or overwrite annual review archives under:
+Do not casually delete or overwrite the durable review files:
 
 ```text
-data/lfs/YYYY-MM-DD/
+data/lfs/purpose_summaries.csv
+data/purpose/purposes.csv
+data/lps/positions.csv
+data/lps/transactions.csv
 ```
 
 Common issues:
@@ -552,11 +574,12 @@ HISTORICAL MEMORY
     git status --short
 
 CURRENT → TARGET
-[ ] STOP annual-review workflow
-[ ] Begin CURRENT → TARGET separately
-[ ] FIRST TASK = source archaeology
-[ ] Define only the minimum sufficient CURRENT contract
-[ ] Derive TARGET from committed Purpose state + selected FINAL decisions
+[ ] Confirm LPS, LFS, and LTS share one as-of date
+[ ] Run LTS
+    python -m lts.runner
+[ ] CHECKPOINT: manifest is balanced and availability matches position market value
+[ ] Review mappings, purpose reports, slices, and locked lots
+[ ] Treat the artifacts as a review plan, not an execution instruction
 ```
 
 ---
@@ -580,10 +603,10 @@ Or, in Lakshya's shorter language:
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-23  
+**Status date:** 2026-09-26  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
-The established architecture remains authoritative. This appendix records the current state of the implementation and the remaining engineering work; it does not redefine the domain model, introduce a second optimizer, or convert diagnostic output into execution authority.
+The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
 
 ## Current boundary
 
@@ -607,7 +630,7 @@ The current implementation includes:
 - reconciliation reporting at lot, Position, Purpose, and transition levels;
 - explicit locked-holding representation;
 - selected-fund evidence; and
-- a slice-materialization foundation intended to produce reviewable artifacts.
+- slice materialization written by the LTS runner into `data/lts/materialized_transition_slices.csv`.
 
 ## Validated evidence
 
@@ -619,7 +642,7 @@ The current validation evidence includes:
 - six balanced Purpose reports; and
 - numerical reconciliation within floating-point tolerance.
 
-These are implementation-validation observations, not a claim that the transition workflow is execution-ready.
+The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -635,35 +658,17 @@ The implementation must continue to preserve the following:
 8. LTS is constrained transition analysis, not a second portfolio optimizer.
 9. Source anomalies are classified rather than silently deduplicated or discarded.
 
-## Known gaps
+## Closed gaps
 
-The current implementation still has open issues:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
 
-1. Materialization is not yet fully integrated into the runner and final artifact contract.
-2. Selected-fund retention behavior requires a data-driven correction; it must not be repaired with hard-coded exceptions.
-3. A valuation discrepancy remains approximately **₹27,420.24**.
-4. Exact duplicate transaction rows remain present and must be classified explicitly rather than silently deduplicated.
-5. End-to-end artifact production and repeatable clean-run validation still require completion.
+1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
+2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.
+3. Position market value, the LFS position snapshot, availability, purpose reports, mappings, slices, and the manifest agree at **₹15,233,131.3171967**. The earlier ₹27,420.24 gap was a NAV-date split: positions had been priced at the 8 Sep print while availability used the 6 Sep as-of print (4 Sep). One shared as-of removes it.
+4. The same-day Parag Parikh rows on folio `11002746` / `INF879O01027` are two real purchases. Their running balances step up by the purchased units, and the bank debits match. They are not copies to delete. A repeated zero-unit IFSC note does not change units. Same date, amount, and description are not enough to call two rows duplicates when the running balance differs. Do not silently drop rows.
+5. The clean run reproduced the artifact set: 34 active positions, 696 lots (602 available, 94 locked), 46 mappings, 46 slices, and six balanced Purpose reports.
 
-## Required engineering sequence
-
-```text
-classify source anomalies
-        ↓
-correct retention semantics
-        ↓
-integrate materialization into the runner
-        ↓
-finalize the artifact contract
-        ↓
-reconcile end to end
-        ↓
-repeat validation from a clean run
-        ↓
-present evidence for human review
-```
-
-Until these gates are completed, generated outputs should be treated as engineering evidence and diagnostics—not transaction instructions.
+LTS artifacts remain a human review plan. They do not execute transactions and they do not mutate LPS.
 
 
 ## Additional review checklist for the current transition foundation
@@ -673,12 +678,12 @@ Before accepting a transition run for human review, verify:
 - [ ] lot-level balances are non-negative;
 - [ ] available and locked classifications are explicit;
 - [ ] Position → Purpose mappings are complete or visibly unresolved;
-- [ ] Purpose-level reports reconcile;
-- [ ] selected-fund retention behavior is explained from data;
-- [ ] duplicate source rows are classified, not silently removed;
-- [ ] valuation differences are either explained or recorded as open issues;
-- [ ] materialization artifacts are traceable to source Positions and lots;
-- [ ] the run is repeatable from a clean input state; and
+- [ ] Purpose-level reports reconcile to position market value;
+- [ ] every FINAL weight is funded, with RETAIN only for the same Purpose and ISIN;
+- [ ] same-day rows are distinguished by running balance before anyone calls them duplicates;
+- [ ] availability value matches position market value at the shared as-of;
+- [ ] materialized slices trace back to the source Positions;
+- [ ] the run is repeatable from a clean `output/` rebuild; and
 - [ ] no artifact is presented as an execution instruction.
 
 The existing operating procedure remains in force; this checklist adds transition-specific review gates.

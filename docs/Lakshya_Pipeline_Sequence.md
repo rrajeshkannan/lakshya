@@ -715,11 +715,27 @@ what sequence is feasible?
 Transition Proposal
 ```
 
-The target granularity is the established Position identity:
+The LPS Position identity remains:
 
 ```text
 Investor + Folio + ISIN
 ```
+
+LTS projects that holding into a virtual Position:
+
+```text
+Investor + Folio + ISIN + Slice
+```
+
+LPS does not store slices yet. `bridge_positions` projects each current Position to `Slice-1` at 100%. `build_owned_positions` is the explicit ownership boundary for a later multi-slice split, and it refuses to invent percentages. After LTS is finished, LPS is to be refactored to own slice as well.
+
+Run LTS only after LPS and LFS have used the same as-of date. The runner reads that date from `data/lfs/purpose_summaries.csv` and refuses a different `--as-of`.
+
+```bash
+python -m lts.runner
+```
+
+The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/lps/nav/` as of that date. Those two prices agree only when the CAS import valued the positions at the same as-of.
 
 Investor matters because different investors can have different tax consequences. Folio matters because the same ISIN may appear in different folios and Purpose relationships.
 
@@ -737,9 +753,9 @@ LTS does not introduce a generic `Action` abstraction merely because transition 
 
 # 17. Transition constraints and source archaeology
 
-The first LTS implementation task is **source archaeology, not schema design**.
+LTS may use only constraints the source evidence supports.
 
-The actual portfolio/account source material must establish what is genuinely available for:
+The account statement must establish what is genuinely available for:
 
 - holding identity;
 - units and value;
@@ -907,10 +923,10 @@ The complete domain and contract definitions are maintained in `docs/Lakshya_Dom
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-23  
+**Status date:** 2026-09-26  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
-The established architecture remains authoritative. This appendix records the current state of the implementation and the remaining engineering work; it does not redefine the domain model, introduce a second optimizer, or convert diagnostic output into execution authority.
+The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
 
 ## Current boundary
 
@@ -934,7 +950,7 @@ The current implementation includes:
 - reconciliation reporting at lot, Position, Purpose, and transition levels;
 - explicit locked-holding representation;
 - selected-fund evidence; and
-- a slice-materialization foundation intended to produce reviewable artifacts.
+- slice materialization written by the LTS runner into `data/lts/materialized_transition_slices.csv`.
 
 ## Validated evidence
 
@@ -946,7 +962,7 @@ The current validation evidence includes:
 - six balanced Purpose reports; and
 - numerical reconciliation within floating-point tolerance.
 
-These are implementation-validation observations, not a claim that the transition workflow is execution-ready.
+The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -962,35 +978,17 @@ The implementation must continue to preserve the following:
 8. LTS is constrained transition analysis, not a second portfolio optimizer.
 9. Source anomalies are classified rather than silently deduplicated or discarded.
 
-## Known gaps
+## Closed gaps
 
-The current implementation still has open issues:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
 
-1. Materialization is not yet fully integrated into the runner and final artifact contract.
-2. Selected-fund retention behavior requires a data-driven correction; it must not be repaired with hard-coded exceptions.
-3. A valuation discrepancy remains approximately **₹27,420.24**.
-4. Exact duplicate transaction rows remain present and must be classified explicitly rather than silently deduplicated.
-5. End-to-end artifact production and repeatable clean-run validation still require completion.
+1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
+2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.
+3. Position market value, the LFS position snapshot, availability, purpose reports, mappings, slices, and the manifest agree at **₹15,233,131.3171967**. The earlier ₹27,420.24 gap was a NAV-date split: positions had been priced at the 8 Sep print while availability used the 6 Sep as-of print (4 Sep). One shared as-of removes it.
+4. The same-day Parag Parikh rows on folio `11002746` / `INF879O01027` are two real purchases. Their running balances step up by the purchased units, and the bank debits match. They are not copies to delete. A repeated zero-unit IFSC note does not change units. Same date, amount, and description are not enough to call two rows duplicates when the running balance differs. Do not silently drop rows.
+5. The clean run reproduced the artifact set: 34 active positions, 696 lots (602 available, 94 locked), 46 mappings, 46 slices, and six balanced Purpose reports.
 
-## Required engineering sequence
-
-```text
-classify source anomalies
-        ↓
-correct retention semantics
-        ↓
-integrate materialization into the runner
-        ↓
-finalize the artifact contract
-        ↓
-reconcile end to end
-        ↓
-repeat validation from a clean run
-        ↓
-present evidence for human review
-```
-
-Until these gates are completed, generated outputs should be treated as engineering evidence and diagnostics—not transaction instructions.
+LTS artifacts remain a human review plan. They do not execute transactions and they do not mutate LPS.
 
 
 ## Current transition-stage sequence
@@ -1017,4 +1015,4 @@ human review artifact
 
 This sequence is subordinate to the established pipeline and does not bypass the existing LPS, LFS, Purpose Staging, Historical Snapshot, or human review boundaries.
 
-A balanced aggregate must not be treated as sufficient by itself. The underlying source rows, lot lineage, Position identity, Purpose attribution, and open anomalies must remain inspectable.
+A balanced aggregate must not be treated as sufficient by itself. The underlying source rows, lot lineage, Position identity, Purpose attribution, and any classified anomaly must remain inspectable.
