@@ -1,10 +1,30 @@
 {
-  "artifact_version": 2,
+  "artifact_version": 3,
   "isin": "INF663L01DV3",
   "scheme_code": 125307,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-20T16:50:26+05:30",
+  "retrieved_at": "2026-09-26T19:58:54+05:30",
   "observations": [
+    {
+      "date": "2026-09-25",
+      "nav": 76.51
+    },
+    {
+      "date": "2026-09-24",
+      "nav": 76.59
+    },
+    {
+      "date": "2026-09-23",
+      "nav": 77.51
+    },
+    {
+      "date": "2026-09-22",
+      "nav": 77.09
+    },
+    {
+      "date": "2026-09-21",
+      "nav": 77.21
+    },
     {
       "date": "2026-09-18",
       "nav": 77.33

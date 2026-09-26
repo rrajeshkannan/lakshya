@@ -1,10 +1,30 @@
 {
-  "artifact_version": 2,
+  "artifact_version": 3,
   "isin": "INF179K01426",
   "scheme_code": 101764,
   "source": "mfapi.in",
-  "retrieved_at": "2026-09-20T16:50:26+05:30",
+  "retrieved_at": "2026-09-26T19:58:54+05:30",
   "observations": [
+    {
+      "date": "2026-09-25",
+      "nav": 777.84
+    },
+    {
+      "date": "2026-09-24",
+      "nav": 775.337
+    },
+    {
+      "date": "2026-09-23",
+      "nav": 788.911
+    },
+    {
+      "date": "2026-09-22",
+      "nav": 784.42
+    },
+    {
+      "date": "2026-09-21",
+      "nav": 787.168
+    },
     {
       "date": "2026-09-18",
       "nav": 784.845

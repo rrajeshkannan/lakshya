@@ -1,47 +1,47 @@
 purpose,source_position_id,source_isin,source_kind,destination_isin,amount,locked
-Retirement,"LtsPositionId(investor='Amma', folio='11002736', isin='INF879O01027', slice='Slice-1')",INF879O01027,RETAINED_POSITION,INF879O01027,1305030.2933201,false
-Retirement,"LtsPositionId(investor='Amma', folio='51025894395 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,68190.9232774,false
-Retirement,"LtsPositionId(investor='Amma', folio='51058264581 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,15497.9371085,false
-Retirement,"LtsPositionId(investor='Appanna', folio='11002746', isin='INF879O01027', slice='Slice-1')",INF879O01027,RETAINED_POSITION,INF879O01027,1669634.8346008,false
-Retirement,"LtsPositionId(investor='Appanna', folio='51025826366 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,61991.9980183,false
-Retirement,"LtsPositionId(investor='Appanna', folio='51058264622 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,12398.5992711,false
-Edu_B,"LtsPositionId(investor='Amma', folio='51025894406 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,618551.0210880,false
-Edu_B,"LtsPositionId(investor='Amma', folio='51056055031 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,591388.3934231,false
-Edu_B,"LtsPositionId(investor='Appanna', folio='51025826376 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,209871.95248630000,false
-Edu_B,"LtsPositionId(investor='Appanna', folio='51025826376 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01100,355152.51790850000,false
-Edu_B,"LtsPositionId(investor='Appanna', folio='51056055041 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01100,473070.77950665000,false
-Edu_B,"LtsPositionId(investor='Appanna', folio='51056055041 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF966L01887,118317.61391645000,false
-Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01027,567494.7256260000,false
-Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01100,331038.5899485000,false
-Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF966L01887,47291.2271355000,false
-Kutti,"LtsPositionId(investor='Amma', folio='51058264591 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,196609.97280252000,true
-Kutti,"LtsPositionId(investor='Amma', folio='51058264591 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01100,42506.65374708000,true
-Kutti,"LtsPositionId(investor='Amma', folio='51058356031 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01100,72182.49705439000,false
-Kutti,"LtsPositionId(investor='Amma', folio='51058356031 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF966L01887,3344.61069301000,false
-Kutti,"LtsPositionId(investor='Appanna', folio='51042397805 / 0', isin='INF966L01614', slice='Slice-1')",INF966L01614,REDEMPTION_PROCEEDS,INF966L01887,13039.5537072,false
-Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01027,373133.0466000000,false
-Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01100,217660.9438500000,false
-Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF966L01887,31094.4205500000,false
-Retirement,"LtsPositionId(investor='Amma', folio='10391853 / 47', isin='INF109K01BL4', slice='Slice-1')",INF109K01BL4,REDEMPTION_PROCEEDS,INF174K01LT0,486214.0584,false
-Retirement,"LtsPositionId(investor='Amma', folio='13393503', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF174K01LT0,43875.39726307500,true
-Retirement,"LtsPositionId(investor='Amma', folio='13393503', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,181777.34120302500,true
-Retirement,"LtsPositionId(investor='Amma', folio='15034009 / 63', isin='INF179K01426', slice='Slice-1')",INF179K01426,REDEMPTION_PROCEEDS,INF879O01027,674770.03794,false
-Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01187', slice='Slice-1')",INF174K01187,REDEMPTION_PROCEEDS,INF879O01027,555977.862560,false
-Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01KT2', slice='Slice-1')",INF174K01KT2,REDEMPTION_PROCEEDS,INF879O01027,482307.038271,false
-Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LS2', slice='Slice-1')",INF174K01LS2,REDEMPTION_PROCEEDS,INF879O01027,153538.79376,false
-Retirement,"LtsPositionId(investor='Amma', folio='51025894385 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,540602.1271762,true
-Retirement,"LtsPositionId(investor='Amma', folio='51026416556 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01027,594819.6608580,false
-Retirement,"LtsPositionId(investor='Amma', folio='79925703934 / 0', isin='INF769K01DM9', slice='Slice-1')",INF769K01DM9,REDEMPTION_PROCEEDS,INF879O01027,494344.294206,false
-Retirement,"LtsPositionId(investor='Amma', folio='9106204444 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF879O01027,215019.89990,false
-Retirement,"LtsPositionId(investor='Amma', folio='91069892872 / 0', isin='INF846K01K35', slice='Slice-1')",INF846K01K35,REDEMPTION_PROCEEDS,INF879O01027,1176502.74082,false
-Retirement,"LtsPositionId(investor='Appanna', folio='13394210', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,218316.6602826,true
-Retirement,"LtsPositionId(investor='Appanna', folio='51025826356 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,514849.3401714,true
-Retirement,"LtsPositionId(investor='Appanna', folio='51026416621 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01027,594819.6608580,false
-Retirement,"LtsPositionId(investor='Appanna', folio='51058264612 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,169299.61600822500,true
-Retirement,"LtsPositionId(investor='Appanna', folio='51058264612 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF966L01887,69817.01054137500,true
-Retirement,"LtsPositionId(investor='Appanna', folio='51058356011 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF966L01887,67847.5454664,false
-Retirement,"LtsPositionId(investor='Appanna', folio='9106204455 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF966L01887,234345.44198,false
-Stitch,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LT0', slice='Slice-1')",INF174K01LT0,REDEMPTION_PROCEEDS,INF879O01027,205304.0674674000,false
-Stitch,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LT0', slice='Slice-1')",INF174K01LT0,REDEMPTION_PROCEEDS,INF879O01100,6502.5079116000,false
-Stitch,"LtsPositionId(investor='Amma', folio='9106205012 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF879O01100,113258.1981110500,false
-Stitch,"LtsPositionId(investor='Amma', folio='9106205012 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF966L01887,17108.6722889500,false
+Retirement,"LtsPositionId(investor='Amma', folio='11002736', isin='INF879O01027', slice='Slice-1')",INF879O01027,RETAINED_POSITION,INF879O01027,1312435.5759669,false
+Retirement,"LtsPositionId(investor='Amma', folio='51025894395 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,68288.4894252,false
+Retirement,"LtsPositionId(investor='Amma', folio='51058264581 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,15520.1112330,false
+Retirement,"LtsPositionId(investor='Appanna', folio='11002746', isin='INF879O01027', slice='Slice-1')",INF879O01027,RETAINED_POSITION,INF879O01027,1679109.0344952,false
+Retirement,"LtsPositionId(investor='Appanna', folio='51025826366 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,62080.6948734,false
+Retirement,"LtsPositionId(investor='Appanna', folio='51058264622 / 0', isin='INF966L01887', slice='Slice-1')",INF966L01887,RETAINED_POSITION,INF966L01887,12416.3389278,false
+Edu_B,"LtsPositionId(investor='Amma', folio='51025894406 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,617541.6360960,false
+Edu_B,"LtsPositionId(investor='Amma', folio='51056055031 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,590423.3338752,false
+Edu_B,"LtsPositionId(investor='Appanna', folio='51025826376 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01027,209529.47208960000,false
+Edu_B,"LtsPositionId(investor='Appanna', folio='51025826376 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01100,354572.96083200000,false
+Edu_B,"LtsPositionId(investor='Appanna', folio='51056055041 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF879O01100,472298.79703680000,false
+Edu_B,"LtsPositionId(investor='Appanna', folio='51056055041 / 0', isin='INF966L01911', slice='Slice-1')",INF966L01911,REDEMPTION_PROCEEDS,INF966L01887,118124.53683840000,false
+Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01027,570243.1157460000,false
+Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01100,332641.8175185000,false
+Home_Loan,"LtsPositionId(investor='Appanna', folio='3537092 / 39', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF966L01887,47520.2596455000,false
+Kutti,"LtsPositionId(investor='Amma', folio='51058264591 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,196347.98366178000,true
+Kutti,"LtsPositionId(investor='Amma', folio='51058264591 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01100,42800.47136142000,true
+Kutti,"LtsPositionId(investor='Amma', folio='51058356031 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01100,71735.85244128500,false
+Kutti,"LtsPositionId(investor='Amma', folio='51058356031 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF966L01887,3355.12194621500,false
+Kutti,"LtsPositionId(investor='Appanna', folio='51042397805 / 0', isin='INF966L01614', slice='Slice-1')",INF966L01614,REDEMPTION_PROCEEDS,INF966L01887,13007.2100256,false
+Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01027,374940.1386000000,false
+Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF879O01100,218715.0808500000,false
+Marriage,"LtsPositionId(investor='Amma', folio='12799161 / 64', isin='INF179K01608', slice='Slice-1')",INF179K01608,REDEMPTION_PROCEEDS,INF966L01887,31245.0115500000,false
+Retirement,"LtsPositionId(investor='Amma', folio='10391853 / 47', isin='INF109K01BL4', slice='Slice-1')",INF109K01BL4,REDEMPTION_PROCEEDS,INF174K01LT0,491789.06922,false
+Retirement,"LtsPositionId(investor='Amma', folio='13393503', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF174K01LT0,39486.15834412000,true
+Retirement,"LtsPositionId(investor='Amma', folio='13393503', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,187695.57426338000,true
+Retirement,"LtsPositionId(investor='Amma', folio='15034009 / 63', isin='INF179K01426', slice='Slice-1')",INF179K01426,REDEMPTION_PROCEEDS,INF879O01027,679200.242583,false
+Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01187', slice='Slice-1')",INF174K01187,REDEMPTION_PROCEEDS,INF879O01027,559665.920160,false
+Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01KT2', slice='Slice-1')",INF174K01KT2,REDEMPTION_PROCEEDS,INF879O01027,482161.690332,false
+Retirement,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LS2', slice='Slice-1')",INF174K01LS2,REDEMPTION_PROCEEDS,INF879O01027,154362.006744,false
+Retirement,"LtsPositionId(investor='Amma', folio='51025894385 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,540674.0859554,true
+Retirement,"LtsPositionId(investor='Amma', folio='51026416556 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01027,591384.8583750,false
+Retirement,"LtsPositionId(investor='Amma', folio='79925703934 / 0', isin='INF769K01DM9', slice='Slice-1')",INF769K01DM9,REDEMPTION_PROCEEDS,INF879O01027,497367.938427,false
+Retirement,"LtsPositionId(investor='Amma', folio='9106204444 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF879O01027,215185.8530,false
+Retirement,"LtsPositionId(investor='Amma', folio='91069892872 / 0', isin='INF846K01K35', slice='Slice-1')",INF846K01K35,REDEMPTION_PROCEEDS,INF879O01027,1169451.70988,false
+Retirement,"LtsPositionId(investor='Appanna', folio='13394210', isin='INF879O01100', slice='Slice-1')",INF879O01100,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,219795.9460950,true
+Retirement,"LtsPositionId(investor='Appanna', folio='51025826356 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,514917.8710338,true
+Retirement,"LtsPositionId(investor='Appanna', folio='51026416621 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF879O01027,591384.8583750,false
+Retirement,"LtsPositionId(investor='Appanna', folio='51058264612 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF879O01027,168160.93046848000,true
+Retirement,"LtsPositionId(investor='Appanna', folio='51058264612 / 0', isin='INF966L01986', slice='Slice-1')",INF966L01986,LOCKED_REDEMPTION_PROCEEDS,INF966L01887,70987.52455472000,true
+Retirement,"LtsPositionId(investor='Appanna', folio='51058356011 / 0', isin='INF966L01689', slice='Slice-1')",INF966L01689,REDEMPTION_PROCEEDS,INF966L01887,67455.7579500,false
+Retirement,"LtsPositionId(investor='Appanna', folio='9106204455 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF966L01887,234526.3106,false
+Stitch,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LT0', slice='Slice-1')",INF174K01LT0,REDEMPTION_PROCEEDS,INF879O01027,205550.37948000,false
+Stitch,"LtsPositionId(investor='Amma', folio='4641557', isin='INF174K01LT0', slice='Slice-1')",INF174K01LT0,REDEMPTION_PROCEEDS,INF879O01100,6566.09832000,false
+Stitch,"LtsPositionId(investor='Amma', folio='9106205012 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF879O01100,113338.28971000,false
+Stitch,"LtsPositionId(investor='Amma', folio='9106205012 / 0', isin='INF663L01DV3', slice='Slice-1')",INF663L01DV3,REDEMPTION_PROCEEDS,INF966L01887,17129.19829000,false
