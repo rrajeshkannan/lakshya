@@ -17,7 +17,6 @@ from lakshya_core.hashing import sha256_file
 
 _sha256 = sha256_file
 
-import argparse
 import csv
 import json
 import platform
@@ -654,16 +653,3 @@ def run(
         workers=workers,
     )
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--as-of", required=True, help="Purpose valuation date, e.g. 2026-08-31")
-    parser.add_argument("--resume-from", choices=("mission", "global"), help="Resume from persisted MISSION or global checkpoints without recomputing fingerprints")
-    parser.add_argument("--workers", type=int, default=None, help="Optional ProcessPoolExecutor worker count; default delegates to Python")
-    parser.add_argument("--purposes", nargs="+", help="Run only the named Purposes; default runs all")
-    args = parser.parse_args()
-    run(args.as_of, args.resume_from, args.workers, args.purposes)
-
-
-if __name__ == "__main__":
-    main()

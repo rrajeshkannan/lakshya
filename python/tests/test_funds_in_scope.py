@@ -32,6 +32,30 @@ def test_load_fund_scope_rows_accepts_equity_elss_and_debt_non_elss(tmp_path):
     ]
 
 
+def test_load_fund_scope_rows_rejects_blank_asset_class(tmp_path):
+    scope = tmp_path / "funds_in_scope.csv"
+    scope.write_text(
+        "isin,asset_class,is_elss\n"
+        "ISIN_A,,\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="blank asset_class"):
+        load_fund_scope_rows(scope)
+
+
+def test_load_fund_scope_rows_rejects_debt_elss(tmp_path):
+    scope = tmp_path / "funds_in_scope.csv"
+    scope.write_text(
+        "isin,asset_class,is_elss\n"
+        "ISIN_A,debt,yes\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Debt fund cannot be marked ELSS"):
+        load_fund_scope_rows(scope)
+
+
 def test_validate_scope_covers_positions_is_asymmetric():
     validate_scope_covers_positions(
         scope_isins=["ISIN_A", "ISIN_B"],
