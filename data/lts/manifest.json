@@ -1,6 +1,7 @@
 {
   "all_purpose_reports_balanced": true,
   "artifacts": {
+    "cascade_review": "cascade_review.csv",
     "holding_availability": "holding_availability.csv",
     "holding_availability_summary": "holding_availability_summary.csv",
     "materialized_transition_slices": "materialized_transition_slices.csv",
@@ -11,7 +12,7 @@
   "availability_count": 34,
   "availability_lot_count": 696,
   "contract": "LTS_TRANSITION",
-  "contract_version": 5,
+  "contract_version": 6,
   "is_balanced": true,
   "locked_position_count": 6,
   "mapping_count": 46,
