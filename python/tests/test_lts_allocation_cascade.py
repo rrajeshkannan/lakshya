@@ -316,3 +316,103 @@ def test_redeem_target_folio_does_not_cross_investors():
 
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
     assert redeemed.target_folio == NEW_FOLIO
+
+
+def _owned_value(plan, purpose, isin):
+    totals: dict[str, Decimal] = {}
+    for item in plan.slices:
+        if item.purpose == purpose and item.target_isin == isin:
+            totals[item.target_investor] = totals.get(item.target_investor, Decimal("0")) + item.market_value
+    return totals
+
+
+def test_redeemed_capital_is_split_to_an_equal_investor_share():
+    plan = build_allocation_cascade(
+        [
+            position("Amma", "FA", "TGT", "50", "1"),
+            position("Amma", "FA2", "SRC", "100", "1"),
+            position("Appanna", "FB", "SRC2", "50", "1"),
+        ],
+        formation(row("Home_Loan", "TGT", "200", "1")),
+        existing_positions=[
+            existing("Amma", "FA", "TGT", "50"),
+            existing("Amma", "FAM", "TGT", "1"),
+            existing("Appanna", "FAP", "TGT", "9"),
+        ],
+    )
+
+    owned = _owned_value(plan, "Home_Loan", "TGT")
+    assert owned["Amma"] == Decimal("100")
+    assert owned["Appanna"] == Decimal("100")
+    retained = [item for item in plan.slices if item.disposition is TransitionDisposition.RETAIN]
+    assert len(retained) == 1
+    assert retained[0].current_investor == "Amma"
+    assert retained[0].target_investor == "Amma"
+    assert retained[0].market_value == Decimal("50")
+    routed = next(
+        item
+        for item in plan.slices
+        if item.current_investor == "Amma"
+        and item.disposition is TransitionDisposition.REDEEM
+        and item.target_investor == "Appanna"
+    )
+    assert routed.target_folio == "FAP"
+    assert routed.target_isin == "TGT"
+
+
+def test_retain_above_half_sends_all_liquid_capital_to_the_other_investor():
+    plan = build_allocation_cascade(
+        [
+            position("Amma", "FA", "TGT", "80", "1"),
+            position("Amma", "FA2", "SRC", "20", "1"),
+            position("Appanna", "FB", "RET", "100", "1"),
+        ],
+        formation(
+            row("Home_Loan", "TGT", "100", "1"),
+            row("Retirement", "RET", "100", "1"),
+        ),
+    )
+
+    home = _owned_value(plan, "Home_Loan", "TGT")
+    assert home["Amma"] == Decimal("80")
+    assert home["Appanna"] == Decimal("20")
+    liquid = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
+    assert liquid.current_investor == "Amma"
+    assert liquid.target_investor == "Appanna"
+    assert liquid.purpose == "Home_Loan"
+    retirement = _owned_value(plan, "Retirement", "RET")
+    assert retirement == {"Appanna": Decimal("100")}
+    assert all(
+        item.target_investor == item.current_investor
+        for item in plan.slices
+        if item.disposition is TransitionDisposition.RETAIN
+    )
+
+
+def test_one_redeemed_holding_is_split_across_both_investors():
+    plan = build_allocation_cascade(
+        [
+            position("Amma", "FA", "SRC", "100", "1"),
+            position("Appanna", "FB", "TGT", "50", "1"),
+        ],
+        formation(row("Kutti", "TGT", "150", "1")),
+        existing_positions=[
+            existing("Amma", "FAM", "TGT", "4"),
+            existing("Appanna", "FB", "TGT", "50"),
+        ],
+    )
+
+    parts = [
+        item
+        for item in plan.slices
+        if item.current_investor == "Amma" and item.current_isin == "SRC"
+    ]
+    assert sorted((item.target_investor, item.units, item.target_folio) for item in parts) == [
+        ("Amma", Decimal("75"), "FAM"),
+        ("Appanna", Decimal("25"), "FB"),
+    ]
+    assert sum(item.percentage for item in parts) == Decimal("100")
+    assert sum(item.units for item in parts) == Decimal("100")
+    owned = _owned_value(plan, "Kutti", "TGT")
+    assert owned["Amma"] == Decimal("75")
+    assert owned["Appanna"] == Decimal("75")

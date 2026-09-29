@@ -13,6 +13,12 @@ LPS state.
    fund's weight in that purpose is reduced so the purpose total still matches
    its capital. Surplus that the purpose cannot absorb is cascaded into
    another purpose. The review rows record those weight changes.
+4. Assign ``target_investor`` while materializing slices. ``RETAIN`` stays
+   with the holding owner. For each purpose and target fund, redeemed capital
+   is routed to whichever holding investor is furthest below an equal share
+   of that fund's market value. With Amma and Appanna that share is half.
+   Locked inventory above half is left in place, and every redeemed rupee
+   in that fund goes to the other investor.
 """
 
 from __future__ import annotations
@@ -329,6 +335,7 @@ def build_folio_directory(
 def _resolve_target_folio(
     draft: _Draft,
     folio_directory: Mapping[tuple[str, str], str],
+    target_investor: str,
 ) -> str:
     """Resolve target_folio per the RETAIN/REDEEM rule.
 
@@ -339,7 +346,141 @@ def _resolve_target_folio(
     """
     if draft.disposition is TransitionDisposition.RETAIN:
         return draft.folio
-    return folio_directory.get((draft.investor, draft.target_isin), NEW_FOLIO)
+    return folio_directory.get((target_investor, draft.target_isin), NEW_FOLIO)
+
+
+@dataclass(frozen=True)
+class _Piece:
+    """One draft, or a split of a redeemed draft, aimed at one target investor."""
+
+    draft: _Draft
+    target_investor: str
+    units: Decimal
+
+
+def _equal_shares(total: Decimal, investors: Sequence[str]) -> dict[str, Decimal]:
+    """Split ``total`` into one share per investor. The last share keeps the remainder."""
+    shares: dict[str, Decimal] = {}
+    remaining = total
+    count = len(investors)
+    for index, investor in enumerate(investors):
+        if index == count - 1:
+            shares[investor] = remaining
+        else:
+            share = total / Decimal(count)
+            shares[investor] = share
+            remaining -= share
+    return shares
+
+
+def _split_redeem_piece(
+    draft: _Draft,
+    remaining_gap: dict[str, Decimal],
+    receivers: Sequence[str],
+    *,
+    single_receiver: bool,
+) -> list[_Piece]:
+    """Route one redeemed draft to the investors still short of an equal share."""
+    if single_receiver:
+        investor = receivers[0]
+        remaining_gap[investor] = remaining_gap.get(investor, ZERO) - draft.units * draft.nav
+        return [_Piece(draft, investor, draft.units)]
+
+    left_units = draft.units
+    parts: list[_Piece] = []
+    while left_units > ZERO:
+        left_value = left_units * draft.nav
+        needy = [
+            investor
+            for investor in receivers
+            if remaining_gap.get(investor, ZERO) > TOLERANCE
+        ]
+        if not needy:
+            investor = min(receivers, key=lambda name: (remaining_gap.get(name, ZERO), name))
+            parts.append(_Piece(draft, investor, left_units))
+            remaining_gap[investor] = remaining_gap.get(investor, ZERO) - left_value
+            break
+        investor = min(needy, key=lambda name: (-remaining_gap[name], name))
+        gap = remaining_gap[investor]
+        others_still_need = any(name != investor for name in needy)
+        take_units = left_units if not others_still_need or gap >= left_value else left_units * gap / left_value
+        if take_units >= left_units:
+            parts.append(_Piece(draft, investor, left_units))
+            remaining_gap[investor] = gap - left_value
+            break
+        left_units -= take_units
+        remaining_gap[investor] = ZERO
+        parts.append(_Piece(draft, investor, take_units))
+    return parts
+
+
+def _equalize_group(group: Sequence[_Draft], investors: Sequence[str]) -> list[_Piece]:
+    """Keep retained lots with their owner and split redeemed value toward parity."""
+    total = sum((draft.units * draft.nav for draft in group), ZERO)
+    shares = _equal_shares(total, investors)
+    retained: dict[str, Decimal] = {investor: ZERO for investor in investors}
+    retain_pieces: list[_Piece] = []
+    redeem: list[_Draft] = []
+    for draft in group:
+        if draft.disposition is TransitionDisposition.RETAIN:
+            retained[draft.investor] = retained.get(draft.investor, ZERO) + draft.units * draft.nav
+            retain_pieces.append(_Piece(draft, draft.investor, draft.units))
+        else:
+            redeem.append(draft)
+    if not redeem:
+        return retain_pieces
+
+    below = [
+        investor
+        for investor in investors
+        if shares[investor] - retained.get(investor, ZERO) > TOLERANCE
+    ]
+    if not below:
+        below = [min(investors, key=lambda name: (retained.get(name, ZERO), name))]
+    remaining_gap = {
+        investor: shares[investor] - retained.get(investor, ZERO)
+        for investor in below
+    }
+    pieces = list(retain_pieces)
+    for draft in sorted(
+        redeem,
+        key=lambda item: (item.investor, item.folio, item.isin, item.purpose, item.target_isin),
+    ):
+        pieces.extend(_split_redeem_piece(
+            draft,
+            remaining_gap,
+            below,
+            single_receiver=len(below) == 1,
+        ))
+    return pieces
+
+
+def _equalize_target_investors(
+    drafts: Sequence[_Draft],
+    investors: Sequence[str],
+) -> list[_Piece]:
+    """Assign a target investor to every draft without moving retained lots.
+
+    One investor, or a book with no redeemed capital, keeps the holding owner.
+    Two or more investors share each purpose and target fund equally. Redeemed
+    value fills the investor furthest below that share first. When retained
+    lots already exceed the share, that investor receives none of the liquid
+    capital.
+    """
+    if len(investors) < 2:
+        return [_Piece(draft, draft.investor, draft.units) for draft in drafts]
+
+    grouped: dict[tuple[str, str], list[_Draft]] = defaultdict(list)
+    order: list[tuple[str, str]] = []
+    for draft in drafts:
+        key = (draft.purpose, draft.target_isin)
+        if key not in grouped:
+            order.append(key)
+        grouped[key].append(draft)
+    pieces: list[_Piece] = []
+    for key in order:
+        pieces.extend(_equalize_group(grouped[key], investors))
+    return pieces
 
 
 def _positive(amount: Decimal) -> bool:
@@ -613,18 +754,21 @@ def _slices_from_drafts(
     holdings: Sequence[_Holding],
     folio_directory: Mapping[tuple[str, str], str],
 ) -> tuple[TransitionSlice, ...]:
-    by_holding: dict[tuple[str, str, str], list[_Draft]] = defaultdict(list)
-    for draft in drafts:
-        by_holding[(draft.investor, draft.folio, draft.isin)].append(draft)
+    investors = tuple(sorted({holding.investor for holding in holdings}))
+    by_holding: dict[tuple[str, str, str], list[_Piece]] = defaultdict(list)
+    for piece in _equalize_target_investors(drafts, investors):
+        draft = piece.draft
+        by_holding[(draft.investor, draft.folio, draft.isin)].append(piece)
 
     slices: list[TransitionSlice] = []
     for holding in holdings:
         rows = by_holding.get((holding.investor, holding.folio, holding.isin), [])
-        rows.sort(key=lambda draft: (
-            not draft.locked,
-            draft.disposition is not TransitionDisposition.RETAIN,
-            draft.purpose,
-            draft.target_isin,
+        rows.sort(key=lambda piece: (
+            not piece.draft.locked,
+            piece.draft.disposition is not TransitionDisposition.RETAIN,
+            piece.draft.purpose,
+            piece.draft.target_isin,
+            piece.target_investor,
         ))
         if not rows:
             raise ValueError(
@@ -632,19 +776,29 @@ def _slices_from_drafts(
                 f"{holding.investor}/{holding.folio}/{holding.isin}"
             )
         remaining_percentage = ONE_HUNDRED
-        for index, draft in enumerate(rows):
-            units = draft.units
-            if index == len(rows) - 1:
+        emitted_units: list[Decimal] = []
+        for index, piece in enumerate(rows):
+            draft = piece.draft
+            last = index == len(rows) - 1
+            if last:
+                units = holding.units - sum(emitted_units, ZERO)
                 percentage = remaining_percentage
             else:
+                units = piece.units
+                emitted_units.append(units)
                 percentage = units / holding.units * ONE_HUNDRED
                 remaining_percentage -= percentage
+            if units < ZERO:
+                raise ValueError(
+                    "Slice units went negative while conserving the holding: "
+                    f"{holding.investor}/{holding.folio}/{holding.isin}"
+                )
             slices.append(TransitionSlice(
                 current_investor=draft.investor,
                 current_folio=draft.folio,
                 current_isin=draft.isin,
-                target_investor=draft.investor,
-                target_folio=_resolve_target_folio(draft, folio_directory),
+                target_investor=piece.target_investor,
+                target_folio=_resolve_target_folio(draft, folio_directory, piece.target_investor),
                 target_isin=draft.target_isin,
                 target_slice=f"slice-{index + 1}",
                 purpose=draft.purpose,
@@ -765,6 +919,8 @@ def _validate(
             raise ValueError(f"Retained slice changed ISIN: {item}")
         if item.disposition is TransitionDisposition.RETAIN and item.target_folio != item.current_folio:
             raise ValueError(f"Retained slice changed folio: {item}")
+        if item.disposition is TransitionDisposition.RETAIN and item.target_investor != item.current_investor:
+            raise ValueError(f"Retained slice changed investor: {item}")
         if item.disposition is TransitionDisposition.REDEEM:
             expected_folio = folio_directory.get(
                 (item.target_investor, item.target_isin), NEW_FOLIO
