@@ -312,7 +312,10 @@ def persist_lts_artifacts(
     manifest_path = lts_root / "manifest.json"
     _write_atomic_mapping(result, mapping_path)
     _write_atomic_reports(result, report_path)
-    persist_materialized_slices_csv(result.materialized_slices, materialized_transition_slices_path)
+    from .execution_playbook import playbook_slices_ready
+
+    if not playbook_slices_ready(materialized_transition_slices_path):
+        persist_materialized_slices_csv(result.materialized_slices, materialized_transition_slices_path)
     _write_atomic_availability_lots(result, availability_lot_path)
     _write_atomic_availability_summary(result, availability_summary_path)
     _write_manifest(
@@ -331,6 +334,30 @@ def persist_lts_artifacts(
         availability_summary_path,
         manifest_path,
     )
+
+
+def _publish_execution_playbook(slices_path: Path) -> None:
+    """Write the unit playbook when the on-disk slices use the cascade schema.
+
+    The cascade file is the source of redemption units. A legacy slice export
+    does not carry those columns, so this step leaves any existing playbook
+    untouched instead of building orders from the wrong file.
+    """
+    from .execution_playbook import (
+        format_redemption_summary,
+        playbook_slices_ready,
+        write_execution_playbook,
+    )
+
+    if not playbook_slices_ready(slices_path):
+        print("Execution playbook skipped: materialized slices are not the cascade schema.")
+        return
+    playbook_path, rows = write_execution_playbook(
+        slices_path,
+        slices_path.with_name("execution_playbook.csv"),
+    )
+    print(format_redemption_summary(rows))
+    print(f"Execution playbook: {playbook_path.relative_to(PROJECT_ROOT)}")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -369,6 +396,7 @@ def main() -> None:
     print(f"Holding availability CSV: {availability_lot_path.relative_to(PROJECT_ROOT)}")
     print(f"Holding availability summary CSV: {availability_summary_path.relative_to(PROJECT_ROOT)}")
     print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
+    _publish_execution_playbook(materialized_transition_slices_path)
 
 
 if __name__ == "__main__":
