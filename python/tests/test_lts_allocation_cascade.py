@@ -5,7 +5,6 @@ from lps.transactions import Transaction
 from lps.positions import Position, PositionId
 from lts.allocation_cascade import (
     ELSS_LOCKED,
-    NEW_FOLIO,
     STCG_LOCKED,
     STAGE_CROSS_COMPOSITION,
     STAGE_IN_COMPOSITION,
@@ -167,12 +166,12 @@ def test_partial_elss_lock_splits_units_and_percentages():
         as_of=AS_OF,
     )
 
-    assert [(item.target_slice, item.disposition, item.locked, item.units, item.percentage, item.disposition_reason) for item in plan.slices] == [
-        ("slice-1", TransitionDisposition.RETAIN, True, Decimal("6"), Decimal("60"), ELSS_LOCKED),
-        ("slice-2", TransitionDisposition.REDEEM, False, Decimal("4"), Decimal("40"), None),
+    assert [(item.target_isin, item.target_slice, item.disposition, item.locked, item.units, item.percentage, item.disposition_reason) for item in plan.slices] == [
+        ("ELSS", "slice-1", TransitionDisposition.RETAIN, True, Decimal("6"), Decimal("60"), ELSS_LOCKED),
+        ("BBB", "slice-1", TransitionDisposition.REDEEM, False, Decimal("4"), Decimal("40"), None),
     ]
-    assert plan.slices[0].target_isin == "ELSS"
-    assert plan.slices[1].target_isin == "BBB"
+    assert plan.slices[0].target_folio == "F1"
+    assert plan.slices[1].target_folio == "NEW_FOLIO_1"
     assert sum(item.units for item in plan.slices) == Decimal("10")
     assert sum(item.percentage for item in plan.slices) == Decimal("100")
     assert all(item.market_value == item.units * item.nav for item in plan.slices)
@@ -287,7 +286,7 @@ def test_redeem_target_folio_falls_back_to_new_folio_placeholder_when_absent():
     )
 
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
-    assert redeemed.target_folio == NEW_FOLIO
+    assert redeemed.target_folio == "NEW_FOLIO_1"
 
 
 def test_redeem_target_folio_treats_a_zero_unit_folio_as_existing_inventory():
@@ -315,7 +314,7 @@ def test_redeem_target_folio_does_not_cross_investors():
     )
 
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
-    assert redeemed.target_folio == NEW_FOLIO
+    assert redeemed.target_folio == "NEW_FOLIO_1"
 
 
 def _owned_value(plan, purpose, isin):
@@ -416,3 +415,54 @@ def test_one_redeemed_holding_is_split_across_both_investors():
     owned = _owned_value(plan, "Kutti", "TGT")
     assert owned["Amma"] == Decimal("75")
     assert owned["Appanna"] == Decimal("75")
+
+
+def _purposes_per_virtual_position(plan):
+    grouped: dict[tuple[str, str, str, str], set[str]] = {}
+    for item in plan.slices:
+        key = (item.target_investor, item.target_folio, item.target_isin, item.target_slice)
+        grouped.setdefault(key, set()).add(item.purpose)
+    return grouped
+
+
+def test_fresh_reinvestment_folios_are_isolated_by_purpose():
+    plan = build_allocation_cascade(
+        [
+            position("I", "F1", "SRC", "60", "1"),
+            position("I", "F2", "SRC2", "40", "1"),
+        ],
+        formation(
+            row("Home_Loan", "TGT", "60", "1"),
+            row("Kutti", "TGT", "40", "1"),
+        ),
+    )
+
+    folios = {
+        item.purpose: item.target_folio
+        for item in plan.slices
+        if item.disposition is TransitionDisposition.REDEEM
+    }
+    assert folios == {"Home_Loan": "NEW_FOLIO_1", "Kutti": "NEW_FOLIO_2"}
+    assert all(item.target_slice == "slice-1" for item in plan.slices)
+    assert max(len(purposes) for purposes in _purposes_per_virtual_position(plan).values()) == 1
+
+
+def test_legacy_folio_reused_across_purposes_gets_one_slice_each():
+    plan = build_allocation_cascade(
+        [
+            position("I", "F1", "SRC", "50", "1"),
+            position("I", "F2", "SRC2", "50", "1"),
+        ],
+        formation(
+            row("Home_Loan", "TGT", "50", "1"),
+            row("Kutti", "TGT", "50", "1"),
+        ),
+        existing_positions=[existing("I", "F_EXIST", "TGT", "10")],
+    )
+
+    assert {item.target_folio for item in plan.slices} == {"F_EXIST"}
+    by_purpose = {item.purpose: item.target_slice for item in plan.slices}
+    assert by_purpose == {"Home_Loan": "slice-1", "Kutti": "slice-2"}
+    virtual = _purposes_per_virtual_position(plan)
+    assert max(len(purposes) for purposes in virtual.values()) == 1
+    assert len(virtual) == 2

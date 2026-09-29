@@ -19,6 +19,13 @@ LPS state.
    of that fund's market value. With Amma and Appanna that share is half.
    Locked inventory above half is left in place, and every redeemed rupee
    in that fund goes to the other investor.
+5. Resolve ``target_folio``. Retained lots keep their current folio. Redeemed
+   capital reuses a folio the target investor already holds for that fund.
+   Fresh reinvestment gets a purpose-specific placeholder, ``NEW_FOLIO_1``
+   onward, so goals do not share a new account.
+6. Number ``target_slice`` on ``(target_investor, target_folio, target_isin)``.
+   Each purpose on that virtual holding gets the next slice, so one target
+   position maps to one purpose.
 """
 
 from __future__ import annotations
@@ -51,7 +58,11 @@ STCG_LOCKED = "STCG_LOCKED"
 STAGE_UNCHANGED = "UNCHANGED"
 STAGE_IN_COMPOSITION = "IN_COMPOSITION"
 STAGE_CROSS_COMPOSITION = "CROSS_COMPOSITION"
-NEW_FOLIO = "NEW_FOLIO"
+def new_folio_name(index: int) -> str:
+    """Return the purpose-isolated placeholder for one fresh reinvestment folio."""
+    if index < 1:
+        raise ValueError(f"New folio index must be positive: {index}")
+    return f"NEW_FOLIO_{index}"
 
 
 @dataclass(frozen=True)
@@ -332,21 +343,48 @@ def build_folio_directory(
     return {key: folio for key, (_value, folio) in best.items()}
 
 
-def _resolve_target_folio(
-    draft: _Draft,
+def _redeem_folio_plan(
+    destinations: Sequence[tuple[str, str, str]],
     folio_directory: Mapping[tuple[str, str], str],
-    target_investor: str,
-) -> str:
-    """Resolve target_folio per the RETAIN/REDEEM rule.
+) -> dict[tuple[str, str, str], str]:
+    """Map ``(purpose, target investor, target ISIN)`` to a redeem folio.
 
-    RETAIN never changes ISIN, so the destination is the same physical
-    folio. REDEEM looks up an existing folio the target investor already
-    holds for the target ISIN, falling back to the ``NEW_FOLIO`` placeholder
-    when no such folio exists yet.
+    A legacy folio the investor already holds for that fund is reused for
+    every purpose. Each fresh ``(purpose, investor, fund)`` gets the next
+    ``NEW_FOLIO_n`` placeholder, in purpose then investor then ISIN order.
     """
-    if draft.disposition is TransitionDisposition.RETAIN:
-        return draft.folio
-    return folio_directory.get((target_investor, draft.target_isin), NEW_FOLIO)
+    legacy: dict[tuple[str, str, str], str] = {}
+    fresh: set[tuple[str, str, str]] = set()
+    for purpose, investor, isin in destinations:
+        existing = folio_directory.get((investor, isin))
+        key = (purpose, investor, isin)
+        if existing is None:
+            fresh.add(key)
+        else:
+            legacy[key] = existing
+    plan = dict(legacy)
+    for index, key in enumerate(sorted(fresh), start=1):
+        plan[key] = new_folio_name(index)
+    return plan
+
+
+def _target_slice_plan(
+    positions: Sequence[tuple[str, str, str, str]],
+) -> dict[tuple[str, str, str, str], str]:
+    """Number one slice per purpose on each ``(investor, folio, ISIN)``.
+
+    ``positions`` are ``(target_investor, target_folio, target_isin, purpose)``.
+    Purposes sort by name, so the first purpose on a target holding is
+    ``slice-1``.
+    """
+    purposes: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+    for investor, folio, isin, purpose in positions:
+        purposes[(investor, folio, isin)].add(purpose)
+    assigned: dict[tuple[str, str, str, str], str] = {}
+    for target in sorted(purposes):
+        for index, purpose in enumerate(sorted(purposes[target]), start=1):
+            assigned[(*target, purpose)] = f"slice-{index}"
+    return assigned
 
 
 @dataclass(frozen=True)
@@ -755,8 +793,28 @@ def _slices_from_drafts(
     folio_directory: Mapping[tuple[str, str], str],
 ) -> tuple[TransitionSlice, ...]:
     investors = tuple(sorted({holding.investor for holding in holdings}))
+    pieces = _equalize_target_investors(drafts, investors)
+    redeem_folios = _redeem_folio_plan(
+        [
+            (piece.draft.purpose, piece.target_investor, piece.draft.target_isin)
+            for piece in pieces
+            if piece.draft.disposition is TransitionDisposition.REDEEM
+        ],
+        folio_directory,
+    )
+
+    def _folio_for(piece: _Piece) -> str:
+        draft = piece.draft
+        if draft.disposition is TransitionDisposition.RETAIN:
+            return draft.folio
+        return redeem_folios[(draft.purpose, piece.target_investor, draft.target_isin)]
+
+    slice_names = _target_slice_plan([
+        (piece.target_investor, _folio_for(piece), piece.draft.target_isin, piece.draft.purpose)
+        for piece in pieces
+    ])
     by_holding: dict[tuple[str, str, str], list[_Piece]] = defaultdict(list)
-    for piece in _equalize_target_investors(drafts, investors):
+    for piece in pieces:
         draft = piece.draft
         by_holding[(draft.investor, draft.folio, draft.isin)].append(piece)
 
@@ -793,14 +851,20 @@ def _slices_from_drafts(
                     "Slice units went negative while conserving the holding: "
                     f"{holding.investor}/{holding.folio}/{holding.isin}"
                 )
+            target_folio = _folio_for(piece)
             slices.append(TransitionSlice(
                 current_investor=draft.investor,
                 current_folio=draft.folio,
                 current_isin=draft.isin,
                 target_investor=piece.target_investor,
-                target_folio=_resolve_target_folio(draft, folio_directory, piece.target_investor),
+                target_folio=target_folio,
                 target_isin=draft.target_isin,
-                target_slice=f"slice-{index + 1}",
+                target_slice=slice_names[(
+                    piece.target_investor,
+                    target_folio,
+                    draft.target_isin,
+                    draft.purpose,
+                )],
                 purpose=draft.purpose,
                 disposition=draft.disposition,
                 locked=draft.locked,
@@ -908,6 +972,14 @@ def _validate(
 ) -> None:
     by_holding: dict[tuple[str, str, str], list[TransitionSlice]] = defaultdict(list)
     by_purpose: dict[str, Decimal] = defaultdict(lambda: ZERO)
+    redeem_folios = _redeem_folio_plan(
+        [
+            (row.purpose, row.target_investor, row.target_isin)
+            for row in slices
+            if row.disposition is TransitionDisposition.REDEEM
+        ],
+        folio_directory,
+    )
     for item in slices:
         if item.disposition not in (TransitionDisposition.RETAIN, TransitionDisposition.REDEEM):
             raise ValueError(f"Unexpected disposition: {item.disposition}")
@@ -922,9 +994,7 @@ def _validate(
         if item.disposition is TransitionDisposition.RETAIN and item.target_investor != item.current_investor:
             raise ValueError(f"Retained slice changed investor: {item}")
         if item.disposition is TransitionDisposition.REDEEM:
-            expected_folio = folio_directory.get(
-                (item.target_investor, item.target_isin), NEW_FOLIO
-            )
+            expected_folio = redeem_folios[(item.purpose, item.target_investor, item.target_isin)]
             if item.target_folio != expected_folio:
                 raise ValueError(f"Redeemed slice resolved to the wrong target folio: {item}")
         if item.market_value != item.units * item.nav:
@@ -951,6 +1021,28 @@ def _validate(
             raise ValueError(
                 f"Purpose allocation does not match its capital: {purpose}: {actual} != {capital}"
             )
+
+    purposes_by_position: dict[tuple[str, str, str], dict[str, set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
+    for item in slices:
+        purposes_by_position[(item.target_investor, item.target_folio, item.target_isin)][
+            item.purpose
+        ].add(item.target_slice)
+    for target, purpose_slices in purposes_by_position.items():
+        for purpose, names in purpose_slices.items():
+            if len(names) != 1:
+                raise ValueError(
+                    f"Purpose {purpose} uses more than one slice on {target}: {sorted(names)}"
+                )
+        ordered = sorted(purpose_slices)
+        for index, purpose in enumerate(ordered, start=1):
+            actual = next(iter(purpose_slices[purpose]))
+            expected = f"slice-{index}"
+            if actual != expected:
+                raise ValueError(
+                    f"Target slice for {target} purpose {purpose} is {actual}, expected {expected}"
+                )
 
 
 def build_allocation_cascade(
@@ -1232,7 +1324,7 @@ def export_cascade_review_csv(rows: Sequence[CascadeReviewRow]) -> str:
 __all__ = [
     "ELSS_LOCKED",
     "STCG_LOCKED",
-    "NEW_FOLIO",
+    "new_folio_name",
     "STAGE_CROSS_COMPOSITION",
     "STAGE_IN_COMPOSITION",
     "STAGE_UNCHANGED",
