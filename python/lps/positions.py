@@ -8,13 +8,34 @@ from decimal import Decimal
 from .transactions import Transaction
 
 
+PRIMARY_SLICE = "slice-1"
+# LTS still names the primary virtual slice ``Slice-1``. Both names identify
+# that same primary slice for set membership with an LTS position id.
+_PRIMARY_SLICE_NAMES = frozenset({PRIMARY_SLICE, "Slice-1"})
+
+
 @dataclass(frozen=True)
 class PositionId:
-    """Stable identity for a Position."""
+    """Stable identity for a Position: investor|folio|isin|slice."""
 
     investor: str
     folio: str
     isin: str
+    slice: str = PRIMARY_SLICE
+
+    def __post_init__(self) -> None:
+        if not self.slice.strip():
+            raise ValueError("Position slice is required.")
+
+    def __hash__(self) -> int:
+        if self.slice in _PRIMARY_SLICE_NAMES:
+            return hash((self.investor, self.folio, self.isin))
+        return hash((self.investor, self.folio, self.isin, self.slice))
+
+    @property
+    def key(self) -> str:
+        """Canonical 4-part identity."""
+        return f"{self.investor}|{self.folio}|{self.isin}|{self.slice}"
 
 
 @dataclass(frozen=True)
@@ -58,9 +79,10 @@ def reconstruct_positions(
                 item[0].investor,
                 item[0].folio,
                 item[0].isin,
+                item[0].slice,
             ),
         )
     ]
 
 
-__all__ = ["PositionId", "Position", "reconstruct_positions"]
+__all__ = ["PRIMARY_SLICE", "PositionId", "Position", "reconstruct_positions"]

@@ -7,7 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 
 
-POSITION_FIELDS = {
+REQUIRED_POSITION_FIELDS = {
     "investor",
     "folio",
     "isin",
@@ -16,6 +16,7 @@ POSITION_FIELDS = {
     "market_value",
     "purpose",
 }
+OPTIONAL_POSITION_FIELDS = {"slice"}
 
 
 def purpose_capital_from_positions(path: Path) -> dict[str, float]:
@@ -27,7 +28,9 @@ def purpose_capital_from_positions(path: Path) -> dict[str, float]:
     """
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
-        if set(reader.fieldnames or ()) != POSITION_FIELDS:
+        fields = set(reader.fieldnames or ())
+        accepted = REQUIRED_POSITION_FIELDS | OPTIONAL_POSITION_FIELDS
+        if not REQUIRED_POSITION_FIELDS <= fields <= accepted:
             raise ValueError("Positions file has an unexpected column layout.")
 
         result: dict[str, Decimal] = {}

@@ -56,3 +56,18 @@ def test_bridge_does_not_mutate_source_identity():
     assert projected[0].id.investor == source.id.investor
     assert projected[0].id.folio == source.id.folio
     assert projected[0].id.isin == source.id.isin
+
+
+def test_bridge_keeps_a_non_primary_lps_slice_name():
+    source = Position(
+        id=PositionId("Amma", "F1", "INF001", "slice-4"),
+        units=Decimal("10"),
+        nav=Decimal("2"),
+        market_value=Decimal("20"),
+        purpose="Marriage",
+    )
+
+    projected = bridge_positions([source])
+
+    assert projected[0].id == LtsPositionId("Amma", "F1", "INF001", "slice-4")
+    assert projected[0].units == Decimal("10")

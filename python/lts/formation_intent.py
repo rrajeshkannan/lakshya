@@ -60,7 +60,8 @@ def _purpose_capital_from_positions(
 
 def _purpose_capital(positions_path: Path) -> dict[str, Decimal]:
     rows = _read_csv(positions_path)
-    if not rows or set(rows[0]) != POSITION_FIELDS:
+    fields = set(rows[0]) if rows else set()
+    if not rows or not POSITION_FIELDS <= fields <= POSITION_FIELDS | {"slice"}:
         raise ValueError(f"Positions file has an unexpected column layout: {positions_path}")
 
     result: dict[str, Decimal] = {}

@@ -4,8 +4,8 @@ LTS owns a virtual Position identity:
 
     Investor + Folio + ISIN + Slice
 
-The current LPS contract has no Slice ownership rows, so ``bridge_positions``
-continues to provide a conservative one-to-one ``Slice-1`` projection.
+LPS positions carry ``slice``. ``bridge_positions`` projects the primary
+LPS slice ``slice-1`` onto ``Slice-1`` and keeps every other slice name.
 ``build_owned_positions`` is the explicit ownership boundary for a future
 multi-purpose physical holding. It never invents ownership percentages:
 callers must supply them and the validator requires each physical holding to
@@ -54,16 +54,25 @@ class LtsPositionId:
                 other.isin,
                 other.slice,
             )
-        if self.slice != DEFAULT_SLICE:
-            return False
-        return (
+        if not (
             hasattr(other, "investor")
             and hasattr(other, "folio")
             and hasattr(other, "isin")
-            and not hasattr(other, "slice")
-            and (self.investor, self.folio, self.isin)
-            == (other.investor, other.folio, other.isin)
+        ):
+            return False
+        other_slice = getattr(other, "slice", None)
+        same_holding = (self.investor, self.folio, self.isin) == (
+            other.investor,
+            other.folio,
+            other.isin,
         )
+        if self.slice == DEFAULT_SLICE:
+            if other_slice not in (None, DEFAULT_SLICE, "slice-1"):
+                return False
+            return same_holding
+        if other_slice is None:
+            return False
+        return same_holding and self.slice == other_slice
 
 
 @dataclass(frozen=True)
@@ -191,15 +200,26 @@ def build_owned_positions(
     return result
 
 
+def _projected_slice(slice_name: str) -> str:
+    """Map the LPS primary slice onto the LTS primary slice name."""
+    if slice_name in {DEFAULT_SLICE, "slice-1"}:
+        return DEFAULT_SLICE
+    return slice_name
+
+
 def bridge_positions(positions: list[Position]) -> list[LtsPosition]:
-    """Conservatively project current LPS Positions into Slice-1 at 100%."""
+    """Project each LPS slice at 100% of its own units.
+
+    The primary LPS slice ``slice-1`` is projected as ``Slice-1``. Any other
+    slice keeps its name.
+    """
     return [
         LtsPosition(
             id=LtsPositionId(
                 investor=position.id.investor,
                 folio=position.id.folio,
                 isin=position.id.isin,
-                slice=DEFAULT_SLICE,
+                slice=_projected_slice(position.id.slice),
             ),
             units=position.units,
             nav=position.nav,

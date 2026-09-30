@@ -34,6 +34,7 @@ DEFAULT_TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
 DEFAULT_PURPOSE_SUMMARIES_PATH = DATA_DIR / "lfs" / "purpose_summaries.csv"
 DEFAULT_FUND_SCOPE_PATH = DATA_DIR / "lps" / "funds_in_scope.csv"
 DEFAULT_LTS_ROOT = DATA_DIR / "lts"
+DEFAULT_TRANSITION_MANIFEST_PATH = DATA_DIR / "lps" / "transition_manifest.json"
 
 ACTIVE_ARTIFACTS = (
     "materialized_transition_slices.csv",
@@ -253,6 +254,73 @@ def _print_runner_and_lock_audit() -> None:
     )
 
 
+def write_transition_manifest(
+    *,
+    lts_manifest_path: Path,
+    playbook_path: Path,
+    destination: Path,
+) -> Path:
+    """Write the LPS transition manifest from the LTS manifest and playbook.
+
+    ``as_of`` and ``contract_version`` are copied from the LTS manifest file.
+    Every playbook row becomes a ``PENDING`` order.
+    """
+    payload = json.loads(lts_manifest_path.read_text(encoding="utf-8"))
+    as_of = payload.get("as_of")
+    if not isinstance(as_of, str) or not as_of.strip():
+        raise ValueError(f"LTS manifest has no as_of date: {lts_manifest_path}")
+    date.fromisoformat(as_of)
+    contract_version = payload.get("contract_version")
+    if isinstance(contract_version, bool) or not isinstance(contract_version, int):
+        raise ValueError(
+            f"LTS manifest contract_version must be an integer: {lts_manifest_path}"
+        )
+
+    orders: list[dict[str, object]] = []
+    with playbook_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        required = (
+            "source_investor",
+            "source_folio",
+            "source_isin",
+            "units_to_redeem",
+            "target_investor",
+            "target_folio",
+            "target_isin",
+            "target_slice",
+            "purpose",
+        )
+        missing = [field for field in required if field not in (reader.fieldnames or ())]
+        if missing:
+            raise ValueError(
+                f"{playbook_path} is missing columns: {', '.join(missing)}"
+            )
+        for index, row in enumerate(reader, start=1):
+            orders.append({
+                "order_id": f"ORD-{index:03d}",
+                "source_investor": row["source_investor"],
+                "source_folio": row["source_folio"],
+                "source_isin": row["source_isin"],
+                "units_to_redeem": row["units_to_redeem"],
+                "target_investor": row["target_investor"],
+                "target_folio": row["target_folio"],
+                "target_isin": row["target_isin"],
+                "target_slice": row["target_slice"],
+                "purpose": row["purpose"],
+                "status": "PENDING",
+                "settled_at": None,
+            })
+
+    document = {
+        "as_of": as_of,
+        "manifest_id": f"MAN-{as_of}-01",
+        "contract_version": contract_version,
+        "orders": orders,
+    }
+    _write_text(destination, json.dumps(document, indent=2) + "\n")
+    return destination
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--as-of", help="Optional valuation boundary; normally inferred from LFS summaries.")
@@ -296,6 +364,12 @@ def main() -> None:
             "Cost basis is FIFO acquisition amount on lots the lock rules leave "
             "sellable. Section 112A grandfathering is not applied."
         )
+    transition_manifest = write_transition_manifest(
+        lts_manifest_path=written["manifest"],
+        playbook_path=written["execution_playbook"],
+        destination=DEFAULT_TRANSITION_MANIFEST_PATH,
+    )
+    print(f"transition_manifest: {transition_manifest.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":
@@ -307,6 +381,8 @@ __all__ = [
     "DEFAULT_LTS_ROOT",
     "DEFAULT_POSITIONS_PATH",
     "LtsRunResult",
+    "DEFAULT_TRANSITION_MANIFEST_PATH",
     "persist_lts_artifacts",
     "run_lts_transition",
+    "write_transition_manifest",
 ]
