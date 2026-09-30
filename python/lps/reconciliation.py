@@ -1,9 +1,16 @@
 """Settle LTS transition orders against later CAMS redemptions.
 
-The transition manifest is the open order book. A redemption settles an order
-only when it is strictly after the manifest ``as_of`` date and matches the
-pending order's source holding and unit quantity. Fulfilled orders are left
-in place so a later run does not apply them again.
+The transition manifest is the open order book. A redemption settles pending
+orders on its source holding only when it is strictly after the manifest
+``as_of`` date. Matching is exact, in this order:
+
+1. one pending order with the same unit quantity;
+2. every still-pending order on that holding, when their units sum to the
+   redemption;
+3. the earliest smaller combination of those orders, in manifest order, whose
+   units sum to the redemption.
+
+Fulfilled orders stay fulfilled so a later run does not apply them again.
 """
 
 from __future__ import annotations
@@ -12,6 +19,7 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from itertools import combinations
 from pathlib import Path
 
 from .position_persistence import read_positions, write_positions
@@ -106,7 +114,7 @@ def _match_pending_orders(
     transactions: list[Transaction],
     as_of: date,
 ) -> list[dict[str, object]]:
-    """Mark exact pending matches fulfilled and return those orders."""
+    """Mark matched pending orders fulfilled and return them in settlement order."""
     settled: list[dict[str, object]] = []
     ordered = sorted(
         transactions,
@@ -122,14 +130,93 @@ def _match_pending_orders(
     for transaction in ordered:
         if transaction.transaction_date <= as_of or not _is_cams_redemption(transaction):
             continue
-        for order in orders:
-            if order["status"] != PENDING or not _order_matches(order, transaction):
-                continue
+        matched = _match_redemption(orders, transaction)
+        if not matched:
+            continue
+        settled_at = transaction.transaction_date.isoformat()
+        for order in matched:
             order["status"] = FULFILLED
-            order["settled_at"] = transaction.transaction_date.isoformat()
+            order["settled_at"] = settled_at
             settled.append(order)
-            break
     return settled
+
+
+def _match_redemption(
+    orders: list[dict[str, object]],
+    transaction: Transaction,
+) -> list[dict[str, object]]:
+    """Return the pending orders one redemption settles, if any."""
+    pending = [
+        order
+        for order in orders
+        if order["status"] == PENDING and _same_source(order, transaction)
+    ]
+    if not pending:
+        return []
+    raw_units = transaction.units
+    assert raw_units is not None
+    units = -raw_units
+    exact = _tier_one_exact(pending, units)
+    if exact is not None:
+        return [exact]
+    aggregated = _tier_two_full_folio(pending, units)
+    if aggregated is not None:
+        return aggregated
+    return _tier_three_subset(pending, units)
+
+
+def _same_source(order: dict[str, object], transaction: Transaction) -> bool:
+    return (
+        transaction.investor == order["source_investor"]
+        and transaction.folio == order["source_folio"]
+        and transaction.isin == order["source_isin"]
+    )
+
+
+def _order_units(order: dict[str, object]) -> Decimal:
+    return Decimal(str(order["units_to_redeem"]))
+
+
+def _tier_one_exact(
+    pending: list[dict[str, object]],
+    units: Decimal,
+) -> dict[str, object] | None:
+    """Return the earliest pending order with this exact unit quantity."""
+    for order in pending:
+        if _order_units(order) == units:
+            return order
+    return None
+
+
+def _tier_two_full_folio(
+    pending: list[dict[str, object]],
+    units: Decimal,
+) -> list[dict[str, object]] | None:
+    """Return every pending order when the redemption redeems the whole set."""
+    if len(pending) < 2:
+        return None
+    total = sum((_order_units(order) for order in pending), Decimal("0"))
+    if total == units:
+        return list(pending)
+    return None
+
+
+def _tier_three_subset(
+    pending: list[dict[str, object]],
+    units: Decimal,
+) -> list[dict[str, object]]:
+    """Return the earliest proper subset whose units sum to the redemption.
+
+    Combinations follow manifest order. Smaller combinations are tried before
+    larger ones, and each size is tried in lexicographic index order. The
+    full pending set is tier 2, and a single order is tier 1.
+    """
+    quantities = [_order_units(order) for order in pending]
+    for size in range(2, len(pending)):
+        for combo in combinations(range(len(pending)), size):
+            if sum((quantities[index] for index in combo), Decimal("0")) == units:
+                return [pending[index] for index in combo]
+    return []
 
 
 def _is_cams_redemption(transaction: Transaction) -> bool:
@@ -138,17 +225,6 @@ def _is_cams_redemption(transaction: Transaction) -> bool:
         transaction.event_type.strip() == REDEMPTION
         and units is not None
         and units < 0
-    )
-
-
-def _order_matches(order: dict[str, object], transaction: Transaction) -> bool:
-    units = transaction.units
-    assert units is not None
-    return (
-        transaction.investor == order["source_investor"]
-        and transaction.folio == order["source_folio"]
-        and transaction.isin == order["source_isin"]
-        and -units == Decimal(str(order["units_to_redeem"]))
     )
 
 
