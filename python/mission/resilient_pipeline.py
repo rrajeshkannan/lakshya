@@ -82,7 +82,7 @@ from .survivor_trajectory_experiment import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-NAV_DIR = DATA_DIR / "lps" / "nav"
+NAV_DIR = DATA_DIR / "nav"
 PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
 TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
 CURRENT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"

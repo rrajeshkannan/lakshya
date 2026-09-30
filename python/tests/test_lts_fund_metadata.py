@@ -20,20 +20,21 @@ def test_project_fund_metadata_exposes_only_transition_relevant_fields():
     assert metadata == TransitionFundMetadata(
         isin="INF001",
         scheme_name="Example Equity Fund",
-        scheme_category="Equity Scheme - Large Cap",
+        asset_class="equity",
+        is_elss=False,
         scheme_type="Open Ended Schemes",
     )
+    assert not hasattr(metadata, "scheme_category")
 
 
 def test_classify_elss_from_scheme_category():
-    assert classify_fund(
-        TransitionFundMetadata("INF001", scheme_category="Equity Scheme - ELSS")
-    ) == FundClassification("INF001", "Equity", True, "MFAPI")
+    metadata = project_fund_metadata("INF001", {"schemeCategory": "Equity Scheme - ELSS"})
+    assert classify_fund(metadata) == FundClassification("INF001", "Equity", True, "MFAPI")
 
 
 def test_classify_equity_non_elss_from_scheme_category():
     result = classify_fund(
-        TransitionFundMetadata("INF001", scheme_category="Equity Scheme - Large Cap")
+        project_fund_metadata("INF001", {"schemeCategory": "Equity Scheme - Large Cap"})
     )
     assert result.asset_class == "Equity"
     assert result.is_elss is False
@@ -42,7 +43,7 @@ def test_classify_equity_non_elss_from_scheme_category():
 
 def test_classify_debt_from_scheme_category():
     result = classify_fund(
-        TransitionFundMetadata("INF001", scheme_category="Debt Scheme - Corporate Bond")
+        project_fund_metadata("INF001", {"schemeCategory": "Debt Scheme - Corporate Bond"})
     )
     assert result.asset_class == "Debt"
     assert result.is_elss is False

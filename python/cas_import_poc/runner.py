@@ -23,7 +23,7 @@ INPUT_DIR = PROJECT_ROOT / "input"
 LPS_DATA_DIR = PROJECT_ROOT / "data" / "lps"
 TRANSACTIONS_PATH = LPS_DATA_DIR / "transactions.csv"
 POSITIONS_PATH = LPS_DATA_DIR / "positions.csv"
-NAV_DATA_DIR = LPS_DATA_DIR / "nav"
+NAV_DATA_DIR = PROJECT_ROOT / "data" / "nav"
 
 
 def _load_casparser():

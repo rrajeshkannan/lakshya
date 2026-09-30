@@ -735,7 +735,7 @@ Run LTS only after LPS and LFS have used the same as-of date. The runner reads t
 python -m lts.runner
 ```
 
-The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/lps/nav/` as of that date. Those two prices agree only when the CAS import valued the positions at the same as-of.
+The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/nav/` as of that date. Those two prices agree only when the CAS import valued the positions at the same as-of.
 
 Investor matters because different investors can have different tax consequences. Folio matters because the same ISIN may appear in different folios and Purpose relationships.
 

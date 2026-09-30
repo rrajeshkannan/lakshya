@@ -25,6 +25,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from .scheme import scheme_record
+
 
 class NavEvidenceStore:
     """Persistent JSON store for one Fund's NAV history."""
@@ -56,7 +58,7 @@ class NavEvidenceStore:
             "scheme_code": int(scheme_code),
             "source": source,
             "retrieved_at": retrieved_at,
-            "scheme_metadata": scheme_metadata or {},
+            "scheme_metadata": scheme_record(scheme_metadata),
             "observations": self._serialize_observations(nav),
         }
         self._write(payload)
@@ -65,7 +67,7 @@ class NavEvidenceStore:
         """Return persisted source-derived scheme metadata."""
         if not self.path.exists():
             raise ValueError(f"NAV evidence artifact does not exist: {self.path}")
-        return dict(self._read().get("scheme_metadata", {}))
+        return scheme_record(self._read().get("scheme_metadata", {}))
 
     def latest_date(self) -> pd.Timestamp:
         """Return the date of the newest persisted NAV observation."""
@@ -165,7 +167,7 @@ class NavEvidenceStore:
         payload["artifact_version"] += 1
         payload["retrieved_at"] = retrieved_at
         if scheme_metadata is not None:
-            payload["scheme_metadata"] = dict(scheme_metadata)
+            payload["scheme_metadata"] = scheme_record(scheme_metadata)
         payload["observations"] = new_observations + existing_observations
         self._write(payload)
 

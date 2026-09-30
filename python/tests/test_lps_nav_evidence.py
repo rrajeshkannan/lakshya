@@ -215,7 +215,8 @@ def test_nav_evidence_store_persists_scheme_metadata(tmp_path):
         retrieved_at="2026-08-04T16:00:00+05:30",
         scheme_metadata={"schemeCategory": "Equity Scheme - Large Cap"},
     )
-    assert store.scheme_metadata() == {"schemeCategory": "Equity Scheme - Large Cap"}
+    assert store.scheme_metadata() == {"asset_class": "equity", "is_elss": False}
+    assert "schemeCategory" not in json.loads(path.read_text(encoding="utf-8"))["scheme_metadata"]
 
 
 def test_nav_evidence_store_updates_scheme_metadata_without_rewriting_history(tmp_path):
@@ -239,4 +240,5 @@ def test_nav_evidence_store_updates_scheme_metadata_without_rewriting_history(tm
         {"date": "2026-08-04", "nav": 104.0},
         {"date": "2026-08-03", "nav": 103.0},
     ]
-    assert store.scheme_metadata() == {"schemeCategory": "Equity Scheme - ELSS"}
+    assert store.scheme_metadata() == {"asset_class": "equity", "is_elss": True}
+    assert "schemeCategory" not in payload["scheme_metadata"]

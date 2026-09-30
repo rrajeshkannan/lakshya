@@ -15,6 +15,8 @@ from urllib.request import Request, urlopen
 
 import pandas as pd
 
+from .scheme import scheme_record
+
 
 DEFAULT_MFAPI_BASE_URL = "https://api.mfapi.in"
 
@@ -62,7 +64,7 @@ class MfapiNavSource:
             raise ValueError(
                 f"ISIN could not be resolved through MFAPI scheme catalog: {isin}"
             )
-        return dict(matches[0])
+        return scheme_record(matches[0])
 
     def resolve_scheme_code(self, isin: str) -> int:
         """Resolve a Lakshya Fund ISIN to the MFAPI scheme code."""

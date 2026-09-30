@@ -156,4 +156,7 @@ def test_nav_source_resolves_full_scheme_metadata_by_isin():
     scheme = source.resolve_scheme("TEST123")
 
     assert scheme["schemeCode"] == 12345
-    assert scheme["schemeCategory"] == "ELSS"
+    assert scheme["schemeName"] == "Test ELSS Fund - Growth"
+    assert scheme["asset_class"] == "equity"
+    assert scheme["is_elss"] is True
+    assert "schemeCategory" not in scheme

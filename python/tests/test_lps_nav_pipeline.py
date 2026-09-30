@@ -25,7 +25,7 @@ class FakeNavSource:
 
 
 def nav_path(tmp_path, isin):
-    return tmp_path / "lps" / "nav" / f"{isin}.json"
+    return tmp_path / "nav" / f"{isin}.json"
 
 
 def test_run_nav_pipeline_creates_evidence(tmp_path):
