@@ -7,8 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
-
-from .position_bridge import LtsPositionId
+from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -37,32 +36,15 @@ class TargetFormation:
     rows: tuple[FormationIntentRow, ...]
 
 
-@dataclass(frozen=True)
-class EconomicReconciliation:
-    """CURRENT-to-TARGET economic reconciliation at Purpose × ISIN grain."""
+class TransitionDisposition(str, Enum):
+    """Whether a cascade slice stays in place or is sold."""
 
-    purpose: str
-    isin: str
-    current_value: Decimal
-    target_value: Decimal
-    matched_value: Decimal
-    current_excess: Decimal
-    target_gap: Decimal
-
-
-@dataclass(frozen=True)
-class PositionReconciliation:
-    """How one LTS Position contributes to economic TARGET."""
-
-    position_id: LtsPositionId
-    target_purpose: str
-    target_isin: str
-    current_value: Decimal
-    matched_value: Decimal
-    unmatched_current_value: Decimal
+    RETAIN = "RETAIN"
+    REDEEM = "REDEEM"
 
 
 __all__ = [
-    "EconomicReconciliation", "FormationIntentRow", "PositionReconciliation",
+    "FormationIntentRow",
     "TargetFormation",
+    "TransitionDisposition",
 ]

@@ -43,10 +43,9 @@ from lps.transactions import Transaction
 
 from .fund_metadata import FundClassification
 from .lots import fifo_holding_lots
-from .models import TargetFormation
+from .models import TargetFormation, TransitionDisposition
 from .position_bridge import LtsPosition
 from .purpose_allocation import validate_purpose_target_allocation
-from .purpose_transition import TransitionDisposition
 
 ZERO = Decimal("0")
 ONE_HUNDRED = Decimal("100")

@@ -16,7 +16,7 @@ from lts.allocation_cascade import (
 from lts.fund_metadata import FundClassification
 from lts.models import FormationIntentRow, TargetFormation
 from lts.position_bridge import LtsPosition, LtsPositionId
-from lts.purpose_transition import TransitionDisposition
+from lts.models import TransitionDisposition
 
 
 AS_OF = date(2026, 9, 6)

@@ -1,13 +1,8 @@
 from datetime import date
 from decimal import Decimal
 
-import pandas as pd
-
-from lps.nav_evidence import NavEvidenceStore
-from lps.position_persistence import read_positions
-from lps.transaction_persistence import write_transactions
-from lps.transactions import Transaction
-from lts.runner import run_lts_transition
+from lts.models import TransitionDisposition
+from lts.runner import persist_lts_artifacts, run_lts_transition
 
 
 PURPOSES = """name,due,desired,monthly_plan
@@ -21,12 +16,6 @@ Appanna,F2,BBB,5,200,1000,Retirement
 Amma,F3,CCC,20,100,2000,Edu_A
 """
 
-FUND_SCOPE = """isin,asset_class,is_elss
-AAA,equity,no
-BBB,equity,no
-CCC,equity,no
-"""
-
 SUMMARIES = (
     "purpose,primary_winner\n"
     'Retirement,"AAA,BBB|AAA=0.6000,BBB=0.4000"\n'
@@ -34,7 +23,7 @@ SUMMARIES = (
 )
 
 
-def test_runner_composes_existing_lts_components(tmp_path):
+def test_runner_composes_the_cascade(tmp_path):
     purposes = tmp_path / "purposes.csv"
     positions = tmp_path / "positions.csv"
     summaries = tmp_path / "purpose_summaries.csv"
@@ -48,14 +37,15 @@ def test_runner_composes_existing_lts_components(tmp_path):
         purpose_summaries_path=summaries,
     )
 
-    assert result.plan.is_balanced
-    assert [report.purpose for report in result.reports] == ["Edu_A", "Retirement"]
-    assert all(report.is_balanced for report in result.reports)
-    assert result.plan.portfolio_current_amount == Decimal("3600")
-    assert result.plan.portfolio_target_amount == Decimal("3600")
+    assert result.lot_locks_applied is False
     assert result.current_input.diagnostics.total_records == 3
     assert result.current_input.diagnostics.active_records == 3
     assert result.current_input.diagnostics.inactive_records == 0
+    assert sum(item.market_value for item in result.cascade.slices) == Decimal("3600")
+    assert {item.disposition for item in result.cascade.slices} <= {
+        TransitionDisposition.RETAIN,
+        TransitionDisposition.REDEEM,
+    }
 
 
 def test_runner_excludes_zero_unit_inactive_records(tmp_path):
@@ -78,14 +68,13 @@ def test_runner_excludes_zero_unit_inactive_records(tmp_path):
         purpose_summaries_path=summaries,
     )
 
-    assert result.plan.is_balanced
     assert result.current_input.diagnostics.total_records == 4
     assert result.current_input.diagnostics.active_records == 3
     assert result.current_input.diagnostics.inactive_records == 1
     assert [position.id.isin for position in result.positions] == ["AAA", "BBB", "CCC"]
 
 
-def test_runner_does_not_reconcile_unattributed_positions(tmp_path):
+def test_runner_rejects_unattributed_positions(tmp_path):
     purposes = tmp_path / "purposes.csv"
     positions = tmp_path / "positions.csv"
     summaries = tmp_path / "purpose_summaries.csv"
@@ -106,62 +95,31 @@ def test_runner_does_not_reconcile_unattributed_positions(tmp_path):
         )
 
 
-def test_runner_uses_transaction_and_nav_evidence_when_available(tmp_path):
+def test_persist_writes_only_active_artifacts(tmp_path):
     purposes = tmp_path / "purposes.csv"
     positions = tmp_path / "positions.csv"
     summaries = tmp_path / "purpose_summaries.csv"
-    transactions = tmp_path / "transactions.csv"
-    nav_root = tmp_path / "nav"
-    fund_scope = tmp_path / "funds_in_scope.csv"
-
     purposes.write_text(PURPOSES, encoding="utf-8")
     positions.write_text(POSITIONS, encoding="utf-8")
     summaries.write_text(SUMMARIES, encoding="utf-8")
-    fund_scope.write_text(FUND_SCOPE, encoding="utf-8")
-
-    persisted_positions = read_positions(positions)
-    write_transactions(
-        transactions,
-        [
-            Transaction(
-                transaction_date=date(2020, 1, 1),
-                event_type="Purchase",
-                investor=position.id.investor,
-                folio=position.id.folio,
-                isin=position.id.isin,
-                units=position.units,
-                amount=position.market_value,
-                price=position.nav,
-                source_description="test fixture",
-            )
-            for position in persisted_positions
-        ],
-    )
-
-    for position in persisted_positions:
-        store = NavEvidenceStore(nav_root / f"{position.id.isin}.json")
-        store.create(
-            isin=position.id.isin,
-            scheme_code=1,
-            source="test",
-            nav=pd.DataFrame(
-                [{"date": "2026-09-20", "nav": str(position.nav)}]
-            ),
-            retrieved_at="2026-09-21T00:00:00Z",
-        )
-
     result = run_lts_transition(
         purposes_path=purposes,
         positions_path=positions,
-        transactions_path=transactions,
-        nav_root=nav_root,
         purpose_summaries_path=summaries,
-        fund_scope_path=fund_scope,
-        as_of=date(2026, 9, 20),
+        as_of=date(2026, 9, 6),
     )
 
-    assert len(result.evidence.positions) == 3
-    assert len(result.evidence.transactions) == 3
-    assert len(result.availability) == 3
-    assert all(report.locked_units == Decimal("0") for report in result.availability)
-    assert all(report.unlocked_units > Decimal("0") for report in result.availability)
+    output = tmp_path / "lts"
+    written = persist_lts_artifacts(result, as_of="2026-09-06", lts_root=output)
+    names = {path.name for path in output.iterdir()}
+    assert names == {
+        "materialized_transition_slices.csv",
+        "cascade_review.csv",
+        "execution_playbook.csv",
+        "manifest.json",
+    }
+    assert "tax_preflight_report" not in written
+    assert "purpose_reports.csv" not in names
+    assert "transition_mappings.csv" not in names
+    assert "holding_availability.csv" not in names
+    assert "holding_availability_summary.csv" not in names

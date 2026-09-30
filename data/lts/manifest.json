@@ -1,23 +1,18 @@
 {
-  "all_purpose_reports_balanced": true,
   "artifacts": {
     "cascade_review": "cascade_review.csv",
-    "holding_availability": "holding_availability.csv",
-    "holding_availability_summary": "holding_availability_summary.csv",
+    "execution_playbook": "execution_playbook.csv",
+    "manifest": "manifest.json",
     "materialized_transition_slices": "materialized_transition_slices.csv",
-    "purpose_reports": "purpose_reports.csv",
-    "transition_mappings": "transition_mappings.csv"
+    "tax_preflight_report": "tax_preflight_report.txt"
   },
   "as_of": "2026-09-06",
-  "availability_count": 34,
-  "availability_lot_count": 696,
   "contract": "LTS_TRANSITION",
-  "contract_version": 6,
-  "is_balanced": true,
-  "locked_position_count": 6,
-  "mapping_count": 46,
-  "portfolio_current_amount": "15233131.3171967",
-  "portfolio_target_amount": "15233131.31719670000",
+  "contract_version": 7,
+  "locked_slice_count": 6,
+  "lot_locks_applied": true,
+  "portfolio_market_value": "15233131.31719670000000000000",
   "position_count": 34,
-  "purpose_report_count": 6
+  "review_count": 25,
+  "slice_count": 73
 }
