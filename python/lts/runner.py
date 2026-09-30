@@ -336,6 +336,64 @@ def persist_lts_artifacts(
     )
 
 
+def _print_runner_and_lock_audit() -> None:
+    """Print the one-time runner and tax-lock inspection. This does not validate."""
+    print(
+        "\n".join([
+            "LTS runner topology",
+            "  Executable entry point: python -m lts.runner (python/lts/runner.py).",
+            "  python/lts has no __main__.py.",
+            "  execution_playbook.py is a library called by this runner. "
+            "Its former main entry point has been removed.",
+            "",
+            "STCG and ELSS tax-lock inspection",
+            "  Cascade path (allocation_cascade.py), which writes the slice file,",
+            "  the execution playbook, and this tax report:",
+            "  - Equity STCG: a lot is locked when (as_of - acquired).days <= 365,",
+            "    including the 365th day. ELSS: a lot is locked while as_of is",
+            "    strictly before the third anniversary. The anniversary day itself",
+            "    is unlocked. Debt and other asset classes are not locked.",
+            "  - Locked units are split onto portions with locked=True.",
+            "  - _drafts_for_portions assigns those portions disposition=RETAIN",
+            "    and does not reach the REDEEM branch. REDEEM drafts are built",
+            "    only from unlocked, non-chosen portions and carry locked=False.",
+            "  - The cascade's existing check rejects a locked slice that is not RETAIN.",
+            "  Edge cases, outside that cascade redemption pool:",
+            "  - Calling the cascade without transactions marks the whole holding",
+            "    unlocked, so lot locks are not applied.",
+            "  - purpose_transition.py, still used for transition_mappings.csv,",
+            "    can label a locked holding REDEEM_LOCKED with locked=True.",
+            "    Its lock set comes from holding_constraints, which locks ELSS",
+            "    only and does not apply the equity 365-day STCG rule.",
+            "  The live redemption book is the cascade slice file, not that mapping.",
+            "",
+        ])
+    )
+
+
+def _publish_tax_preflight(as_of: date, slices_path: Path) -> None:
+    """Write the FY 2026-27 advance-tax sheet from the cascade redemption book."""
+    from .execution_playbook import playbook_slices_ready
+    from .tax_preflight import write_tax_preflight_report
+
+    if not playbook_slices_ready(slices_path):
+        print("Advance tax report skipped: materialized slices are not the cascade schema.")
+        return
+    report_path, text = write_tax_preflight_report(
+        slices_path=slices_path,
+        transactions_path=DEFAULT_TRANSACTIONS_PATH,
+        fund_scope_path=DEFAULT_FUND_SCOPE_PATH,
+        as_of=as_of,
+        destination=slices_path.with_name("tax_preflight_report.txt"),
+    )
+    print(text, end="")
+    print(
+        "Cost basis is FIFO acquisition amount on lots the lock rules leave "
+        "sellable. Section 112A grandfathering is not applied."
+    )
+    print(f"Advance tax report: {report_path.relative_to(PROJECT_ROOT)}")
+
+
 def _publish_execution_playbook(slices_path: Path) -> None:
     """Write the unit playbook when the on-disk slices use the cascade schema.
 
@@ -368,6 +426,7 @@ def _parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = _parser().parse_args()
+    _print_runner_and_lock_audit()
     inferred_as_of = _infer_as_of(DEFAULT_PURPOSE_SUMMARIES_PATH)
     if args.as_of is not None and args.as_of != inferred_as_of:
         raise ValueError(
@@ -397,6 +456,7 @@ def main() -> None:
     print(f"Holding availability summary CSV: {availability_summary_path.relative_to(PROJECT_ROOT)}")
     print(f"LTS manifest: {manifest_path.relative_to(PROJECT_ROOT)}")
     _publish_execution_playbook(materialized_transition_slices_path)
+    _publish_tax_preflight(date.fromisoformat(inferred_as_of), materialized_transition_slices_path)
 
 
 if __name__ == "__main__":

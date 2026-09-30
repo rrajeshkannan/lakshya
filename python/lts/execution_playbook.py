@@ -256,21 +256,6 @@ def write_execution_playbook(
     return destination, rows
 
 
-def main() -> None:
-    root = Path(__file__).resolve().parents[2]
-    slices_path = root / "data" / "lts" / "materialized_transition_slices.csv"
-    destination = root / "data" / "lts" / "execution_playbook.csv"
-    playbook_path, rows = write_execution_playbook(slices_path, destination)
-    print(format_redemption_summary(rows))
-    print(f"Execution playbook: {playbook_path.relative_to(root)}")
-    print("Preview:")
-    print("".join(playbook_path.read_text(encoding="utf-8").splitlines(keepends=True)[:6]), end="")
-
-
-if __name__ == "__main__":
-    main()
-
-
 __all__ = [
     "ExecutionPlaybookRow",
     "build_execution_playbook",

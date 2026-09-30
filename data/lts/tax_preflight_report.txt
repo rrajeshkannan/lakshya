@@ -1,0 +1,25 @@
+====================================================================
+               LTS PRE-FLIGHT ADVANCE TAX REPORT (FY 2026-27)
+====================================================================
+
+--- INVESTOR 1: AMMA ---
+ Gross Redemption Proceeds: ₹71,80,306.14
+ Total Cost of Acquisition: ₹36,51,384.19
+ Total Realized LTCG:       ₹35,28,921.95
+ --------------------------------------------------
+ Annual Exemption (112A):   ₹1,25,000.00
+ Net Taxable LTCG:          ₹34,03,921.95
+ TAX PAYABLE (@ 12.5%):     ₹4,25,490.24 [Earmark for March 15 Advance Tax]
+
+--- INVESTOR 2: APPANNA ---
+ Gross Redemption Proceeds: ₹33,05,742.77
+ Total Cost of Acquisition: ₹17,90,587.52
+ Total Realized LTCG:       ₹15,15,155.25
+ --------------------------------------------------
+ Annual Exemption (112A):   ₹1,25,000.00
+ Net Taxable LTCG:          ₹13,90,155.25
+ TAX PAYABLE (@ 12.5%):     ₹1,73,769.41 [Earmark for March 15 Advance Tax]
+
+====================================================================
+ TOTAL ADVANCE TAX TO EARMARK ACROSS FAMILY: ₹5,99,259.65
+====================================================================
