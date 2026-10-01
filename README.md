@@ -34,18 +34,18 @@ python -m lts.runner --as-of 2026-09-30
 | Command | What it does |
 |---|---|
 | `python -m lps.cas_import.runner` | Statement import. Writes transactions and unit balances. Keeps Purpose. Does not price the book. |
-| `python -m lps.runner` | NAV from mfapi.in, then `market value = units × NAV`, then settlement against `data/lps/transition_manifest.json`. |
+| `python -m lps.runner` | NAV from mfapi.in, then `market value = units × NAV`, then settlement of `data/lps/transition_manifest.json` from `data/lps/settlement_mapping.csv`. |
 | `python -m lfs.runner` | MISSION, then FINAL. Reads `data/lfs/purpose.csv`. |
 | `python -m lfs.review_runner` | Purpose Staging. `init`, `turn`, and `commit`. |
 | `python -m lts.runner` | Tax-lock cascade, execution playbook, and the transition manifest. |
 
-`lps.runner` prints the valuation date it was given. It also prints the as-of on the transition manifest when that file is present.
+`lps.runner` prints the valuation date it was given. It also prints the as-of on the transition manifest when that file is present. Reinvestment orders use one folio per investor, purpose, and fund (`NEW_FOLIO_<INVESTOR>_<PURPOSE>_<ISIN_SUFFIX>` until the AMC folio is known). After you execute a trade, record it in `data/lps/settlement_mapping.csv` and run `lps.runner` again. The operating steps are in `docs/Lakshya_HowTo.md`.
 
 ```bash
 pytest python/tests/
 ```
 
-The v1.0.0 sweep passed 408 tests. Packages are `python/core/`, `python/lps/` (`cas_import/`, `nav_engine/`, `valuator/`), `python/lfs/` (including `python/lfs/purpose_staging/`), and `python/lts/`.
+The v1.0.0 sweep passed 409 tests. Packages are `python/core/`, `python/lps/` (`cas_import/`, `nav_engine/`, `valuator/`), `python/lfs/` (including `python/lfs/purpose_staging/`), and `python/lts/`.
 
 Operating steps: `docs/Lakshya_HowTo.md`. Release record: `docs/Lakshya_Current_Status.md`. Architecture: `docs/Lakshya_Architecture.md`. Domain model: `docs/Lakshya_Domain_Model.md`. Sequence: `docs/Lakshya_Pipeline_Sequence.md`.
 

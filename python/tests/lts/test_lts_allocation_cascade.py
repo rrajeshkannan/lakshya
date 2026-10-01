@@ -51,14 +51,14 @@ def classify(isin, asset_class, is_elss):
     return FundClassification(isin, asset_class, is_elss, "TEST")
 
 
-def existing(investor, folio, isin, market_value=None):
+def existing(investor, folio, isin, market_value=None, purpose=None):
     value = None if market_value is None else Decimal(market_value)
     return Position(
         id=PositionId(investor, folio, isin),
         units=Decimal("0") if value is None else Decimal("1"),
         nav=None,
         market_value=value,
-        purpose=None,
+        purpose=purpose,
     )
 
 
@@ -171,7 +171,7 @@ def test_partial_elss_lock_splits_units_and_percentages():
         ("BBB", "slice-1", TransitionDisposition.REDEEM, False, Decimal("4"), Decimal("40"), None),
     ]
     assert plan.slices[0].target_folio == "F1"
-    assert plan.slices[1].target_folio == "NEW_FOLIO_1"
+    assert plan.slices[1].target_folio == "NEW_FOLIO_I_Edu_BBB"
     assert sum(item.units for item in plan.slices) == Decimal("10")
     assert sum(item.percentage for item in plan.slices) == Decimal("100")
     assert all(item.market_value == item.units * item.nav for item in plan.slices)
@@ -245,8 +245,8 @@ def test_redeem_target_folio_resolves_to_investors_existing_folio():
         [position("I", "F1", "AAA", "10", "10", "Edu")],
         formation(row("Edu", "BBB", "100", "1")),
         existing_positions=[
-            existing("I", "F1", "AAA", "100"),
-            existing("I", "F2", "BBB", "50"),
+            existing("I", "F1", "AAA", "100", purpose="Retirement"),
+            existing("I", "F2", "BBB", "50", purpose="Edu"),
         ],
     )
 
@@ -257,21 +257,23 @@ def test_redeem_target_folio_resolves_to_investors_existing_folio():
 
 def test_redeem_target_folio_prefers_the_highest_market_value_folio():
     directory = build_folio_directory([
-        existing("I", "F_LOW", "BBB", "10"),
-        existing("I", "F_HIGH", "BBB", "5000"),
-        existing("I", "F_MID", "BBB", "500"),
+        existing("I", "F_LOW", "BBB", "10", purpose="Edu"),
+        existing("I", "F_HIGH", "BBB", "5000", purpose="Edu"),
+        existing("I", "F_MID", "BBB", "500", purpose="Edu"),
+        existing("I", "F_OTHER", "BBB", "9000", purpose="Retirement"),
     ])
 
-    assert directory[("I", "BBB")] == "F_HIGH"
+    assert directory[("I", "Edu", "BBB")] == "F_HIGH"
+    assert ("I", "Retirement", "BBB") in directory
 
     plan = build_allocation_cascade(
         [position("I", "F1", "AAA", "10", "10", "Edu")],
         formation(row("Edu", "BBB", "100", "1")),
         existing_positions=[
-            existing("I", "F1", "AAA", "100"),
-            existing("I", "F_LOW", "BBB", "10"),
-            existing("I", "F_HIGH", "BBB", "5000"),
-            existing("I", "F_MID", "BBB", "500"),
+            existing("I", "F1", "AAA", "100", purpose="Retirement"),
+            existing("I", "F_LOW", "BBB", "10", purpose="Edu"),
+            existing("I", "F_HIGH", "BBB", "5000", purpose="Edu"),
+            existing("I", "F_MID", "BBB", "500", purpose="Edu"),
         ],
     )
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
@@ -286,16 +288,16 @@ def test_redeem_target_folio_falls_back_to_new_folio_placeholder_when_absent():
     )
 
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
-    assert redeemed.target_folio == "NEW_FOLIO_1"
+    assert redeemed.target_folio == "NEW_FOLIO_I_Edu_BBB"
 
 
-def test_redeem_target_folio_treats_a_zero_unit_folio_as_existing_inventory():
+def test_redeem_reuses_a_zero_unit_folio_dedicated_to_the_purpose():
     plan = build_allocation_cascade(
         [position("I", "F1", "AAA", "10", "10", "Edu")],
         formation(row("Edu", "BBB", "100", "1")),
         existing_positions=[
-            existing("I", "F1", "AAA", "100"),
-            existing("I", "F2", "BBB"),
+            existing("I", "F1", "AAA", "100", purpose="Retirement"),
+            existing("I", "F2", "BBB", purpose="Edu"),
         ],
     )
 
@@ -309,12 +311,12 @@ def test_redeem_target_folio_does_not_cross_investors():
         formation(row("Edu", "BBB", "100", "1")),
         existing_positions=[
             existing("I", "F1", "AAA", "100"),
-            existing("OTHER_INVESTOR", "F2", "BBB", "50"),
+            existing("OTHER_INVESTOR", "F2", "BBB", "50", purpose="Edu"),
         ],
     )
 
     redeemed = next(item for item in plan.slices if item.disposition is TransitionDisposition.REDEEM)
-    assert redeemed.target_folio == "NEW_FOLIO_1"
+    assert redeemed.target_folio == "NEW_FOLIO_I_Edu_BBB"
 
 
 def _owned_value(plan, purpose, isin):
@@ -334,9 +336,9 @@ def test_redeemed_capital_is_split_to_an_equal_investor_share():
         ],
         formation(row("Home_Loan", "TGT", "200", "1")),
         existing_positions=[
-            existing("Amma", "FA", "TGT", "50"),
-            existing("Amma", "FAM", "TGT", "1"),
-            existing("Appanna", "FAP", "TGT", "9"),
+            existing("Amma", "FA", "TGT", "50", purpose="Home_Loan"),
+            existing("Amma", "FAM", "TGT", "1", purpose="Home_Loan"),
+            existing("Appanna", "FAP", "TGT", "9", purpose="Home_Loan"),
         ],
     )
 
@@ -396,8 +398,8 @@ def test_one_redeemed_holding_is_split_across_both_investors():
         ],
         formation(row("Kutti", "TGT", "150", "1")),
         existing_positions=[
-            existing("Amma", "FAM", "TGT", "4"),
-            existing("Appanna", "FB", "TGT", "50"),
+            existing("Amma", "FAM", "TGT", "4", purpose="Kutti"),
+            existing("Appanna", "FB", "TGT", "50", purpose="Kutti"),
         ],
     )
 
@@ -442,12 +444,15 @@ def test_fresh_reinvestment_folios_are_isolated_by_purpose():
         for item in plan.slices
         if item.disposition is TransitionDisposition.REDEEM
     }
-    assert folios == {"Home_Loan": "NEW_FOLIO_1", "Kutti": "NEW_FOLIO_2"}
+    assert folios == {
+        "Home_Loan": "NEW_FOLIO_I_Home_Loan_TGT",
+        "Kutti": "NEW_FOLIO_I_Kutti_TGT",
+    }
     assert all(item.target_slice == "slice-1" for item in plan.slices)
     assert max(len(purposes) for purposes in _purposes_per_virtual_position(plan).values()) == 1
 
 
-def test_legacy_folio_reused_across_purposes_gets_one_slice_each():
+def test_one_existing_folio_is_not_shared_across_purposes():
     plan = build_allocation_cascade(
         [
             position("I", "F1", "SRC", "50", "1"),
@@ -457,12 +462,14 @@ def test_legacy_folio_reused_across_purposes_gets_one_slice_each():
             row("Home_Loan", "TGT", "50", "1"),
             row("Kutti", "TGT", "50", "1"),
         ),
-        existing_positions=[existing("I", "F_EXIST", "TGT", "10")],
+        existing_positions=[existing("I", "F_EXIST", "TGT", "10", purpose="Home_Loan")],
     )
 
-    assert {item.target_folio for item in plan.slices} == {"F_EXIST"}
+    folios = {item.purpose: item.target_folio for item in plan.slices}
+    assert folios["Home_Loan"] == "F_EXIST"
+    assert folios["Kutti"] == "NEW_FOLIO_I_Kutti_TGT"
     by_purpose = {item.purpose: item.target_slice for item in plan.slices}
-    assert by_purpose == {"Home_Loan": "slice-1", "Kutti": "slice-2"}
+    assert by_purpose == {"Home_Loan": "slice-1", "Kutti": "slice-1"}
     virtual = _purposes_per_virtual_position(plan)
     assert max(len(purposes) for purposes in virtual.values()) == 1
     assert len(virtual) == 2

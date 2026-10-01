@@ -19,10 +19,11 @@ LPS state.
    of that fund's market value. With Amma and Appanna that share is half.
    Locked inventory above half is left in place, and every redeemed rupee
    in that fund goes to the other investor.
-5. Resolve ``target_folio``. Retained lots keep their current folio. Redeemed
-   capital reuses a folio the target investor already holds for that fund.
-   Fresh reinvestment gets a purpose-specific placeholder, ``NEW_FOLIO_1``
-   onward, so goals do not share a new account.
+5. Resolve ``target_folio``. Retained lots keep their current folio. A
+   reinvestment reuses a folio only when that folio is already dedicated to
+   the same ``(target investor, purpose, target ISIN)``. Every other
+   reinvestment gets ``NEW_FOLIO_<INVESTOR>_<PURPOSE>_<ISIN_SUFFIX>``, so
+   one folio is not a pool for several goals.
 6. Number ``target_slice`` on ``(target_investor, target_folio, target_isin)``.
    Each purpose on that virtual holding gets the next slice, so one target
    position maps to one purpose.
@@ -57,11 +58,23 @@ STCG_LOCKED = "STCG_LOCKED"
 STAGE_UNCHANGED = "UNCHANGED"
 STAGE_IN_COMPOSITION = "IN_COMPOSITION"
 STAGE_CROSS_COMPOSITION = "CROSS_COMPOSITION"
-def new_folio_name(index: int) -> str:
-    """Return the purpose-isolated placeholder for one fresh reinvestment folio."""
-    if index < 1:
-        raise ValueError(f"New folio index must be positive: {index}")
-    return f"NEW_FOLIO_{index}"
+def new_folio_name(investor: str, purpose: str, isin: str) -> str:
+    """Return the placeholder for one purpose-dedicated reinvestment folio.
+
+    The suffix is the last six characters of the ISIN, or the whole ISIN
+    when it is shorter. One ``(investor, purpose, ISIN)`` always maps to
+    the same placeholder.
+    """
+    investor_name = investor.strip()
+    purpose_name = purpose.strip()
+    code = isin.strip()
+    if not investor_name or not purpose_name or not code:
+        raise ValueError(
+            "A new folio needs an investor, a purpose, and an ISIN: "
+            f"{investor!r}, {purpose!r}, {isin!r}."
+        )
+    suffix = code[-6:]
+    return f"NEW_FOLIO_{investor_name}_{purpose_name}_{suffix}"
 
 
 @dataclass(frozen=True)
@@ -319,21 +332,32 @@ def _portion(
 
 def build_folio_directory(
     inventory: Sequence[Position] | Sequence[LtsPosition],
-) -> dict[tuple[str, str], str]:
-    """Pick one existing folio per (investor, ISIN) for REDEEM destinations.
+) -> dict[tuple[str, str, str], str]:
+    """Pick one existing folio per ``(investor, purpose, ISIN)``.
 
-    Every row in the LPS position book is inventory, including a folio that
-    currently holds zero units of that ISIN: it is still a folio the investor
-    already has open for that fund. When an investor has more than one folio
-    for the same ISIN, the folio with the highest market value is preferred,
-    matching "the primary active folio." Ties, and every all-zero case, are
-    broken by the lowest folio string so the choice is deterministic.
+    A folio is dedicated when every row on that investor, folio, and ISIN
+    carries the same non-blank purpose. A folio with no purpose, or with
+    more than one purpose, is not a reinvestment destination. Among
+    dedicated folios for the same tuple, the highest market value wins.
+    Ties break on the lowest folio string.
     """
-    best: dict[tuple[str, str], tuple[Decimal, str]] = {}
+    purposes_by_folio: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+    value_by_folio: dict[tuple[str, str, str], Decimal] = defaultdict(lambda: ZERO)
     for row in inventory:
-        key = (row.id.investor, row.id.isin)
+        folio_key = (row.id.investor, row.id.folio, row.id.isin)
+        purpose = (row.purpose or "").strip()
+        purposes_by_folio[folio_key].add(purpose)
         value = row.market_value if row.market_value is not None else ZERO
-        candidate = (value, row.id.folio)
+        value_by_folio[folio_key] += value
+
+    best: dict[tuple[str, str, str], tuple[Decimal, str]] = {}
+    for folio_key, purposes in purposes_by_folio.items():
+        if len(purposes) != 1 or "" in purposes:
+            continue
+        investor, folio, isin = folio_key
+        purpose = next(iter(purposes))
+        key = (investor, purpose, isin)
+        candidate = (value_by_folio[folio_key], folio)
         current = best.get(key)
         if current is None or candidate[0] > current[0] or (
             candidate[0] == current[0] and candidate[1] < current[1]
@@ -344,26 +368,20 @@ def build_folio_directory(
 
 def _redeem_folio_plan(
     destinations: Sequence[tuple[str, str, str]],
-    folio_directory: Mapping[tuple[str, str], str],
+    folio_directory: Mapping[tuple[str, str, str], str],
 ) -> dict[tuple[str, str, str], str]:
-    """Map ``(purpose, target investor, target ISIN)`` to a redeem folio.
+    """Map ``(purpose, target investor, target ISIN)`` to one redeem folio.
 
-    A legacy folio the investor already holds for that fund is reused for
-    every purpose. Each fresh ``(purpose, investor, fund)`` gets the next
-    ``NEW_FOLIO_n`` placeholder, in purpose then investor then ISIN order.
+    Reuse the dedicated folio for that exact tuple when the book already
+    has one. Otherwise assign ``NEW_FOLIO_<investor>_<purpose>_<suffix>``.
     """
-    legacy: dict[tuple[str, str, str], str] = {}
-    fresh: set[tuple[str, str, str]] = set()
+    plan: dict[tuple[str, str, str], str] = {}
     for purpose, investor, isin in destinations:
-        existing = folio_directory.get((investor, isin))
         key = (purpose, investor, isin)
-        if existing is None:
-            fresh.add(key)
-        else:
-            legacy[key] = existing
-    plan = dict(legacy)
-    for index, key in enumerate(sorted(fresh), start=1):
-        plan[key] = new_folio_name(index)
+        if key in plan:
+            continue
+        existing = folio_directory.get((investor, purpose, isin))
+        plan[key] = existing if existing is not None else new_folio_name(investor, purpose, isin)
     return plan
 
 
@@ -789,7 +807,7 @@ def _unit_quantum(_total_units: Decimal) -> Decimal:
 def _slices_from_drafts(
     drafts: Sequence[_Draft],
     holdings: Sequence[_Holding],
-    folio_directory: Mapping[tuple[str, str], str],
+    folio_directory: Mapping[tuple[str, str, str], str],
 ) -> tuple[TransitionSlice, ...]:
     investors = tuple(sorted({holding.investor for holding in holdings}))
     pieces = _equalize_target_investors(drafts, investors)
@@ -970,7 +988,7 @@ def _validate(
     holdings: Sequence[_Holding],
     purpose_capital: Mapping[str, Decimal],
     chosen: set[str],
-    folio_directory: Mapping[tuple[str, str], str],
+    folio_directory: Mapping[tuple[str, str, str], str],
 ) -> None:
     by_holding: dict[tuple[str, str, str], list[TransitionSlice]] = defaultdict(list)
     by_purpose: dict[str, Decimal] = defaultdict(lambda: ZERO)

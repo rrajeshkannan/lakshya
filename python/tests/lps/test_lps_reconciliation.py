@@ -169,3 +169,34 @@ def test_already_fulfilled_order_is_not_applied_again(tmp_path):
     assert result.fulfilled == 1
     assert result.positions_changed is False
     assert positions.read_bytes() == before_positions
+
+
+def test_settlement_mapping_records_the_actual_folio_without_touching_positions(tmp_path):
+    manifest, positions = _write_book(tmp_path, [_order()])
+    before_positions = positions.read_bytes()
+    mapping = tmp_path / "settlement_mapping.csv"
+    mapping.write_text(
+        "order_id,actual_folio,actual_units,actual_amount,settled_date\n"
+        "ORD-001,FOLIO_Marriage,24.5,122.50,2026-10-15\n",
+        encoding="utf-8",
+    )
+
+    result = reconcile(
+        manifest_path=manifest,
+        transactions_path=tmp_path / "transactions.csv",
+        positions_path=positions,
+        settlement_mapping_path=mapping,
+    )
+
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    order = saved["orders"][0]
+    assert result.settled == 1
+    assert result.fulfilled == 0
+    assert result.pending == 0
+    assert result.positions_changed is False
+    assert positions.read_bytes() == before_positions
+    assert order["status"] == "SETTLED"
+    assert order["settled_at"] == "2026-10-15"
+    assert order["target_folio"] == "FOLIO_Marriage"
+    assert order["settled_units"] == "24.5"
+    assert order["settled_amount"] == "122.50"

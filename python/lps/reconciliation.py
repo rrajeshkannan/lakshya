@@ -11,10 +11,15 @@ orders on its source holding only when it is strictly after the manifest
    units sum to the redemption.
 
 Fulfilled orders stay fulfilled so a later run does not apply them again.
+
+``settlement_mapping.csv`` is the human record of a completed reinvestment.
+Each row names an ``order_id`` and the folio, units, amount, and date the
+AMC actually used. That path does not match units against the ledger.
 """
 
 from __future__ import annotations
 
+import csv
 import json
 from dataclasses import dataclass
 from datetime import date
@@ -49,7 +54,15 @@ ORDER_FIELDS = (
 )
 PENDING = "PENDING"
 FULFILLED = "FULFILLED"
+SETTLED = "SETTLED"
 REDEMPTION = "Redemption"
+MAPPING_FIELDS = (
+    "order_id",
+    "actual_folio",
+    "actual_units",
+    "actual_amount",
+    "settled_date",
+)
 
 
 @dataclass(frozen=True)
@@ -63,6 +76,7 @@ class ReconciliationResult:
     fulfilled_this_run: int = 0
     pending: int = 0
     fulfilled: int = 0
+    settled: int = 0
     positions_changed: bool = False
 
 
@@ -71,19 +85,27 @@ def reconcile(
     manifest_path: Path = DEFAULT_MANIFEST_PATH,
     transactions_path: Path = DEFAULT_TRANSACTIONS_PATH,
     positions_path: Path = DEFAULT_POSITIONS_PATH,
+    settlement_mapping_path: Path | None = None,
 ) -> ReconciliationResult:
     """Match post-``as_of`` CAMS redemptions to pending transition orders.
 
     Missing manifest: no positions are read or written. Pending orders with
     no matching redemption stay pending and the positions file is left as it
     is. A second pass skips orders already marked ``FULFILLED``.
+
+    When ``settlement_mapping_path`` exists, each mapped order is marked
+    ``SETTLED`` from the human row. Those orders are not matched to a
+    redemption.
     """
     if not manifest_path.is_file():
         return ReconciliationResult(manifest_present=False)
 
     manifest = _load_manifest(manifest_path)
-    as_of = date.fromisoformat(manifest["as_of"])
+    as_of = date.fromisoformat(str(manifest["as_of"]))
     orders: list[dict[str, object]] = manifest["orders"]
+    mapped: list[dict[str, object]] = []
+    if settlement_mapping_path is not None and settlement_mapping_path.is_file():
+        mapped = _apply_settlement_mapping(orders, settlement_mapping_path)
     transactions = read_transactions(transactions_path)
     settlements = _match_pending_orders(orders, transactions, as_of)
 
@@ -93,8 +115,9 @@ def reconcile(
         for order in settlements:
             positions = _apply_settlement(positions, order)
         _replace_positions(positions_path, positions)
-        _replace_json(manifest_path, manifest)
         positions_changed = True
+    if mapped or settlements:
+        _replace_json(manifest_path, manifest)
 
     statuses = [str(order["status"]) for order in orders]
     return ReconciliationResult(
@@ -105,8 +128,67 @@ def reconcile(
         fulfilled_this_run=len(settlements),
         pending=statuses.count(PENDING),
         fulfilled=statuses.count(FULFILLED),
+        settled=statuses.count(SETTLED),
         positions_changed=positions_changed,
     )
+
+
+def _apply_settlement_mapping(
+    orders: list[dict[str, object]],
+    path: Path,
+) -> list[dict[str, object]]:
+    """Mark mapped orders settled from the human folio, units, amount, and date."""
+    by_id = {str(order["order_id"]): order for order in orders}
+    applied: list[dict[str, object]] = []
+    seen: set[str] = set()
+    for row in _read_settlement_mapping(path):
+        order_id = row["order_id"].strip()
+        if order_id in seen:
+            raise ValueError(f"Settlement mapping repeats order {order_id}.")
+        seen.add(order_id)
+        order = by_id.get(order_id)
+        if order is None:
+            raise ValueError(f"Settlement mapping names an unknown order: {order_id}.")
+        if order["status"] == FULFILLED:
+            raise ValueError(
+                f"Order {order_id} is already fulfilled from the ledger."
+            )
+        folio = row["actual_folio"].strip()
+        if not folio:
+            raise ValueError(f"Settlement mapping has a blank folio for {order_id}.")
+        units = Decimal(row["actual_units"].strip())
+        amount = Decimal(row["actual_amount"].strip())
+        if not units.is_finite() or units <= 0:
+            raise ValueError(f"Settlement units for {order_id} must be positive.")
+        if not amount.is_finite() or amount < 0:
+            raise ValueError(f"Settlement amount for {order_id} must be zero or positive.")
+        settled_date = row["settled_date"].strip()
+        date.fromisoformat(settled_date)
+        order["status"] = SETTLED
+        order["settled_at"] = settled_date
+        order["target_folio"] = folio
+        order["settled_units"] = format(units, "f")
+        order["settled_amount"] = format(amount, "f")
+        applied.append(order)
+    return applied
+
+
+def _read_settlement_mapping(path: Path) -> list[dict[str, str]]:
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        missing = [field for field in MAPPING_FIELDS if field not in (reader.fieldnames or ())]
+        if missing:
+            raise ValueError(
+                f"{path} is missing columns: {', '.join(missing)}"
+            )
+        rows = []
+        for row in reader:
+            if row is None:
+                continue
+            if all(not (value or "").strip() for value in row.values()):
+                continue
+            rows.append({field: row[field] or "" for field in MAPPING_FIELDS})
+        return rows
 
 
 def _match_pending_orders(
@@ -376,6 +458,19 @@ def _validate_order(order: object, index: int, path: Path) -> None:
             raise ValueError(f"Fulfilled transition order {index} requires settled_at.")
         date.fromisoformat(settled_at)
         return
+    if status == SETTLED:
+        if not isinstance(settled_at, str) or not settled_at.strip():
+            raise ValueError(f"Settled transition order {index} requires settled_at.")
+        date.fromisoformat(settled_at)
+        for field in ("settled_units", "settled_amount"):
+            raw = order.get(field)
+            if not isinstance(raw, str) or not raw.strip():
+                raise ValueError(f"Settled transition order {index} requires {field}.")
+            Decimal(raw)
+        folio = order.get("target_folio")
+        if not isinstance(folio, str) or not folio.strip():
+            raise ValueError(f"Settled transition order {index} requires target_folio.")
+        return
     raise ValueError(f"Transition order {index} has unsupported status {status!r}.")
 
 
@@ -395,7 +490,9 @@ __all__ = [
     "DEFAULT_MANIFEST_PATH",
     "DEFAULT_POSITIONS_PATH",
     "DEFAULT_TRANSACTIONS_PATH",
+    "MAPPING_FIELDS",
     "ORDER_FIELDS",
+    "SETTLED",
     "ReconciliationResult",
     "reconcile",
 ]

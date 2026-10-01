@@ -22,6 +22,7 @@ from lps.valuator import reprice_position_file
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = PROJECT_ROOT / "data"
 NAV_DIR = DATA_ROOT / "nav"
+SETTLEMENT_MAPPING_PATH = DATA_ROOT / "lps" / "settlement_mapping.csv"
 
 
 def _ledger_counts(positions: list[Position]) -> tuple[int, int]:
@@ -46,6 +47,7 @@ def run(as_of: date) -> None:
         manifest_path=DEFAULT_MANIFEST_PATH,
         transactions_path=DEFAULT_TRANSACTIONS_PATH,
         positions_path=DEFAULT_POSITIONS_PATH,
+        settlement_mapping_path=SETTLEMENT_MAPPING_PATH,
     )
     positions = read_positions(DEFAULT_POSITIONS_PATH)
     holdings, active_slices = _ledger_counts(positions)
@@ -63,6 +65,7 @@ def run(as_of: date) -> None:
     print("Transition orders")
     print(f"  Pending: {result.pending}")
     print(f"  Fulfilled: {result.fulfilled}")
+    print(f"  Settled: {result.settled}")
     print(f"Last reconciliation as of: {result.as_of if result.manifest_present else 'unavailable'}")
 
 

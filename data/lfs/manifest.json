@@ -1,6 +1,6 @@
 {
   "as_of": "2026-09-30",
-  "completed_at": "2026-10-01T19:00:10.139+05:30",
+  "completed_at": "2026-10-01T21:31:48.224+05:30",
   "mode": "full",
   "pipeline": "resilient_pipeline",
   "positions_as_of": {
@@ -9,54 +9,52 @@
   },
   "purpose_selection": "all",
   "python": "3.14.7",
-  "run_id": "d507711907e5",
+  "run_id": "8fa60b97efbc",
   "stages": {
     "admitted_funds": {
       "count": 17,
       "status": "complete",
-      "updated_at": "2026-10-01T18:49:01.483+05:30"
+      "updated_at": "2026-10-01T21:31:41.490+05:30"
     },
     "composition_evidence": {
-      "elapsed_seconds": 328.832,
-      "newly_computed": 27807,
-      "reused": 0,
+      "newly_computed": 0,
+      "reused": 27807,
       "status": "complete",
       "total": 27807,
-      "updated_at": "2026-10-01T18:54:32.025+05:30"
+      "updated_at": "2026-10-01T21:31:43.349+05:30"
     },
     "global_frontier": {
       "candidates": 27807,
-      "elapsed_seconds": 330.386,
-      "reused": false,
+      "reused": true,
       "status": "complete",
       "survivors": 20771,
-      "updated_at": "2026-10-01T19:00:02.454+05:30"
+      "updated_at": "2026-10-01T21:31:43.417+05:30"
     },
     "inputs": {
       "nav_funds": 17,
       "purposes": 6,
       "status": "complete",
-      "updated_at": "2026-10-01T18:49:01.483+05:30"
+      "updated_at": "2026-10-01T21:31:41.490+05:30"
     },
     "mission": {
       "global_survivors": 20771,
       "purposes": 6,
       "status": "complete",
-      "updated_at": "2026-10-01T19:00:06.646+05:30"
+      "updated_at": "2026-10-01T21:31:48.123+05:30"
     },
     "team": {
-      "elapsed_seconds": 1.31,
+      "elapsed_seconds": 1.385,
       "status": "complete",
       "survivors": 217,
-      "updated_at": "2026-10-01T18:49:02.794+05:30"
+      "updated_at": "2026-10-01T21:31:42.875+05:30"
     },
     "trajectory": {
-      "purposes": 6,
+      "purposes": 0,
       "status": "complete",
-      "updated_at": "2026-10-01T19:00:10.138+05:30"
+      "updated_at": "2026-10-01T21:31:48.222+05:30"
     }
   },
-  "started_at": "2026-10-01T18:49:01.412+05:30",
+  "started_at": "2026-10-01T21:31:41.438+05:30",
   "status": "complete",
   "workers": "auto"
 }

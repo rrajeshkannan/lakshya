@@ -91,7 +91,7 @@ After the statement import, price the family book before LFS:
 python -m lps.runner --as-of YYYY-MM-DD
 ```
 
-That command asks `lps.nav_engine` to cache mfapi.in history under `data/nav/` for each active holding through the date, asks `lps.valuator` to set market value to units times that NAV, then reconciles `data/lps/transition_manifest.json`. A fund whose newest stored print is already on or after the date is not fetched again.
+That command asks `lps.nav_engine` to cache mfapi.in history under `data/nav/` for each active holding through the date, asks `lps.valuator` to set market value to units times that NAV, then reconciles `data/lps/transition_manifest.json`. A fund whose newest stored print is already on or after the date is not fetched again. When `data/lps/settlement_mapping.csv` has rows, those orders are marked settled from the folio, units, amount, and date you entered. The steps are in section 11C.
 
 ## 1C. Review Fund scope
 
@@ -476,6 +476,34 @@ ELSS lock-in is already classified. Acquisition-date tax consequences, STCG/LTCG
 
 LTS must not become a second portfolio optimizer and cannot execute transactions automatically.
 
+## 11C. Purpose-dedicated folios and settlement
+
+A reinvestment does not join whatever folio the investor already holds in that fund. `RETAIN` stays on the current physical folio. A new purchase reuses a folio only when that folio is already dedicated to the same investor, purpose, and ISIN. Otherwise the order names a placeholder:
+
+```text
+NEW_FOLIO_<INVESTOR>_<PURPOSE>_<ISIN_SUFFIX>
+```
+
+`NEW_FOLIO_Amma_Edu_B_O01027` is Amma's Edu_B purchase of the fund whose ISIN ends in `O01027`. Marriage, Retirement, and the other purposes in that same fund get their own placeholders.
+
+Indian mutual-fund redemptions apply FIFO inside one folio of one scheme. Lots in another folio are a separate queue. If Edu_B and Retirement purchases share one folio, a later redemption of either goal consumes the oldest units in that folio, including units bought for the other goal. One folio per purpose keeps each goal's acquisition sequence intact.
+
+The playbook is a review plan. You place the trades at the AMC. The AMC then assigns the real folio number, units, and amount. Record each completed order in `data/lps/settlement_mapping.csv`. The file is already in the repository with this header and no rows:
+
+```text
+order_id,actual_folio,actual_units,actual_amount,settled_date
+```
+
+`order_id` is the id in `data/lps/transition_manifest.json`, such as `ORD-001`. `actual_folio` is the folio number the AMC opened. `actual_units` and `actual_amount` are what was allotted. `settled_date` is `YYYY-MM-DD`.
+
+Then run:
+
+```bash
+python -m lps.runner --as-of YYYY-MM-DD
+```
+
+Each mapped order changes from `PENDING` to `SETTLED`. `settled_at` becomes `settled_date`. The placeholder `target_folio` becomes `actual_folio`. The order stores `settled_units` and `settled_amount`. The match is the order id. Leave a row out until that trade has actually settled. CAS import remains the path that writes the raw transaction ledger.
+
 ---
 
 # 12. Errors and recovery
@@ -495,6 +523,7 @@ data/lfs/purpose_summaries.csv
 data/lfs/purpose.csv
 data/lps/positions.csv
 data/lps/transactions.csv
+data/lps/settlement_mapping.csv
 ```
 
 Common issues:
@@ -602,7 +631,14 @@ CURRENT → TARGET
     python -m lps.runner --as-of YYYY-MM-DD
 [ ] CHECKPOINT: manifest is balanced and availability matches position market value
 [ ] Review the execution playbook, materialized slices, cascade review, and tax preflight
+[ ] CHECKPOINT: each reinvestment folio is one investor, one purpose, and one ISIN
 [ ] Treat the artifacts as a review plan, not an execution instruction
+[ ] Place the trades at the AMC
+[ ] Record each settlement in data/lps/settlement_mapping.csv
+    order_id,actual_folio,actual_units,actual_amount,settled_date
+[ ] Apply the settlement map
+    python -m lps.runner --as-of YYYY-MM-DD
+[ ] CHECKPOINT: mapped orders are SETTLED and the placeholder folio is the AMC folio
 ```
 
 ---
