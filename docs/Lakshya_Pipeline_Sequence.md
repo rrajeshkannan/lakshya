@@ -49,28 +49,28 @@ This is not a forced serial `LPS → LFS → LTS` pipeline. LPS feeds both downs
 
 ```mermaid
 flowchart TD
-    A[Authoritative source evidence] --> B[LPS: Transactions]
-    B --> C[LPS: Positions]
-    C --> D[LPS: valuation observation]
-    D --> E[Economic CURRENT / factual views]
+    A[Authoritative source evidence] --> B["LPS: Transactions"]
+    B --> C["LPS: Positions"]
+    C --> D["LPS: valuation observation"]
+    D --> E["Economic CURRENT / factual views"]
 
     E --> F[Formation Evidence]
-    F --> G[LFS-Main: FUND]
-    G --> H[FUND-level weak-Pareto gate]
-    H --> I[LFS-Main: TEAM]
-    I --> J[LFS-Main: COMPOSITION]
-    J --> K[LFS-Main: MISSION]
-    K --> L[LFS-Main: FINAL]
+    F --> G["LFS-Main: FUND"]
+    G --> H["FUND-level weak-Pareto gate"]
+    H --> I["LFS-Main: TEAM"]
+    I --> J["LFS-Main: COMPOSITION"]
+    J --> K["LFS-Main: MISSION"]
+    K --> L["LFS-Main: FINAL"]
 
     L --> M[Purpose Staging INIT]
     M --> N[Human staging turns]
-    N --> O[Achievability + reconciliation]
-    O --> P{Satisfied and pools zero?}
+    N --> O["Achievability + reconciliation"]
+    O --> P{"Satisfied and pools zero?"}
     P -->|No| N
     P -->|Yes| Q[Purpose Staging COMMIT]
     Q --> R[Human annual snapshot review]
     R --> S[Historical Snapshot]
-    S --> T[TARGET from committed Purpose + FINAL]
+    S --> T["TARGET from committed Purpose + FINAL"]
 
     C --> U[Transition Evidence]
     S --> V[Reviewed annual state]
@@ -110,7 +110,7 @@ Purpose Staging is a human reconciliation boundary, not an additional optimizer.
 sequenceDiagram
     participant Reviewer as Family reviewer
     participant LPS as LPS
-    participant LFS as LFS-Main
+    participant LFS as "LFS-Main"
     participant Stage as Purpose staging
     participant Git as Historical repository
     participant Target as TARGET
@@ -199,10 +199,10 @@ data/lps/positions.csv
 Established Position identity is:
 
 ```text
-Investor + Folio + ISIN
+Investor + Folio + ISIN + Slice
 ```
 
-A Position is first-class and contains factual unit state. Valuation is applied as an observation rather than turning valuation into a separate state entity.
+The physical holding is `Investor + Folio + ISIN`. The slice is the virtual Purpose-bearing portion. The opening book is `slice-1`. A Position is first-class and contains factual unit state. Valuation is applied as an observation rather than turning valuation into a separate state entity.
 
 One accepted Position maps to exactly one Purpose. A Purpose may have zero, one, or many Positions.
 
@@ -269,7 +269,7 @@ flowchart TD
     F --> G[Collective Timeline]
     G --> H[TEAM fingerprint]
     H --> I[TEAM 40-D weak Pareto frontier]
-    I --> J[COMPOSITION 5% weight grid]
+    I --> J["COMPOSITION 5% weight grid"]
     J --> K[Composition fingerprints]
     K --> L[Global Composition frontier]
     L --> M[MISSION Purpose qualification]
@@ -279,9 +279,9 @@ flowchart TD
     P --> Q[Trajectory observation]
     Q --> R[FINAL Purpose surface]
     R --> S[Percentile coordinates]
-    S --> T[Utopia / L2 ordering]
+    S --> T["Utopia / L2 ordering"]
     T --> U[Robustness bundle]
-    U --> V[FINAL evidence for staging / TARGET]
+    U --> V["FINAL evidence for staging / TARGET"]
 ```
 
 No stage may use a later stage merely to make its own universe smaller.
@@ -514,7 +514,7 @@ Robustness evidence describes stability; it does not override the primary winner
 
 ```mermaid
 sequenceDiagram
-    participant Source as authoritative purposes.csv
+    participant Source as "data/lfs/purpose.csv"
     participant Reviewer as reviewer
     participant Stage as staging workspace
     participant Ledger as reconciliation ledger
@@ -564,7 +564,7 @@ Acquisition percentages use the same pool base at the start of the acquisition p
 
 The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due are upstream Purpose-input changes, not staging levers.
 
-The authoritative `data/purpose/purposes.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
+The authoritative `data/lfs/purpose.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
 
 ---
 
@@ -573,7 +573,7 @@ The authoritative `data/purpose/purposes.csv` remains unchanged until explicit C
 ```mermaid
 sequenceDiagram
     participant Reviewer as Human reviewer
-    participant Data as data/
+    participant Data as "data/"
     participant Git as Git repository
 
     Reviewer->>Data: inspect intended annual changes
@@ -589,8 +589,9 @@ The durable record includes appropriate reviewed material under:
 
 ```text
 data/lps/
-data/purpose/
 data/lfs/
+data/lts/
+data/nav/
 ```
 
 Runtime output and forensic logs remain disposable where configured.
@@ -687,7 +688,7 @@ sequenceDiagram
     participant Intent as LFS Formation Intent
     participant Compare as LTS comparison
     participant Sim as LTS simulation
-    participant Human as Human reviewer / executor
+    participant Human as "Human reviewer / executor"
 
     LPS->>Compare: factual Positions + history + attribution
     Intent->>Compare: Purpose → Composition mappings
@@ -715,24 +716,24 @@ what sequence is feasible?
 Transition Proposal
 ```
 
-The LPS Position identity remains:
+The physical holding remains:
 
 ```text
 Investor + Folio + ISIN
 ```
 
-LTS projects that holding into a virtual Position:
+LPS stores the virtual slice on that holding:
 
 ```text
 Investor + Folio + ISIN + Slice
 ```
 
-LPS does not store slices yet. `bridge_positions` projects each current Position to `Slice-1` at 100%. `build_owned_positions` is the explicit ownership boundary for a later multi-slice split, and it refuses to invent percentages. After LTS is finished, LPS is to be refactored to own slice as well.
+The slice keeps one physical folio from being treated as a new Position when it serves more than one Purpose. The opening book is `slice-1`. `bridge_positions` reads that book into the cascade. `build_owned_positions` refuses to invent percentages.
 
 Run LTS only after LPS and LFS have used the same as-of date. The runner reads that date from `data/lfs/purpose_summaries.csv` and refuses a different `--as-of`.
 
 ```bash
-python -m lts.runner
+python -m lts.runner --as-of YYYY-MM-DD
 ```
 
 The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/nav/` as of that date. Those two prices agree only when the CAS import valued the positions at the same as-of.
@@ -850,10 +851,10 @@ The general persisted-evidence lifecycle is:
 
 ```mermaid
 flowchart LR
-    A[Load source / checkpoint] --> B[Validate]
-    B --> C{Valid checkpoint?}
+    A["Load source / checkpoint"] --> B[Validate]
+    B --> C{"Valid checkpoint?"}
     C -->|Yes| D[Reuse]
-    C -->|No| E[Compute missing / stale evidence]
+    C -->|No| E["Compute missing / stale evidence"]
     E --> F[Atomic persist]
     F --> G[Validate persisted evidence]
     D --> G
@@ -870,23 +871,23 @@ Composition uses its narrow Completion Index to avoid unnecessary filesystem/JSO
 
 # 20. Human control and failure boundaries
 
-```text
-Human
-  │
-  ├── provides / reviews source evidence
-  ├── defines / reviews Purpose
-  ├── reviews formation scope and results
-  ├── accepts Purpose attribution
-  └── effects transactions externally
+```mermaid
+flowchart TD
+    Human[Human]
+    Human --> H1["provides / reviews source evidence"]
+    Human --> H2["defines / reviews Purpose"]
+    Human --> H3[reviews formation scope and results]
+    Human --> H4[accepts Purpose attribution]
+    Human --> H5[effects transactions externally]
 
-LPS
-  └── establishes factual investment state from evidence
+    LPS[LPS]
+    LPS --> L1[establishes factual investment state from evidence]
 
-LFS
-  └── forms investment architecture
+    LFS[LFS]
+    LFS --> F1[forms investment architecture]
 
-LTS
-  └── stages constrained transition proposals
+    LTS[LTS]
+    LTS --> T1[stages constrained transition proposals]
 ```
 
 Fail-closed boundaries apply where factual or analytical integrity is required. Ambiguous source evidence stops the factual pipeline for human review rather than silently guessing.
@@ -923,7 +924,8 @@ The complete domain and contract definitions are maintained in `docs/Lakshya_Dom
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-26  
+**Status date:** 2026-10-01  
+**Release:** Production v1.0.0, valuation as-of 2026-09-30. See `docs/Lakshya_Current_Status.md`.  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
 The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
@@ -968,7 +970,7 @@ The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not 
 
 The implementation must continue to preserve the following:
 
-1. Position identity is `Investor + Folio + ISIN`.
+1. Position identity is `Investor + Folio + ISIN + Slice`. The physical holding remains `Investor + Folio + ISIN`.
 2. Ownership and Purpose attribution remain explicit.
 3. `transaction_through_date` and `valuation_as_of_date` remain separate.
 4. Source facts and analytical interpretation remain distinguishable.

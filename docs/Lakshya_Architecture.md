@@ -130,7 +130,8 @@ LPS
     ├── Position Identity
     │   ├── Investor
     │   ├── Folio
-    │   └── ISIN
+    │   ├── ISIN
+    │   └── Slice
     ├── Units
     └── valuation observation when applied
         ├── NAV
@@ -142,10 +143,10 @@ LPS
 Established Position identity is:
 
 ```text
-Investor + Folio + ISIN
+Investor + Folio + ISIN + Slice
 ```
 
-Historical Transactions establish Position units and history.
+The physical holding is `Investor + Folio + ISIN`. The slice is the virtual Purpose-bearing portion of that holding. The opening book is `slice-1`. Historical Transactions establish Position units and history.
 
 There is no Portfolio dimension. There is no second Position-state wrapper and no second Transaction concept merely for normalization convenience.
 
@@ -602,7 +603,7 @@ Acquisition percentages use the same pool base at the start of the acquisition p
 
 The reviewer cannot silently create capital or SIP by increasing a capital value or monthly plan. Changes to desired or due are upstream Purpose-input changes, not staging levers, and do not manufacture cash release.
 
-The authoritative `data/purpose/purposes.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
+The authoritative `data/lfs/purpose.csv` remains unchanged until explicit COMMIT. COMMIT requires reviewer satisfaction and both pools equal to zero; the authoritative file is backed up before promotion.
 
 ## 7.2 Historical Snapshot
 
@@ -612,8 +613,9 @@ The durable record includes appropriate reviewed material under:
 
 ```text
 data/lps/
-data/purpose/
 data/lfs/
+data/lts/
+data/nav/
 ```
 
 Generated runtime output and forensic logs remain disposable/Git-ignored where configured.
@@ -712,7 +714,7 @@ The architecture deliberately parks the following until evidence earns them:
 - broader LPS reference-data expansion;
 - Purpose-specific external views until a consumer earns one.
 
-Family Architecture Validation is not a pipeline stage. `python/family/` is Purpose Staging. Production runs MISSION, then FINAL. Purpose Staging is the separate human review after that, and LTS reads the committed result.
+Family Architecture Validation is not a pipeline stage. Purpose Staging is `python/lfs/purpose_staging/`, started with `python -m lfs.review_runner`. Production runs MISSION, then FINAL. Purpose Staging is the separate human review after that, and LTS reads the committed result.
 
 Parking means deliberately refusing to make architecture pay for a need before evidence demonstrates it.
 
@@ -738,7 +740,8 @@ The complete domain map, contract definitions, ubiquitous language, and invarian
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-26  
+**Status date:** 2026-10-01  
+**Release:** Production v1.0.0, valuation as-of 2026-09-30. See `docs/Lakshya_Current_Status.md`.  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
 The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
@@ -783,7 +786,7 @@ The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not 
 
 The implementation must continue to preserve the following:
 
-1. Position identity is `Investor + Folio + ISIN`.
+1. Position identity is `Investor + Folio + ISIN + Slice`. The physical holding remains `Investor + Folio + ISIN`.
 2. Ownership and Purpose attribution remain explicit.
 3. `transaction_through_date` and `valuation_as_of_date` remain separate.
 4. Source facts and analytical interpretation remain distinguishable.

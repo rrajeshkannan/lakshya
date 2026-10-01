@@ -76,10 +76,10 @@ LPS does not own:
 An established Position is identified by:
 
 ```text
-Investor + Folio + ISIN
+Investor + Folio + ISIN + Slice
 ```
 
-A Position has exactly one Purpose attribution once accepted into LPS.
+The physical holding is `Investor + Folio + ISIN`. The slice is the virtual portion that carries one Purpose. The opening book is `slice-1`. A Position has exactly one Purpose attribution once accepted into LPS.
 
 A Purpose may have zero, one, or many Positions.
 
@@ -308,7 +308,7 @@ Therefore:
 | Term | Meaning | Owner |
 |---|---|---|
 | **Transaction** | A factual investment event represented by authoritative source evidence | LPS |
-| **Position** | Capital identified by Investor + Folio + ISIN and established from transactions | LPS |
+| **Position** | Capital identified by Investor + Folio + ISIN + Slice and established from transactions. The first three parts are the physical holding; the slice is the virtual Purpose-bearing portion | LPS |
 | **Purpose** | Family-defined investment purpose | Family / represented in LPS |
 | **Purpose Attribution** | Accepted relationship between a Position and a Purpose | LPS |
 | **Fund Fingerprint** | LFS behavioural analytical intermediate for an individual Fund | LFS |
@@ -374,7 +374,8 @@ That question is the primary guard against domain leakage and accidental re-cent
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-26  
+**Status date:** 2026-10-01  
+**Release:** Production v1.0.0, valuation as-of 2026-09-30. See `docs/Lakshya_Current_Status.md`.  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
 The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
@@ -419,7 +420,7 @@ The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not 
 
 The implementation must continue to preserve the following:
 
-1. Position identity is `Investor + Folio + ISIN`.
+1. Position identity is `Investor + Folio + ISIN + Slice`. The physical holding remains `Investor + Folio + ISIN`.
 2. Ownership and Purpose attribution remain explicit.
 3. `transaction_through_date` and `valuation_as_of_date` remain separate.
 4. Source facts and analytical interpretation remain distinguishable.

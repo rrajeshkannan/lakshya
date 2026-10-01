@@ -21,6 +21,32 @@ How do we move from CURRENT to TARGET?
 
 > **Compute once. Persist immediately. Reuse forever.**
 
+Production release **v1.0.0** is valued as of **2026-09-30**. Three systems, four commands:
+
+```bash
+python -m lps.runner --as-of 2026-09-30
+python -m lfs.runner --as-of 2026-09-30
+python -m lfs.review_runner init --as-of 2026-09-30
+python -m lts.runner --as-of 2026-09-30
+```
+
+| Command | What it does |
+|---|---|
+| `python -m lps.runner` | As-is ledger. Reconciles positions, transactions, and `data/lps/transition_manifest.json`. |
+| `python -m lfs.runner` | MISSION, then FINAL. Reads `data/lfs/purpose.csv`. |
+| `python -m lfs.review_runner` | Purpose Staging. `init`, `turn`, and `commit`. |
+| `python -m lts.runner` | Tax-lock cascade, execution playbook, and the transition manifest. |
+
+CAS import is `python -m lps.cas_import.runner`. The date `lps.runner` prints is the as-of on the transition manifest.
+
+```bash
+pytest python/tests/
+```
+
+The v1.0.0 sweep passed 408 tests. Packages are `python/core/`, `python/lps/`, `python/lfs/` (including `python/lfs/purpose_staging/`), and `python/lts/`.
+
+Operating steps: `docs/Lakshya_HowTo.md`. Release record: `docs/Lakshya_Current_Status.md`. Architecture: `docs/Lakshya_Architecture.md`. Domain model: `docs/Lakshya_Domain_Model.md`. Sequence: `docs/Lakshya_Pipeline_Sequence.md`.
+
 ---
 
 # 1. LPS — Lakshya Position System
@@ -40,10 +66,10 @@ LPS
 A Position is identified by:
 
 ```text
-Investor + Folio + ISIN
+Investor + Folio + ISIN + Slice
 ```
 
-One Position may have many historical Transactions. Position is first-class. There is **no Portfolio dimension** and **no `CurrentState` domain object**.
+The physical holding is `Investor + Folio + ISIN`. The slice is the virtual Purpose-bearing portion. The opening book is `slice-1`. One Position may have many historical Transactions. Position is first-class. There is **no Portfolio dimension** and **no `CurrentState` domain object**.
 
 Purpose mapping is human-maintained:
 
@@ -112,7 +138,7 @@ The production FINAL surface is:
 
 Zero-variance spokes are removed deterministically; retained spokes are equally weighted. Primary ordering is minimum unweighted Euclidean distance to the observed Utopia Point. L-infinity is a diagnostic/joint-frontier dimension, not an arbitrary kill threshold. FINAL also records Lp sweep, leave-one-spoke sensitivity, and 5,000 deterministic bootstrap resamples.
 
-The family controls `data/purpose/purposes.csv`. LFS does not parse CAS, reconstruct actual holdings, or execute transactions.
+The family controls `data/lfs/purpose.csv`. LFS does not parse CAS, reconstruct actual holdings, or execute transactions.
 
 ---
 
@@ -147,8 +173,9 @@ The annual snapshot is a human-controlled Git persistence boundary. After Purpos
 
 ```text
 data/lps/
-data/purpose/
 data/lfs/
+data/lts/
+data/nav/
 ```
 
 Runtime output and forensic logs remain disposable/Git-ignored where configured. Historical memory is not a transaction ledger and does not prove current holdings.
@@ -294,7 +321,8 @@ Changes to the production decision rule require a deliberate versioned release w
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-26  
+**Status date:** 2026-10-01  
+**Release:** Production v1.0.0, valuation as-of 2026-09-30. See `docs/Lakshya_Current_Status.md`.  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
 The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
@@ -339,7 +367,7 @@ The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not 
 
 The implementation must continue to preserve the following:
 
-1. Position identity is `Investor + Folio + ISIN`.
+1. Position identity is `Investor + Folio + ISIN + Slice`. The physical holding remains `Investor + Folio + ISIN`.
 2. Ownership and Purpose attribution remain explicit.
 3. `transaction_through_date` and `valuation_as_of_date` remain separate.
 4. Source facts and analytical interpretation remain distinguishable.

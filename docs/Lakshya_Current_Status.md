@@ -1,8 +1,9 @@
 # Lakshya — Current Implementation Status
 
-**As of:** 2026-09-26
-**Branch:** `main`
-**Status:** The 2026-09-06 clean run reconciles. LTS artifacts are a human review plan, not an execution instruction.
+**Release:** Production v1.0.0
+**Valuation as-of:** 2026-09-30
+**Recorded:** 2026-10-01
+**Status:** The four-runner sweep completes. LTS artifacts are a human review plan, not an execution instruction. `pytest python/tests/` passed 408 tests across `lps`, `lfs`, `lts`, and `core`.
 
 This document is the current implementation-status companion to the design documents. It records what the code does now. It is not a second architecture.
 
@@ -10,13 +11,23 @@ This document is the current implementation-status companion to the design docum
 
 ## 1. System boundary
 
-Lakshya remains a deliberately separated three-system design:
+Lakshya remains a deliberately separated three-system design, operated through four commands:
 
 ```text
 LPS — observe Economic CURRENT from authoritative evidence
 LFS — form reviewed analytical intent and TARGET inputs
+LFS review — Purpose Staging, the human gate after FINAL
 LTS — analyze the transition from CURRENT to TARGET
 ```
+
+```bash
+python -m lps.runner --as-of 2026-09-30
+python -m lfs.runner --as-of 2026-09-30
+python -m lfs.review_runner init --as-of 2026-09-30
+python -m lts.runner --as-of 2026-09-30
+```
+
+Packages: `python/core/`, `python/lps/` (CAS import is `python/lps/cas_import/`), `python/lfs/` (Purpose Staging is `python/lfs/purpose_staging/`), `python/lts/`. Purpose intent is `data/lfs/purpose.csv`. NAV observations are in `data/nav/`.
 
 LTS does not re-run portfolio formation and does not silently change FINAL decisions.
 
@@ -28,33 +39,35 @@ The states remain distinct:
 
 ## 2. How a review is run
 
-Use one as-of date for all three systems. The validated run used **2026-09-06**.
+Use one as-of date for LPS valuation, LFS, Purpose Staging, and LTS. The v1.0.0 run used **2026-09-30**.
 
 ```bash
-python -m cas_import_poc.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-06
-python python/run_production.py --as-of 2026-09-06
-python -m lts.runner
+python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-30
+python -m lfs.runner --as-of 2026-09-30
+python -m lfs.review_runner init --as-of 2026-09-30
+python -m lts.runner --as-of 2026-09-30
+python -m lps.runner --as-of 2026-09-30
 ```
 
-The CAS runner writes `data/lps/positions.csv` at that as-of and keeps Purpose attribution. LFS stamps `data/lfs/purpose_summaries.csv`. LTS reads that stamp and refuses a different `--as-of`.
+The CAS runner writes `data/lps/positions.csv` at that as-of and keeps Purpose attribution. LFS stamps `data/lfs/purpose_summaries.csv` and `data/lfs/manifest.json`. LTS reads that stamp and refuses a different `--as-of`. It also writes `data/lps/transition_manifest.json`. The date `lps.runner` prints is that manifest as-of.
 
 A normal LFS rerun reuses valid checkpoints under `output/`. Delete `output/*` only for a forced clean rebuild.
 
-## 3. What the 2026-09-06 run reconciled
+## 3. What the 2026-09-30 sweep produced
 
-Portfolio market value is **₹15,233,131.3171967** in every economic artifact:
+Portfolio market value is **₹15,233,131.3171967**.
 
-- `data/lps/positions.csv` for the 34 active positions;
-- `output/positions_as_of_2026-09-06.csv`;
-- `data/lts/holding_availability_summary.csv`;
-- `data/lts/purpose_reports.csv`;
-- `data/lts/transition_mappings.csv`;
-- `data/lts/materialized_transition_slices.csv`;
-- `data/lts/manifest.json`.
+- `data/lps/positions.csv` — 53 holdings, 34 active slices;
+- `output/audits/positions_as_of_2026-09-30.csv`;
+- `output/goals/<Purpose>/final_<Purpose>_summary.csv`, archived to `data/lfs/purpose_summaries.csv`;
+- `data/lts/materialized_transition_slices.csv` — 68 slices;
+- `data/lts/cascade_review.csv`;
+- `data/lts/execution_playbook.csv` — 49 orders;
+- `data/lts/tax_preflight_report.txt`;
+- `data/lts/manifest.json`;
+- `data/lps/transition_manifest.json` — `MAN-2026-09-30-01`, 49 pending orders, 0 fulfilled.
 
-The run also has 696 lots (602 available, 94 locked), 46 mappings, 46 slices, and six balanced Purpose reports. FINAL winners in `output/final_<Purpose>_summary.csv` match `data/lfs/purpose_summaries.csv`.
-
-`python -m lts.runner` writes the materialized slices. They are part of the artifact contract.
+`python -m lts.runner` writes the slices, the playbook, and the transition manifest. They are part of the artifact contract. The playbook and the manifest agree on source ISIN, target ISIN, and units.
 
 Every FINAL weight is funded. `RETAIN` is only the capital already held in that Purpose and that ISIN. The remainder of the weight is `INVEST` inside the same Purpose.
 
@@ -70,8 +83,8 @@ Every FINAL weight is funded. `RETAIN` is only the capital already held in that 
 
 The following remain mandatory:
 
-1. An LPS Position is identified by **Investor + Folio + ISIN**.
-2. LTS uses **Investor + Folio + ISIN + Slice**. The bridge currently projects each LPS Position to `Slice-1` at 100%. LPS does not store slices yet.
+1. An LPS Position is identified by **Investor + Folio + ISIN + Slice**. The physical holding is the first three parts. The opening book is `slice-1`.
+2. LTS plans target slices on that same identity. `bridge_positions` reads the LPS book. It does not invent a second ownership percentage.
 3. Ownership and Purpose mapping stay explicit. One virtual LTS Position maps to one Purpose. Slice percentages on one physical holding sum to 100%.
 4. `transaction_through_date` and `valuation_as_of_date` are separate facts.
 5. Source evidence stays separate from analytical interpretation and transition decisions.

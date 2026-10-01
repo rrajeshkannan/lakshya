@@ -2,7 +2,7 @@
 
 This is the practical operating guide for a Lakshya annual review. `docs/Lakshya_Architecture.md` defines the contracts; `docs/Lakshya_Pipeline_Sequence.md` defines execution and persistence boundaries.
 
-**As of:** 2026-09-26
+**Release:** Production v1.0.0, valuation as-of 2026-09-30
 
 The three-system mental model is:
 
@@ -14,6 +14,15 @@ LTS — transition CURRENT → TARGET
 
 Follow the annual review in order. Do not skip a manual checkpoint.
 
+```bash
+python -m lps.runner --as-of 2026-09-30
+python -m lfs.runner --as-of 2026-09-30
+python -m lfs.review_runner init --as-of 2026-09-30
+python -m lts.runner --as-of 2026-09-30
+```
+
+`lps.runner` reconciles the ledger. Import a statement with `python -m lps.cas_import.runner`. Confirm with `pytest python/tests/`.
+
 ---
 
 # 1. Before you start
@@ -22,10 +31,10 @@ Run commands from the repository root:
 
 ```bash
 cd /path/to/lakshya
-python -m pip install -r python/requirements.txt
+python -m pip install -e ".[test]"
 ```
 
-Do not edit generated files under `output/` or `data/lfs/` by hand.
+Do not edit generated files under `output/` by hand. `data/lfs/purpose.csv` is the human intent file. `data/lfs/purpose_summaries.csv` and `data/lfs/manifest.json` are written by LFS.
 
 ## 1A. LPS — annual source acquisition and factual evidence
 
@@ -52,12 +61,12 @@ data/lps/transactions.csv
 data/lps/positions.csv
 ```
 
-Each record retains investor identity. A Position is identified by `Investor + Folio + ISIN`.
+Each record retains investor identity. A Position is identified by `Investor + Folio + ISIN + Slice`. The physical holding is the first three parts. The opening book is `slice-1`.
 
 Run one import per investor from the repository root. Pass the same `--as-of` that LFS and LTS will use. The runner replaces that investor's transactions, acquires NAV, and rewrites `data/lps/positions.csv` for the whole family at that date. It keeps existing Purpose attribution. Do not empty `positions.csv` before import. The password is entered at the prompt and is not stored.
 
 ```bash
-python -m cas_import_poc.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of YYYY-MM-DD
+python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of YYYY-MM-DD
 ```
 
 The LPS data model has **Transactions and Positions**. Do not introduce a `CurrentState` object or a Portfolio dimension merely to make a view convenient.
@@ -93,7 +102,7 @@ Scheme Name and AMC remain useful factual identity/reference information. Do not
 Review:
 
 ```text
-data/purpose/purposes.csv
+data/lfs/purpose.csv
 ```
 
 Purpose values, targets, SIPs and dates are human-controlled inputs. LFS does not infer or invent them.
@@ -105,19 +114,19 @@ Purpose values, targets, SIPs and dates are human-controlled inputs. LFS does no
 Use:
 
 ```bash
-python python/run_production.py --as-of YYYY-MM-DD
+python -m lfs.runner --as-of YYYY-MM-DD
 ```
 
 Example:
 
 ```bash
-python python/run_production.py --as-of 2026-09-06
+python -m lfs.runner --as-of 2026-09-30
 ```
 
 Optional selected Purposes:
 
 ```bash
-python python/run_production.py --as-of YYYY-MM-DD --purposes Retirement Edu_B
+python -m lfs.runner --as-of YYYY-MM-DD --purposes Retirement Edu_B
 ```
 
 The LFS-Main analytical chain is:
@@ -134,7 +143,7 @@ A deliberate clean rebuild, when genuinely required, is:
 
 ```bash
 rm -rf output/*
-python python/run_production.py --as-of YYYY-MM-DD
+python -m lfs.runner --as-of YYYY-MM-DD
 ```
 
 ---
@@ -144,7 +153,7 @@ python python/run_production.py --as-of YYYY-MM-DD
 For every Purpose being reviewed, inspect:
 
 ```text
-output/final_<Purpose>_summary.csv
+output/goals/<Purpose>/final_<Purpose>_summary.csv
 ```
 
 Confirm:
@@ -167,13 +176,13 @@ Purpose Staging is the deliberate human reconciliation turn after FINAL. It is a
 Initialize:
 
 ```bash
-python python/run_purpose_staging.py init --as-of YYYY-MM-DD
+python -m lfs.review_runner init --as-of YYYY-MM-DD
 ```
 
 Example:
 
 ```bash
-python python/run_purpose_staging.py init --as-of 2026-09-06
+python -m lfs.review_runner init --as-of 2026-09-30
 ```
 
 Workspace:
@@ -191,7 +200,7 @@ achievability_latest.csv
 staging_state.json
 ```
 
-The authoritative `data/purpose/purposes.csv` is not changed by INIT. `staging.log` is a forensic log.
+The authoritative `data/lfs/purpose.csv` is not changed by INIT. `staging.log` is a forensic log.
 
 Purpose Staging does not alter FUND, TEAM, COMPOSITION, MISSION, FINAL, or the selected FINAL Composition.
 
@@ -231,7 +240,7 @@ Do not create money or SIP by directly increasing `value` or `monthly_plan`. Rel
 # 6. Run a staging turn
 
 ```bash
-python python/run_purpose_staging.py turn --as-of YYYY-MM-DD --input path/to/turn.csv
+python -m lfs.review_runner turn --as-of YYYY-MM-DD --input path/to/turn.csv
 ```
 
 The turn:
@@ -298,7 +307,7 @@ Commit only when:
 Run:
 
 ```bash
-python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
+python -m lfs.review_runner commit --as-of YYYY-MM-DD
 ```
 
 Before promotion, the authoritative Purpose file is backed up as:
@@ -310,7 +319,7 @@ purposes_before_commit.csv
 The staged file is then promoted to:
 
 ```text
-data/purpose/purposes.csv
+data/lfs/purpose.csv
 ```
 
 A non-zero pool blocks the commit. This prevents an incomplete redistribution from silently becoming authoritative.
@@ -322,7 +331,7 @@ A non-zero pool blocks the commit. This prevents an incomplete redistribution fr
 Confirm:
 
 - staging state is `COMMITTED`;
-- `data/purpose/purposes.csv` contains the intended state; and
+- `data/lfs/purpose.csv` contains the intended state; and
 - `purposes_before_commit.csv` exists in the staging workspace.
 
 ---
@@ -398,18 +407,18 @@ LPS supplies Economic CURRENT. LFS supplies the reviewed formation intent used t
 LTS has a production command. Run it after LPS and LFS have shared the same as-of. The date is read from `data/lfs/purpose_summaries.csv`.
 
 ```bash
-python -m lts.runner
+python -m lts.runner --as-of YYYY-MM-DD
 ```
 
 It writes:
 
 ```text
-data/lts/transition_mappings.csv
-data/lts/purpose_reports.csv
 data/lts/materialized_transition_slices.csv
-data/lts/holding_availability.csv
-data/lts/holding_availability_summary.csv
+data/lts/cascade_review.csv
+data/lts/execution_playbook.csv
+data/lts/tax_preflight_report.txt
 data/lts/manifest.json
+data/lps/transition_manifest.json
 ```
 
 The plan uses the market values already stored on `data/lps/positions.csv`. Availability reprices those units from the NAV files as of the LFS date. If those dates differ, the two totals will not match. Revalue positions with the CAS runner at the LFS as-of, then run LTS again.
@@ -474,37 +483,39 @@ Do not casually delete or overwrite the durable review files:
 
 ```text
 data/lfs/purpose_summaries.csv
-data/purpose/purposes.csv
+data/lfs/purpose.csv
 data/lps/positions.csv
 data/lps/transactions.csv
 ```
 
 Common issues:
 
-### `Purpose source is missing required columns`
+### `Purpose source is missing required intent columns`
 
 Check:
 
 ```text
-data/purpose/purposes.csv
+data/lfs/purpose.csv
 ```
 
 Required columns:
 
 ```text
-name,due,value,desired,monthly_plan,analytical_horizon_years
+name,due,desired,monthly_plan
 ```
+
+Capital comes from LPS positions. Horizon is derived from `due`.
 
 ### `Unknown Purpose(s)`
 
-Check the spelling against `data/purpose/purposes.csv`.
+Check the spelling against `data/lfs/purpose.csv`.
 
 ### `Staging state missing; initialize first`
 
 Run:
 
 ```bash
-python python/run_purpose_staging.py init --as-of YYYY-MM-DD
+python -m lfs.review_runner init --as-of YYYY-MM-DD
 ```
 
 ### `Acquisition percentages cannot exceed 100%`
@@ -547,21 +558,21 @@ LPS — FACTUAL OBSERVATION
 LFS-MAIN — FORMATION
 [ ] Review formation scope and Purpose inputs
 [ ] Run production
-    python python/run_production.py --as-of YYYY-MM-DD
-[ ] CHECKPOINT: inspect final_<Purpose>_summary.csv
+    python -m lfs.runner --as-of YYYY-MM-DD
+[ ] CHECKPOINT: inspect output/goals/<Purpose>/final_<Purpose>_summary.csv
 [ ] Confirm FINAL results
 
 PURPOSE STAGING
 [ ] Initialize Purpose Staging
-    python python/run_purpose_staging.py init --as-of YYYY-MM-DD
+    python -m lfs.review_runner init --as-of YYYY-MM-DD
 [ ] CHECKPOINT: decide staging turn
 [ ] Run staging turn
-    python python/run_purpose_staging.py turn --as-of YYYY-MM-DD --input turn.csv
+    python -m lfs.review_runner turn --as-of YYYY-MM-DD --input turn.csv
 [ ] CHECKPOINT: inspect staged state, ledger, pools, Achievability
 [ ] Repeat turns until satisfied
 [ ] CHECKPOINT: capital pool = 0; SIP pool = 0
 [ ] Commit Purpose Staging
-    python python/run_purpose_staging.py commit --as-of YYYY-MM-DD
+    python -m lfs.review_runner commit --as-of YYYY-MM-DD
 [ ] CHECKPOINT: confirm authoritative Purpose state + backup
 
 HISTORICAL MEMORY
@@ -576,9 +587,11 @@ HISTORICAL MEMORY
 CURRENT → TARGET
 [ ] Confirm LPS, LFS, and LTS share one as-of date
 [ ] Run LTS
-    python -m lts.runner
+    python -m lts.runner --as-of YYYY-MM-DD
+[ ] Reconcile the ledger
+    python -m lps.runner --as-of YYYY-MM-DD
 [ ] CHECKPOINT: manifest is balanced and availability matches position market value
-[ ] Review mappings, purpose reports, slices, and locked lots
+[ ] Review the execution playbook, materialized slices, cascade review, and tax preflight
 [ ] Treat the artifacts as a review plan, not an execution instruction
 ```
 
@@ -603,7 +616,8 @@ Or, in Lakshya's shorter language:
 
 # Appendix — Current Implementation Status and Transition Boundary
 
-**Status date:** 2026-09-26  
+**Status date:** 2026-10-01  
+**Release:** Production v1.0.0, valuation as-of 2026-09-30. See `docs/Lakshya_Current_Status.md`.  
 **Purpose of this appendix:** Enrich the established architecture with the current implementation evidence without replacing or weakening any previously documented contract.
 
 The established architecture remains authoritative. This appendix records the current implementation evidence. It does not redefine the domain model, introduce a second optimizer, or convert a review artifact into execution authority.
@@ -648,7 +662,7 @@ The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not 
 
 The implementation must continue to preserve the following:
 
-1. Position identity is `Investor + Folio + ISIN`.
+1. Position identity is `Investor + Folio + ISIN + Slice`. The physical holding remains `Investor + Folio + ISIN`.
 2. Ownership and Purpose attribution remain explicit.
 3. `transaction_through_date` and `valuation_as_of_date` remain separate.
 4. Source facts and analytical interpretation remain distinguishable.
