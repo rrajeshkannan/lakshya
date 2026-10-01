@@ -9,6 +9,7 @@ description = "Lakshya portfolio analysis"
 requires-python = ">=3.14"
 dependencies = [
     "casparser>=1.4.1",
+    "certifi>=2024.0",
     "numpy>=2.0",
     "pandas>=2.2",
 ]

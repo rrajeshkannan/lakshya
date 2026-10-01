@@ -3,23 +3,23 @@
 ====================================================================
 
 --- INVESTOR 1: AMMA ---
- Gross Redemption Proceeds: ₹60,15,441.19
+ Gross Redemption Proceeds: ₹58,09,449.34
  Total Cost of Acquisition: ₹31,07,937.46
- Total Realized LTCG:       ₹29,07,503.73
+ Total Realized LTCG:       ₹27,01,511.88
  --------------------------------------------------
  Annual Exemption (112A):   ₹1,25,000.00
- Net Taxable LTCG:          ₹27,82,503.73
- TAX PAYABLE (@ 12.5%):     ₹3,47,812.97 [Earmark for March 15 Advance Tax]
+ Net Taxable LTCG:          ₹25,76,511.88
+ TAX PAYABLE (@ 12.5%):     ₹3,22,063.98 [Earmark for March 15 Advance Tax]
 
 --- INVESTOR 2: APPANNA ---
- Gross Redemption Proceeds: ₹33,09,564.92
+ Gross Redemption Proceeds: ₹32,14,219.41
  Total Cost of Acquisition: ₹17,93,087.40
- Total Realized LTCG:       ₹15,16,477.52
+ Total Realized LTCG:       ₹14,21,132.02
  --------------------------------------------------
  Annual Exemption (112A):   ₹1,25,000.00
- Net Taxable LTCG:          ₹13,91,477.52
- TAX PAYABLE (@ 12.5%):     ₹1,73,934.69 [Earmark for March 15 Advance Tax]
+ Net Taxable LTCG:          ₹12,96,132.02
+ TAX PAYABLE (@ 12.5%):     ₹1,62,016.50 [Earmark for March 15 Advance Tax]
 
 ====================================================================
- TOTAL ADVANCE TAX TO EARMARK ACROSS FAMILY: ₹5,21,747.66
+ TOTAL ADVANCE TAX TO EARMARK ACROSS FAMILY: ₹4,84,080.48
 ====================================================================

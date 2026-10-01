@@ -10,9 +10,11 @@ make portfolio decisions, or persist evidence artifacts.
 Network transport is injected so tests remain deterministic.
 """
 
+import ssl
 from typing import Any, Callable
 from urllib.request import Request, urlopen
 
+import certifi
 import pandas as pd
 
 from .scheme import scheme_record
@@ -39,7 +41,8 @@ def mfapi_http_transport(url: str):
             "Accept": "application/json",
         },
     )
-    return MfapiHttpResponse(urlopen(request, timeout=30))
+    context = ssl.create_default_context(cafile=certifi.where())
+    return MfapiHttpResponse(urlopen(request, timeout=30, context=context))
 
 
 class MfapiNavSource:
