@@ -18,7 +18,12 @@ from final.compromise_programming import (
     write_analysis,
 )
 from lakshya_core.hashing import sha256_file
-from lfs.layout import final_checkpoint_path, final_summary_path, mission_survivors_path
+from lfs.layout import (
+    final_checkpoint_path,
+    final_summary_path,
+    lfs_manifest_path,
+    mission_survivors_path,
+)
 from mission.purpose_loader import load_purposes
 from mission.resilient_pipeline import run as run_mission
 
@@ -181,6 +186,7 @@ def main() -> None:
     )
     for path in archived:
         print(path.relative_to(PROJECT_ROOT))
+    print(f"lfs_manifest: {lfs_manifest_path(LFS_DATA_DIR.parent).relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

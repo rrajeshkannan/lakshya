@@ -37,9 +37,10 @@ from fund_analysis.admissible_funds import load_admissible_funds
 from lfs.layout import (
     composition_candidates_path,
     global_survivors_path,
+    lfs_manifest_path,
     pipeline_log_path,
-    pipeline_manifest_path,
     positions_as_of_path,
+    purpose_intent_path,
 )
 from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions
@@ -90,14 +91,14 @@ from .survivor_trajectory_experiment import (
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 NAV_DIR = DATA_DIR / "nav"
-PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
 CURRENT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 FINGERPRINT_DIR = PROJECT_ROOT / "output" / "fingerprints" / "composition"
 CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 LOG_PATH = pipeline_log_path(OUTPUT_DIR)
-MANIFEST_PATH = pipeline_manifest_path(OUTPUT_DIR)
+MANIFEST_PATH = lfs_manifest_path(DATA_DIR)
 
 _RUN_MANIFEST: dict | None = None
 

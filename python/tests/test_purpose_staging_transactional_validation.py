@@ -47,7 +47,7 @@ def _read(path: Path):
 
 def test_open_purpose_does_not_require_observed_terrain(tmp_path: Path):
     data = tmp_path / "data"
-    purpose = data / "purpose" / "purposes.csv"
+    purpose = data / "lfs" / "purpose.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,desired,monthly_plan\n"
@@ -78,7 +78,7 @@ def test_open_purpose_does_not_require_observed_terrain(tmp_path: Path):
 
 def test_failed_evidence_validation_leaves_staging_workspace_unchanged(tmp_path: Path):
     data = tmp_path / "data"
-    purpose = data / "purpose" / "purposes.csv"
+    purpose = data / "lfs" / "purpose.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,desired,monthly_plan\n"

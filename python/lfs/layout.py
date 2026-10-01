@@ -69,8 +69,22 @@ def pipeline_log_path(output_root: Path) -> Path:
     return runtime_dir(output_root) / "trajectory_pipeline.log"
 
 
-def pipeline_manifest_path(output_root: Path) -> Path:
-    return runtime_dir(output_root) / "pipeline_run_manifest.json"
+def purpose_intent_path(data_dir: Path) -> Path:
+    """Return the reviewer goal file.
+
+    The canonical file is ``data/lfs/purpose.csv``. A data directory that still
+    has only ``data/purpose/purposes.csv`` keeps working until that file is moved.
+    """
+    canonical = data_dir / "lfs" / "purpose.csv"
+    legacy = data_dir / "purpose" / "purposes.csv"
+    if canonical.is_file() or not legacy.is_file():
+        return canonical
+    return legacy
+
+
+def lfs_manifest_path(data_dir: Path) -> Path:
+    """LFS optimization metadata. Distinct from the LTS and LPS manifests."""
+    return data_dir / "lfs" / "manifest.json"
 
 
 def final_checkpoint_path(output_root: Path, purpose: str) -> Path:

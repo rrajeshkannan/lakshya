@@ -6,12 +6,14 @@ import csv
 from datetime import date, datetime
 from pathlib import Path
 
-from .models import Purpose
+from lfs.layout import purpose_intent_path
 from lps.purpose_capital import purpose_capital_from_positions
+
+from .models import Purpose
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 
 

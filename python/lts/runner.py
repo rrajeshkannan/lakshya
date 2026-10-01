@@ -11,6 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from fund_analysis.funds_in_scope import load_fund_scope_rows
+from lfs.layout import purpose_intent_path
 from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions
 
@@ -28,7 +29,7 @@ from .position_bridge import LtsPosition, bridge_positions
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-DEFAULT_PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+DEFAULT_PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 DEFAULT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 DEFAULT_TRANSACTIONS_PATH = DATA_DIR / "lps" / "transactions.csv"
 DEFAULT_PURPOSE_SUMMARIES_PATH = DATA_DIR / "lfs" / "purpose_summaries.csv"

@@ -11,7 +11,7 @@ POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 def _fixture(tmp_path: Path) -> Path:
     data = tmp_path / "data"
-    purpose = data / "purpose" / "purposes.csv"
+    purpose = data / "lfs" / "purpose.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,desired,monthly_plan\n"

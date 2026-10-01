@@ -25,7 +25,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from lfs.layout import achievability_path
+from lfs.layout import achievability_path, purpose_intent_path
 from mission.achievability import required_annual_return
 from mission.achievability_interpretation import AchievabilityStatus
 from mission.models import Purpose
@@ -33,7 +33,7 @@ from .purpose_staging_adapter import load_intent_rows
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-PURPOSES_PATH = DATA_DIR / "purpose" / "purposes.csv"
+PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 SCHEMA_VERSION = 2
 EPSILON = 1e-8
 INTENT_FIELDS = ["name", "due", "desired", "monthly_plan"]
@@ -165,7 +165,7 @@ def _directory(data_dir: Path, as_of: str) -> Path:
 
 def initialize_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     date.fromisoformat(as_of)
-    source = data_dir / "purpose" / "purposes.csv"
+    source = purpose_intent_path(data_dir)
     positions_path = data_dir / "lps" / "positions.csv"
     rows = load_intent_rows(source, positions_path)
     directory = _directory(data_dir, as_of)
@@ -420,7 +420,7 @@ def commit_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
         raise ValueError("Staging workspace is not committable")
     if abs(float(state["pool_capital"])) > EPSILON or abs(float(state["pool_monthly_sip"])) > EPSILON:
         raise ValueError("Cannot commit while common-pool balances remain")
-    authoritative = data_dir / "purpose" / "purposes.csv"
+    authoritative = purpose_intent_path(data_dir)
     staged = directory / "purposes_staged.csv"
     backup = directory / "purposes_before_commit.csv"
     shutil.copy2(authoritative, backup)

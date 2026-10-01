@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lfs.layout import achievability_path, mission_survivors_path, positions_as_of_path
+from lfs.layout import (
+    achievability_path,
+    mission_survivors_path,
+    positions_as_of_path,
+    purpose_intent_path,
+)
 from hashlib import sha256
 from pathlib import Path
 from typing import Callable, Any
@@ -39,7 +44,7 @@ class TrajectoryJobStage:
     def _purpose_inputs_sha256(self, as_of: str) -> str:
         """Reproduce the MISSION Purpose-input provenance contract."""
         snapshot_path = positions_as_of_path(self._deps.output_dir, as_of)
-        purposes_path = self._deps.output_dir.parent / "data" / "purpose" / "purposes.csv"
+        purposes_path = purpose_intent_path(self._deps.output_dir.parent / "data")
         if not snapshot_path.is_file():
             raise FileNotFoundError(f"Historical Position snapshot is missing: {snapshot_path}")
         if not purposes_path.is_file():

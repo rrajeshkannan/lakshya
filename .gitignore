@@ -19,4 +19,4 @@ output/*
 data/reviews/*/purpose_staging/staging.log
 
 # macOS metadata
-.DS_Store
+**/.DS_Store

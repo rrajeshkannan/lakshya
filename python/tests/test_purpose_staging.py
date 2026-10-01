@@ -14,7 +14,7 @@ POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"
 
 def _fixture(tmp_path: Path) -> Path:
     data = tmp_path / "data"
-    purpose = data / "purpose" / "purposes.csv"
+    purpose = data / "lfs" / "purpose.csv"
     purpose.parent.mkdir(parents=True)
     purpose.write_text(
         "name,due,desired,monthly_plan\n"
@@ -31,7 +31,7 @@ def _fixture(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     review = data / "lfs"
-    review.mkdir(parents=True)
+    review.mkdir(parents=True, exist_ok=True)
     for name in ("A", "B"):
         (review / f"{name}_summary.csv").write_text(
             "purpose,purpose_horizon_years,primary_winner,contract_version\n"
@@ -68,7 +68,7 @@ def _staging(data: Path) -> Path:
 
 def test_initialize_isolates_staged_state_from_authoritative_source(tmp_path: Path):
     data = _fixture(tmp_path)
-    source = data / "purpose" / "purposes.csv"
+    source = data / "lfs" / "purpose.csv"
     original = source.read_text(encoding="utf-8")
     directory = initialize_staging("2026-09-06", data_dir=data)
     assert source.read_text(encoding="utf-8") == original
@@ -186,7 +186,7 @@ def test_commit_preserves_authoritative_backup_and_marks_workspace(tmp_path: Pat
     initialize_staging("2026-09-06", data_dir=data)
     run_turn("2026-09-06", _turn(tmp_path, "A,80,10,,\n"), data_dir=data)
     run_turn("2026-09-06", _turn(tmp_path, "B,,,100,\n"), data_dir=data)
-    source = data / "purpose" / "purposes.csv"
+    source = data / "lfs" / "purpose.csv"
     original = source.read_text(encoding="utf-8")
     commit_staging("2026-09-06", data_dir=data)
     staging = _staging(data)
