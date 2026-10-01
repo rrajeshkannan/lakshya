@@ -1,26 +1,26 @@
 record_type,purpose,isin,nominal_weight,adjusted_weight,nominal_value,adjusted_value,delta_value,stage,review_note,investor,folio,units,locked,disposition_reason
-COMPOSITION,Edu_B,INF879O01027,0.6,0.306145,1417494.4420608,723265.0784749,-694229.3635859,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
-COMPOSITION,Edu_B,INF879O01100,0.35,0.271246,826871.7578688,640815.5611149,-186056.1967539,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
-COMPOSITION,Edu_B,INF966L01887,0.05,0.025512,118124.5368384,60272.0898729,-57852.4469655,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
-COMPOSITION,Edu_B,INF966L01986,0,0.397097,0,938138.0073053,938138.0073053,CROSS_COMPOSITION,Retained capital cascaded into this purpose because its original compositions could not absorb it.,,,,,
-COMPOSITION,Home_Loan,INF879O01027,0.6,0.6,570243.115746,570243.115746,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Home_Loan,INF879O01100,0.35,0.35,332641.8175185,332641.8175185,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Home_Loan,INF966L01887,0.05,0.05,47520.2596455,47520.2596455,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Kutti,INF879O01027,0.6,0.6,196347.9836618,196347.9836618,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Kutti,INF879O01100,0.35,0.35,114536.3238027,114536.3238027,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Edu_B,INF879O01027,0.6,0.308779,1417494.4420608,729487.7352778,-688006.706783,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
+COMPOSITION,Edu_B,INF879O01100,0.35,0.271952,826871.7578688,642483.257584,-184388.5002848,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
+COMPOSITION,Edu_B,INF966L01887,0.05,0.025732,118124.5368384,60790.6446065,-57333.8922319,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
+COMPOSITION,Edu_B,INF966L01986,0,0.393537,0,929729.0992997,929729.0992997,CROSS_COMPOSITION,Retained capital cascaded into this purpose because its original compositions could not absorb it.,,,,,
+COMPOSITION,Home_Loan,INF846K01K35,0.2,0.958018,190081.038582,910505.5426327,720424.5040507,IN_COMPOSITION,Chosen or locked capital retained above the formation weight. The surplus is not redeemed.,,,,,
+COMPOSITION,Home_Loan,INF879O01027,0.75,0.039358,712803.8946825,37405.9221349,-675397.9725476,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
+COMPOSITION,Home_Loan,INF966L01887,0.05,0.002624,47520.2596455,2493.7281424,-45026.5315031,IN_COMPOSITION,Weight reduced so this purpose stays at its capital while retained holdings are kept.,,,,,
+COMPOSITION,Kutti,INF846K01K35,0.2,0.2,65449.3278873,65449.3278873,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Kutti,INF879O01027,0.75,0.75,245434.9795772,245434.9795772,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Kutti,INF966L01887,0.05,0.05,16362.3319718,16362.3319718,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Marriage,INF879O01027,0.6,0.6,374940.1386,374940.1386,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Marriage,INF879O01100,0.35,0.35,218715.08085,218715.08085,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Marriage,INF846K01K35,0.2,0.2,124980.0462,124980.0462,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Marriage,INF879O01027,0.75,0.75,468675.17325,468675.17325,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Marriage,INF966L01887,0.05,0.05,31245.01155,31245.01155,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Retirement,INF174K01LT0,0.05,0.05,531275.2275641,531275.2275641,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Retirement,INF879O01027,0.9,0.9,9562954.0961542,9562954.0961542,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Retirement,INF966L01887,0.05,0.05,531275.2275641,531275.2275641,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Stitch,INF879O01027,0.6,0.6,205550.37948,205550.37948,0,UNCHANGED,Formation weight unchanged.,,,,,
-COMPOSITION,Stitch,INF879O01100,0.35,0.35,119904.38803,119904.38803,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Stitch,INF846K01K35,0.2,0.2,68516.79316,68516.79316,0,UNCHANGED,Formation weight unchanged.,,,,,
+COMPOSITION,Stitch,INF879O01027,0.75,0.75,256937.97435,256937.97435,0,UNCHANGED,Formation weight unchanged.,,,,,
 COMPOSITION,Stitch,INF966L01887,0.05,0.05,17129.19829,17129.19829,0,UNCHANGED,Formation weight unchanged.,,,,,
 LOCK,,INF879O01100,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Amma,13393503,6222.974,true,ELSS_LOCKED
-LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Amma,51025894385 / 0,517.155,true,ELSS_LOCKED
+LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Amma,51025894385 / 0,507.245,true,ELSS_LOCKED
 LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Amma,51058264591 / 0,516.696,true,ELSS_LOCKED
 LOCK,,INF879O01100,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Appanna,13394210,6124.603,true,ELSS_LOCKED
-LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Appanna,51025826356 / 0,476.362,true,ELSS_LOCKED
+LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Appanna,51025826356 / 0,468.104,true,ELSS_LOCKED
 LOCK,,INF966L01986,,,,,,ELSS_LOCKED,Lot-level units that cannot be redeemed.,Appanna,51058264612 / 0,516.696,true,ELSS_LOCKED

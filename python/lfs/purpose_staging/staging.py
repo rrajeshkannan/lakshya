@@ -328,22 +328,31 @@ def _apply_acquisitions(staged: dict[str, dict[str, str]], rows: list[dict[str, 
     return pool_capital, pool_sip
 
 
+def _summary_rows(review_dir: Path) -> list[dict[str, str]]:
+    """Return one FINAL summary row per Purpose.
+
+    Production archives every Purpose into ``purpose_summaries.csv``. A review
+    fixture may still keep one single-row ``{purpose}_summary.csv`` per Purpose.
+    """
+    consolidated = review_dir / "purpose_summaries.csv"
+    if consolidated.is_file():
+        return _read_csv(consolidated)
+    rows: list[dict[str, str]] = []
+    for summary in sorted(review_dir.glob("*_summary.csv")):
+        file_rows = _read_csv(summary)
+        if len(file_rows) != 1:
+            continue
+        rows.extend(file_rows)
+    return rows
+
+
 def _observed_upper_returns(data_dir: Path, as_of: str, required_purposes: set[str] | None = None) -> dict[str, float]:
     review_dir = data_dir / "lfs"
     output_dir = data_dir.parent / "output"
     result: dict[str, float] = {}
-    summary_files = []
-    consolidated = review_dir / "purpose_summaries.csv"
-    if consolidated.is_file():
-        summary_files = [consolidated]
-    else:
-        summary_files = sorted(review_dir.glob("*_summary.csv"))
-    for summary in summary_files:
-        rows = _read_csv(summary)
-        if len(rows) != 1:
-            continue
-        purpose = rows[0].get("purpose", "")
-        winner = rows[0].get("primary_winner", "")
+    for row in _summary_rows(review_dir):
+        purpose = row.get("purpose", "")
+        winner = row.get("primary_winner", "")
         if not purpose or not winner:
             continue
         if required_purposes is not None and purpose not in required_purposes:

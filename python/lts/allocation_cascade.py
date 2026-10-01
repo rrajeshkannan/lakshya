@@ -832,19 +832,22 @@ def _slices_from_drafts(
                 "Holding produced no slices: "
                 f"{holding.investor}/{holding.folio}/{holding.isin}"
             )
-        remaining_percentage = ONE_HUNDRED
         emitted_units: list[Decimal] = []
+        emitted_percentages: list[Decimal] = []
         for index, piece in enumerate(rows):
             draft = piece.draft
             last = index == len(rows) - 1
             if last:
                 units = holding.units - sum(emitted_units, ZERO)
-                percentage = remaining_percentage
+                # Sum the stored shares. A running remainder drifts by one
+                # unit in the last place once several 28-digit quotients
+                # have been rounded, and the validator adds those stored shares.
+                percentage = ONE_HUNDRED - sum(emitted_percentages, ZERO)
             else:
                 units = piece.units
                 emitted_units.append(units)
                 percentage = units / holding.units * ONE_HUNDRED
-                remaining_percentage -= percentage
+                emitted_percentages.append(percentage)
             if units < ZERO:
                 raise ValueError(
                     "Slice units went negative while conserving the holding: "

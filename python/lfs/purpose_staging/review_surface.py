@@ -12,6 +12,7 @@ from io import StringIO
 from pathlib import Path
 
 from lfs.layout import achievability_path
+from lfs.purpose_staging.staging import _summary_rows
 from lfs.mission.achievability import required_annual_return
 from lfs.mission.models import Purpose
 
@@ -106,12 +107,9 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | 
     review_dir = data_dir / "lfs"
     output_dir = data_dir.parent / "output"
     result: dict[str, tuple[str, float | None]] = {}
-    for summary in sorted(review_dir.glob("*_summary.csv")):
-        rows = _read_csv(summary)
-        if len(rows) != 1:
-            continue
-        purpose = rows[0].get("purpose", "").strip()
-        winner = rows[0].get("primary_winner", "").strip()
+    for row in _summary_rows(review_dir):
+        purpose = row.get("purpose", "").strip()
+        winner = row.get("primary_winner", "").strip()
         if not purpose or not winner:
             continue
         checkpoint = achievability_path(output_dir, purpose)

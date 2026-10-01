@@ -1,62 +1,62 @@
 {
-  "as_of": "2026-09-06",
-  "completed_at": "2026-09-26T20:12:50.162+05:30",
+  "as_of": "2026-09-30",
+  "completed_at": "2026-10-01T15:53:05.676+05:30",
   "mode": "full",
   "pipeline": "resilient_pipeline",
   "positions_as_of": {
-    "path": "output/positions_as_of_2026-09-06.csv",
-    "sha256": "b583065fe125d7da59c4f50fa32969a4249388041b3bb999316db7dd0fd5d032"
+    "path": "output/audits/positions_as_of_2026-09-30.csv",
+    "sha256": "d1c316e847a910890cd8f38124e68db01cccf9b211dcc1b5a020053aea63c894"
   },
   "purpose_selection": "all",
   "python": "3.14.7",
-  "run_id": "8f3cb2c98476",
+  "run_id": "ba8abed850e9",
   "stages": {
     "admitted_funds": {
       "count": 17,
       "status": "complete",
-      "updated_at": "2026-09-26T20:04:04.153+05:30"
+      "updated_at": "2026-10-01T15:42:39.868+05:30"
     },
     "composition_evidence": {
-      "elapsed_seconds": 279.034,
-      "newly_computed": 28149,
+      "elapsed_seconds": 299.924,
+      "newly_computed": 27807,
       "reused": 0,
       "status": "complete",
-      "total": 28149,
-      "updated_at": "2026-09-26T20:08:44.784+05:30"
+      "total": 27807,
+      "updated_at": "2026-10-01T15:47:41.467+05:30"
     },
     "global_frontier": {
-      "candidates": 28149,
-      "elapsed_seconds": 238.049,
+      "candidates": 27807,
+      "elapsed_seconds": 316.681,
       "reused": false,
       "status": "complete",
-      "survivors": 20808,
-      "updated_at": "2026-09-26T20:12:42.876+05:30"
+      "survivors": 20760,
+      "updated_at": "2026-10-01T15:52:58.190+05:30"
     },
     "inputs": {
       "nav_funds": 17,
       "purposes": 6,
       "status": "complete",
-      "updated_at": "2026-09-26T20:04:04.153+05:30"
+      "updated_at": "2026-10-01T15:42:39.868+05:30"
     },
     "mission": {
-      "global_survivors": 20808,
+      "global_survivors": 20760,
       "purposes": 6,
       "status": "complete",
-      "updated_at": "2026-09-26T20:12:47.170+05:30"
+      "updated_at": "2026-10-01T15:53:02.375+05:30"
     },
     "team": {
-      "elapsed_seconds": 1.217,
+      "elapsed_seconds": 1.289,
       "status": "complete",
-      "survivors": 219,
-      "updated_at": "2026-09-26T20:04:05.370+05:30"
+      "survivors": 217,
+      "updated_at": "2026-10-01T15:42:41.157+05:30"
     },
     "trajectory": {
       "purposes": 6,
       "status": "complete",
-      "updated_at": "2026-09-26T20:12:50.161+05:30"
+      "updated_at": "2026-10-01T15:53:05.673+05:30"
     }
   },
-  "started_at": "2026-09-26T20:04:04.083+05:30",
+  "started_at": "2026-10-01T15:42:39.785+05:30",
   "status": "complete",
   "workers": "auto"
 }
