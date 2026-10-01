@@ -6,10 +6,10 @@ from collections.abc import Callable, Iterable, Mapping
 
 import pandas as pd
 
-from lakshya_core.dominance import Dimension, dominates, non_dominated_frontier
-from lakshya_core.drawdown_severity import calculate_protection
-from lakshya_core.elevation import calculate_elevation
-from lakshya_core.models import Fund
+from core.dominance import Dimension, dominates, non_dominated_frontier
+from core.drawdown_severity import calculate_protection
+from core.elevation import calculate_elevation
+from core.models import Fund
 
 from .comparator_surface import ROLLING_HORIZONS, ROLLING_METRICS, fund_team_dimensions
 

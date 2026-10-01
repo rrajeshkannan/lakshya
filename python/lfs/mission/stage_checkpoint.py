@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 
-from lakshya_core.hashing import sha256_file
+from core.hashing import sha256_file
 
 STAGE_CHECKPOINT_SCHEMA_VERSION = 1
 

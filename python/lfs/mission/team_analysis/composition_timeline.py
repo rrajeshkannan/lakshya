@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 import pandas as pd
 
-from lakshya_core.nav_history import normalize_nav_history
+from core.nav_history import normalize_nav_history
 
 from .composition import Composition
 

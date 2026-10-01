@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from lakshya_core.nav_history import normalize_nav_history
+from core.nav_history import normalize_nav_history
 from .observation_horizon import SUPPORTED_OBSERVATION_HORIZONS
 
 

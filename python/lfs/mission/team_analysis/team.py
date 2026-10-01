@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lakshya_core.models import Fund
+from core.models import Fund
 
 
 @dataclass(frozen=True)

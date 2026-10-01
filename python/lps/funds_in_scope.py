@@ -7,7 +7,7 @@ from typing import Collection
 
 import pandas as pd
 
-from lakshya_core.models import Fund
+from core.models import Fund
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]

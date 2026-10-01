@@ -5,7 +5,7 @@ from __future__ import annotations
 from itertools import combinations
 from typing import Iterable, Iterator
 
-from lakshya_core.models import Fund
+from core.models import Fund
 
 from .team import Team
 

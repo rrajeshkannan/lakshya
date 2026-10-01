@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from lakshya_core.dominance import Dimension
-from lakshya_core.models import Fund
+from core.dominance import Dimension
+from core.models import Fund
 
 from .comparator_surface import fund_team_dimensions
 from .frontier_pipeline import team_frontier_from_histories

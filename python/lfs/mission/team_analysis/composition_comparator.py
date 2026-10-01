@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from lakshya_core.dominance import Dimension
+from core.dominance import Dimension
 
 from .comparator_surface import ROLLING_METRICS, ROLLING_HORIZONS, fund_team_dimensions
 from .composition_fingerprint import CompositionFingerprint

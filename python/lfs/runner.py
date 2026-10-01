@@ -17,7 +17,7 @@ from lfs.final.compromise_programming import (
     analyze_purpose,
     write_analysis,
 )
-from lakshya_core.hashing import sha256_file
+from core.hashing import sha256_file
 from lfs.layout import (
     final_checkpoint_path,
     final_summary_path,

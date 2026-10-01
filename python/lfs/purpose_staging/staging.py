@@ -14,7 +14,7 @@ replacement for FUND -> TEAM -> COMPOSITION -> MISSION -> FINAL.
 """
 from __future__ import annotations
 
-from lakshya_core.hashing import sha256_file
+from core.hashing import sha256_file
 
 import csv
 import json

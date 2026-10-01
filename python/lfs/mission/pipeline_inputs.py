@@ -8,7 +8,7 @@ from typing import Callable, Iterable
 
 import pandas as pd
 
-from lakshya_core.nav_history import cutoff_nav_history
+from core.nav_history import cutoff_nav_history
 
 Log = Callable[[str], None]
 

@@ -1,6 +1,6 @@
 """MISSION-facing alias for the shared analytical-horizon contract."""
 
-from lakshya_core.observation_horizon import (
+from core.observation_horizon import (
     SUPPORTED_ANALYTICAL_HORIZONS,
     nearest_supported_horizon,
 )

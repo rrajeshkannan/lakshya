@@ -23,6 +23,7 @@ package-dir = {"" = "python"}
 
 [tool.setuptools.packages.find]
 where = ["python"]
+include = ["core*", "lps*", "lfs*", "lts*"]
 
 [tool.pytest.ini_options]
 pythonpath = [

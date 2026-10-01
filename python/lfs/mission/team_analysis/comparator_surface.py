@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lakshya_core.dominance import Dimension
+from core.dominance import Dimension
 
 
 ROLLING_METRICS = (

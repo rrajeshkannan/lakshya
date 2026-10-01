@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from lakshya_core.drawdown_severity import calculate_protection
-from lakshya_core.elevation import calculate_elevation
-from lakshya_core.models import ElevationEvidence, ProtectionEvidence
+from core.drawdown_severity import calculate_protection
+from core.elevation import calculate_elevation
+from core.models import ElevationEvidence, ProtectionEvidence
 
 from .composition import Composition
 

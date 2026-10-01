@@ -10,8 +10,8 @@ from typing import Any
 
 import pandas as pd
 
-from lakshya_core.models import ElevationEvidence, ProtectionEvidence
-from lakshya_core.rolling_returns import RollingReturnEvidence
+from core.models import ElevationEvidence, ProtectionEvidence
+from core.rolling_returns import RollingReturnEvidence
 
 from .composition import Composition, composition_identity
 from .composition_fingerprint import CompositionFingerprint

@@ -13,7 +13,7 @@ provenance all validate.
 from __future__ import annotations
 
 from hashlib import sha256
-from lakshya_core.hashing import sha256_file
+from core.hashing import sha256_file
 
 _sha256 = sha256_file
 

@@ -1,10 +1,12 @@
 data/cache/
 data/fingerprints/composition/
 python/lakshya.egg-info/
+*.egg-info/
 bin/
 obj/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Local CAS input evidence (never commit family statements/password-bearing files)
 input/*

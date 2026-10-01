@@ -6,8 +6,8 @@ from collections.abc import Iterable, Iterator, Mapping
 
 import pandas as pd
 
-from lakshya_core.dominance import Dimension
-from lakshya_core.models import Fund
+from core.dominance import Dimension
+from core.models import Fund
 
 from .collective_timeline import build_collective_nav
 from .team import Team

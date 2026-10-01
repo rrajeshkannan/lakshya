@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
-from lakshya_core.dominance import Dimension, dominates
+from core.dominance import Dimension, dominates
 
 
 FrontierEvent = Callable[[str, object, object | None], None]
