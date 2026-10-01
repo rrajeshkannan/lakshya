@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from mission.trajectory_observation import select_observable_horizon
+from lfs.mission.trajectory_observation import select_observable_horizon
 
 
 def nav(periods):

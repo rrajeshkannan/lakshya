@@ -18,7 +18,7 @@ from lps.transaction_persistence import read_transactions, write_transactions
 from lps.transactions import Transaction
 from lps.valuation import value_positions
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 INPUT_DIR = PROJECT_ROOT / "input"
 LPS_DATA_DIR = PROJECT_ROOT / "data" / "lps"
 TRANSACTIONS_PATH = LPS_DATA_DIR / "transactions.csv"

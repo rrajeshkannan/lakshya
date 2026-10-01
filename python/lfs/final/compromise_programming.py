@@ -40,7 +40,7 @@ from lfs.layout import final_evidence_prefix
 
 from .observation_horizon import nearest_supported_horizon
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 FINGERPRINT_DIR = PROJECT_ROOT / "output" / "fingerprints" / "composition"
 OUTPUT_DIR = PROJECT_ROOT / "output"

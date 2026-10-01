@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 
-from mission import resilient_pipeline
+from lfs.mission import resilient_pipeline
 
 
 def test_macro_console_and_forensic_log_are_distinct(tmp_path, monkeypatch, capsys):

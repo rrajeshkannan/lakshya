@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from mission.survivor_trajectory_experiment import observe_survivors_for_purpose
-from mission.trajectory_observation import observe_trajectory
+from lfs.mission.survivor_trajectory_experiment import observe_survivors_for_purpose
+from lfs.mission.trajectory_observation import observe_trajectory
 from team_analysis.composition_fingerprint import CompositionFingerprint
 from team_analysis.composition import Composition, composition_identity
 from team_analysis.team import Team

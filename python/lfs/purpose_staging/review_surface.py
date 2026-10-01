@@ -12,10 +12,10 @@ from io import StringIO
 from pathlib import Path
 
 from lfs.layout import achievability_path
-from mission.achievability import required_annual_return
-from mission.models import Purpose
+from lfs.mission.achievability import required_annual_return
+from lfs.mission.models import Purpose
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 
 REVIEW_FIELDS = [

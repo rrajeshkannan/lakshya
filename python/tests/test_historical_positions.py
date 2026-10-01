@@ -7,7 +7,7 @@ import pandas as pd
 from lps.nav_evidence import NavEvidenceStore
 from lps.positions import Position, PositionId
 from lps.transactions import Transaction
-from mission.historical_positions import build_positions_as_of
+from lfs.mission.historical_positions import build_positions_as_of
 
 
 def _tx(day: str, units: str, *, isin: str = "ISIN1") -> Transaction:

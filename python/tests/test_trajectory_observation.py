@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from mission.trajectory_observation import observe_trajectory
+from lfs.mission.trajectory_observation import observe_trajectory
 
 
 def nav(values):

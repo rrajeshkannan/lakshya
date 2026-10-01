@@ -1,8 +1,8 @@
 from datetime import date
 from decimal import Decimal
 
-from cas_import_poc.ledger import read_ledger, write_ledger
-from cas_import_poc.models import Transaction
+from lps.cas_import.ledger import read_ledger, write_ledger
+from lps.cas_import.models import Transaction
 
 
 def _transaction(**kwargs):

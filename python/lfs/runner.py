@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from final.archival import archive_final_summaries
-from final.compromise_programming import (
+from lfs.final.archival import archive_final_summaries
+from lfs.final.compromise_programming import (
     DEFAULT_BOOTSTRAP_RESAMPLES,
     DEFAULT_BOOTSTRAP_SEED,
     FINAL_CONTRACT_VERSION,
@@ -24,8 +24,8 @@ from lfs.layout import (
     lfs_manifest_path,
     mission_survivors_path,
 )
-from mission.purpose_loader import load_purposes
-from mission.resilient_pipeline import run as run_mission
+from lfs.mission.purpose_loader import load_purposes
+from lfs.mission.resilient_pipeline import run as run_mission
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = PROJECT_ROOT / "output"

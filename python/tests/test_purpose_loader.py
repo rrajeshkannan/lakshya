@@ -2,9 +2,9 @@ from datetime import date
 from pathlib import Path
 
 from lfs.layout import lfs_manifest_path, purpose_intent_path
-from mission.purpose_loader import DATA_DIR, PURPOSES_PATH, load_purposes
-from mission.resilient_pipeline import DATA_DIR as PIPELINE_DATA_DIR
-from mission.resilient_pipeline import MANIFEST_PATH
+from lfs.mission.purpose_loader import DATA_DIR, PURPOSES_PATH, load_purposes
+from lfs.mission.resilient_pipeline import DATA_DIR as PIPELINE_DATA_DIR
+from lfs.mission.resilient_pipeline import MANIFEST_PATH
 from lps.reconciliation import DEFAULT_MANIFEST_PATH
 from lts.runner import DEFAULT_LTS_ROOT, DEFAULT_PURPOSES_PATH, DEFAULT_TRANSITION_MANIFEST_PATH
 

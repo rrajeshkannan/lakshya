@@ -2,8 +2,8 @@ from pathlib import Path
 
 from lakshya_core.hashing import sha256_file
 from lfs.layout import achievability_path, global_survivors_path, mission_survivors_path
-from mission.durable_stage_output import is_valid_csv_checkpoint, write_csv_checkpoint
-from mission.mission_stage import MissionCheckpointDeps, MissionStage
+from lfs.mission.durable_stage_output import is_valid_csv_checkpoint, write_csv_checkpoint
+from lfs.mission.mission_stage import MissionCheckpointDeps, MissionStage
 
 
 def _write_outputs(output: Path, purpose_inputs: str) -> None:

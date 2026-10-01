@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import mission.resilient_pipeline as pipeline
+import lfs.mission.resilient_pipeline as pipeline
 from lfs.layout import composition_candidates_path, global_survivors_path, mission_survivors_path
-from mission.durable_stage_output import write_csv_checkpoint
+from lfs.mission.durable_stage_output import write_csv_checkpoint
 
 
 AS_OF = "2026-08-31"

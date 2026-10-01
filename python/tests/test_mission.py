@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lakshya_core.models import Fund
-from mission import Mission, Purpose
+from lfs.mission import Mission, Purpose
 from team_analysis.composition import Composition
 from team_analysis.team import Team
 

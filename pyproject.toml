@@ -30,6 +30,3 @@ pythonpath = [
 testpaths = [
     "python/tests"
 ]
-norecursedirs = [
-    "python/tests/parked"
-]

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from family.staging import initialize_staging, run_turn
-from family.staging_history import snapshot_current_staging
+from lfs.purpose_staging.staging import initialize_staging, run_turn
+from lfs.purpose_staging.staging_history import snapshot_current_staging
 
 TURN_HEADER = "purpose,value,monthly_plan,capital_acquire_pct,sip_acquire_pct\n"
 POSITIONS_HEADER = "investor,folio,isin,units,nav,market_value,purpose\n"

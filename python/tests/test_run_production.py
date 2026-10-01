@@ -5,7 +5,7 @@ from pathlib import Path
 
 from lfs.layout import final_checkpoint_path, final_summary_path, mission_survivors_path
 from lfs.runner import _final_checkpoint_valid, _write_checkpoint
-from final.compromise_programming import FINAL_CONTRACT_VERSION
+from lfs.final.compromise_programming import FINAL_CONTRACT_VERSION
 
 
 def test_final_checkpoint_is_invalidated_when_mission_changes(tmp_path: Path, monkeypatch):

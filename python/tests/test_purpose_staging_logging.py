@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from family.staging import initialize_staging, run_turn
+from lfs.purpose_staging.staging import initialize_staging, run_turn
 
 
 def test_staging_log_captures_turn_and_pool_events(tmp_path: Path):

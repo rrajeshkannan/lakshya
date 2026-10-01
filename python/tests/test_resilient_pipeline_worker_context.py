@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import mission.resilient_pipeline as pipeline
+import lfs.mission.resilient_pipeline as pipeline
 
 
 def test_write_rows_uses_explicit_worker_as_of_without_manifest(tmp_path: Path, monkeypatch):

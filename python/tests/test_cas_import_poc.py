@@ -4,10 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from cas_import_poc.adapter import adapt_cas, adapt_transaction
-from cas_import_poc.models import Position, PositionId
-from cas_import_poc.positions import reconstruct_positions
-from cas_import_poc.validation import reconcile_unit_balance
+from lps.cas_import.adapter import adapt_cas, adapt_transaction
+from lps.cas_import.models import Position, PositionId
+from lps.cas_import.positions import reconstruct_positions
+from lps.cas_import.validation import reconcile_unit_balance
 
 
 def _transaction(**kwargs):

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from final.archival import archive_final_summaries
+from lfs.final.archival import archive_final_summaries
 from lfs.layout import final_checkpoint_path, final_summary_path
 
 

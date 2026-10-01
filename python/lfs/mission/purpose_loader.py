@@ -11,7 +11,7 @@ from lps.purpose_capital import purpose_capital_from_positions
 
 from .models import Purpose
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"

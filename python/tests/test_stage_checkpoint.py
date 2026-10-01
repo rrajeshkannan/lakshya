@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mission.stage_checkpoint import (
+from lfs.mission.stage_checkpoint import (
     is_valid_completion_marker,
     marker_path,
     write_completion_marker,

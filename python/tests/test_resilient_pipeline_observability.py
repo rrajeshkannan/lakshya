@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import mission.resilient_pipeline as pipeline
+import lfs.mission.resilient_pipeline as pipeline
 
 
 def test_console_and_forensic_log_are_distinct_channels(tmp_path: Path, monkeypatch, capsys):

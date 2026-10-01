@@ -26,12 +26,12 @@ from pathlib import Path
 from typing import Any
 
 from lfs.layout import achievability_path, purpose_intent_path
-from mission.achievability import required_annual_return
-from mission.achievability_interpretation import AchievabilityStatus
-from mission.models import Purpose
+from lfs.mission.achievability import required_annual_return
+from lfs.mission.achievability_interpretation import AchievabilityStatus
+from lfs.mission.models import Purpose
 from .purpose_staging_adapter import load_intent_rows
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 PURPOSES_PATH = purpose_intent_path(DATA_DIR)
 SCHEMA_VERSION = 2

@@ -4,8 +4,8 @@ from math import isclose
 
 import pytest
 
-from mission.achievability import required_annual_return
-from mission.models import Purpose
+from lfs.mission.achievability import required_annual_return
+from lfs.mission.models import Purpose
 
 
 def test_capital_alone_uses_horizon() -> None:

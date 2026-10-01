@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from final.compromise_programming import (
+from lfs.final.compromise_programming import (
     _bootstrap_percentile_coordinate,
     build_purpose_surface,
     distance_from_utopia,

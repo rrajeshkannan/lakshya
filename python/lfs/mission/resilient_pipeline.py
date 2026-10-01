@@ -88,7 +88,7 @@ from .survivor_trajectory_experiment import (
     observe_survivors_for_purpose,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 NAV_DIR = DATA_DIR / "nav"
 PURPOSES_PATH = purpose_intent_path(DATA_DIR)

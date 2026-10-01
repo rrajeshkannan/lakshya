@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from mission.achievability_interpretation import assess_achievability
-from mission.models import Purpose
+from lfs.mission.achievability_interpretation import assess_achievability
+from lfs.mission.models import Purpose
 
 
 def fingerprint(maximum: float | None, horizon: int = 5):

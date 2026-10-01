@@ -3,7 +3,7 @@ from pathlib import Path
 from lakshya_core.hashing import sha256_file
 import pandas as pd
 
-import mission.resilient_pipeline as pipeline
+import lfs.mission.resilient_pipeline as pipeline
 from lfs.layout import (
     achievability_path,
     composition_candidates_path,
@@ -11,7 +11,7 @@ from lfs.layout import (
     mission_survivors_path,
     trajectory_observations_dir,
 )
-from mission.durable_stage_output import write_csv_checkpoint
+from lfs.mission.durable_stage_output import write_csv_checkpoint
 
 
 AS_OF = "2026-08-31"

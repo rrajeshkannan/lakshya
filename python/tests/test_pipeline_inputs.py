@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from mission.pipeline_inputs import load_fund_histories
+from lfs.mission.pipeline_inputs import load_fund_histories
 
 
 def test_load_fund_histories_reads_one_json_per_fund_and_applies_as_of(tmp_path: Path):

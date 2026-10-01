@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mission.protection_pareto import protection_only_frontier
+from lfs.mission.protection_pareto import protection_only_frontier
 from team_analysis.comparator_surface import protection_dimensions
 
 

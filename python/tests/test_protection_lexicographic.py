@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mission.protection_lexicographic import (
+from lfs.mission.protection_lexicographic import (
     PROTECTION_SEVERITY_LADDER,
     protection_lexicographic_order,
 )

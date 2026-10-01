@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from mission.durable_stage_output import (
+from lfs.mission.durable_stage_output import (
     is_valid_csv_checkpoint,
     load_csv_checkpoint,
     write_csv_checkpoint,

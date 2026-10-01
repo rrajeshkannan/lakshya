@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mission.achievability import required_annual_return
-from mission.achievability_interpretation import assess_achievability
-from mission.models import Purpose
+from lfs.mission.achievability import required_annual_return
+from lfs.mission.achievability_interpretation import assess_achievability
+from lfs.mission.models import Purpose
 
 
 def _elevation(*, rolling_3y=None, rolling_5y=None, rolling_7y=None, rolling_10y=None):

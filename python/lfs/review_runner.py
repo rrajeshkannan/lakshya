@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from family.staging import commit_staging, initialize_staging, run_turn
+from lfs.purpose_staging.staging import commit_staging, initialize_staging, run_turn
 
 
 def main() -> None:

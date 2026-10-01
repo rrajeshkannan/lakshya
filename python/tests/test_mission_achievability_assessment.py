@@ -1,9 +1,9 @@
 from types import SimpleNamespace
 
 from lakshya_core.rolling_returns import RollingReturnEvidence
-from mission.achievability_interpretation import AchievabilityStatus, assess_achievability
-from mission.achievability import required_annual_return
-from mission.models import Purpose
+from lfs.mission.achievability_interpretation import AchievabilityStatus, assess_achievability
+from lfs.mission.achievability import required_annual_return
+from lfs.mission.models import Purpose
 
 
 def evidence(years: int, maximum: float) -> RollingReturnEvidence:
