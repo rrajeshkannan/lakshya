@@ -25,7 +25,9 @@ def _write_review(data: Path, as_of: str, purpose: str, winner: str = "X|X=1.000
 def _write_checkpoint(tmp_path: Path, purpose: str, upper: float = 0.10) -> None:
     output = tmp_path / "output"
     output.mkdir(exist_ok=True)
-    (output / f"achievability_{purpose}.csv").write_text(
+    achievability = output / "goals" / purpose / f"achievability_{purpose}.csv"
+    achievability.parent.mkdir(parents=True, exist_ok=True)
+    achievability.write_text(
         "composition,status,required_annual_return,comparison_horizon_years,observed_upper_return\n"
         f"X|X=1.0000,within_observed_terrain,0.05,9,{upper:.2f}\n",
         encoding="utf-8",

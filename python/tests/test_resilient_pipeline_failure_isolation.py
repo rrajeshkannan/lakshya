@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import mission.resilient_pipeline as pipeline
+from lfs.layout import composition_candidates_path, global_survivors_path, mission_survivors_path
 from mission.durable_stage_output import write_csv_checkpoint
 
 
@@ -46,10 +47,11 @@ def _configure(tmp_path: Path, monkeypatch):
 
 
 def _write_global(output: Path):
-    candidates = output / "composition_candidates.csv"
+    candidates = composition_candidates_path(output)
+    candidates.parent.mkdir(parents=True, exist_ok=True)
     candidates.write_text("composition,team\nA|A=1.0,A\n", encoding="utf-8")
     write_csv_checkpoint(
-        output / "global_survivors.csv",
+        global_survivors_path(output),
         [{"composition": "A|A=1.0"}],
         stage="global_frontier",
         as_of=AS_OF,
@@ -86,7 +88,8 @@ def test_successful_sibling_checkpoint_survives_failed_purpose(
     _disable_evidence_migration(monkeypatch)
 
     purposes = [_purpose("Edu_B"), _purpose("Retirement")]
-    completed = output / "mission_survivors_Retirement.csv"
+    completed = mission_survivors_path(output, "Retirement")
+    completed.parent.mkdir(parents=True, exist_ok=True)
     completed.write_text("completed sibling\n", encoding="utf-8")
 
     futures = {
@@ -119,7 +122,8 @@ def test_retry_can_skip_already_valid_purpose_and_run_only_failed_work(
     _write_global(output)
     _disable_evidence_migration(monkeypatch)
 
-    completed = output / "mission_survivors_Retirement.csv"
+    completed = mission_survivors_path(output, "Retirement")
+    completed.parent.mkdir(parents=True, exist_ok=True)
     completed.write_text("completed sibling\n", encoding="utf-8")
 
     purposes = [_purpose("Edu_B"), _purpose("Retirement")]

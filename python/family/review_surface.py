@@ -11,6 +11,7 @@ from datetime import date, datetime
 from io import StringIO
 from pathlib import Path
 
+from lfs.layout import achievability_path
 from mission.achievability import required_annual_return
 from mission.models import Purpose
 
@@ -113,7 +114,7 @@ def _final_evidence(data_dir: Path, as_of: str) -> dict[str, tuple[str, float | 
         winner = rows[0].get("primary_winner", "").strip()
         if not purpose or not winner:
             continue
-        checkpoint = output_dir / f"achievability_{purpose}.csv"
+        checkpoint = achievability_path(output_dir, purpose)
         if not checkpoint.is_file():
             raise FileNotFoundError(f"Achievability checkpoint missing: {checkpoint}")
         matches = [row for row in _read_csv(checkpoint) if row.get("composition") == winner]

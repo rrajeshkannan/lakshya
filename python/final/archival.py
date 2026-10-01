@@ -8,6 +8,8 @@ import os
 from datetime import date
 from pathlib import Path
 
+from lfs.layout import final_checkpoint_path
+
 
 SUMMARY_FILENAME = "purpose_summaries.csv"
 
@@ -57,7 +59,7 @@ def archive_final_summaries(
     Purpose rows.
     """
     date.fromisoformat(as_of)
-    summary_paths = sorted(output_dir.glob("final_*_summary.csv"))
+    summary_paths = sorted((output_dir / "goals").glob("*/final_*_summary.csv"))
     summaries: dict[str, Path] = {}
     for path in summary_paths:
         purpose = path.name.removeprefix("final_").removesuffix("_summary.csv")
@@ -96,7 +98,7 @@ def archive_final_summaries(
         if row.get("purpose") != purpose:
             raise ValueError(f"FINAL summary Purpose mismatch: {source}")
 
-        checkpoint = output_dir / f"final_{purpose}_checkpoint.json"
+        checkpoint = final_checkpoint_path(output_dir, purpose)
         if not checkpoint.is_file():
             raise FileNotFoundError(f"FINAL checkpoint missing for {purpose}: {checkpoint}")
         checkpoint_payload = _read_checkpoint(checkpoint)

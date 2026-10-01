@@ -5,6 +5,12 @@ import pandas as pd
 import pytest
 
 import mission.resilient_pipeline as pipeline
+from lfs.layout import (
+    composition_candidates_path,
+    global_survivors_path,
+    mission_survivors_path,
+    trajectory_observations_dir,
+)
 from mission.durable_stage_output import write_csv_checkpoint
 
 
@@ -22,14 +28,15 @@ def _configure(tmp_path: Path, monkeypatch):
 
 
 def _write_global_inputs(output: Path):
-    (output / "composition_candidates.csv").write_text(
+    composition_candidates_path(output).parent.mkdir(parents=True, exist_ok=True)
+    composition_candidates_path(output).write_text(
         "composition,team\nA|A=1.0,A\n", encoding="utf-8"
     )
 
 
 def _write_global_checkpoint(output: Path):
     write_csv_checkpoint(
-        output / "global_survivors.csv",
+        global_survivors_path(output),
         [{"composition": "A|A=1.0"}],
         stage="global_frontier",
         as_of=AS_OF,
@@ -50,7 +57,8 @@ def test_global_checkpoint_is_rejected_when_upstream_input_changes(tmp_path: Pat
     _write_global_inputs(output)
     _write_global_checkpoint(output)
 
-    (output / "composition_candidates.csv").write_text(
+    composition_candidates_path(output).parent.mkdir(parents=True, exist_ok=True)
+    composition_candidates_path(output).write_text(
         "composition,team\nA|A=1.0,A\nB|B=1.0,B\n", encoding="utf-8"
     )
 
@@ -62,7 +70,8 @@ def test_global_checkpoint_is_rejected_when_marker_is_missing(tmp_path: Path, mo
     output = _configure(tmp_path, monkeypatch)
     _write_global_inputs(output)
     _write_global_checkpoint(output)
-    (output / "global_survivors.csv.complete.json").unlink()
+    marker = global_survivors_path(output)
+    marker.with_suffix(marker.suffix + ".complete.json").unlink()
 
     with pytest.raises((ValueError, FileNotFoundError)):
         pipeline._load_global_identities()
@@ -73,7 +82,7 @@ def test_global_checkpoint_is_rejected_for_different_as_of(tmp_path: Path, monke
     _write_global_inputs(output)
     _write_global_checkpoint(output)
     write_csv_checkpoint(
-        output / "global_survivors.csv",
+        global_survivors_path(output),
         [{"composition": "A|A=1.0"}],
         stage="global_frontier",
         as_of="2027-08-31",
@@ -89,16 +98,16 @@ def test_global_checkpoint_output_mutation_is_detected(tmp_path: Path, monkeypat
     _write_global_inputs(output)
     _write_global_checkpoint(output)
 
-    frame = pd.read_csv(output / "global_survivors.csv")
+    frame = pd.read_csv(global_survivors_path(output))
     frame.loc[0, "composition"] = "MUTATED"
-    frame.to_csv(output / "global_survivors.csv", index=False)
+    frame.to_csv(global_survivors_path(output), index=False)
 
     with pytest.raises((ValueError, FileNotFoundError)):
         pipeline._load_global_identities()
 
 
 def _write_mission_checkpoint(output: Path):
-    mission_path = output / "mission_survivors_Edu_B.csv"
+    mission_path = mission_survivors_path(output, "Edu_B")
     write_csv_checkpoint(
         mission_path,
         [{"composition": "A|A=1.0"}],
@@ -112,8 +121,9 @@ def _write_mission_checkpoint(output: Path):
 def test_trajectory_checkpoint_requires_current_contract_version(tmp_path: Path, monkeypatch):
     output = _configure(tmp_path, monkeypatch)
     mission_path = _write_mission_checkpoint(output)
-    trajectory_path = output / "trajectory_observations" / "Edu_B.csv"
-    coverage_path = output / "trajectory_observations" / "Edu_B_coverage.csv"
+    observations = trajectory_observations_dir(output)
+    trajectory_path = observations / "Edu_B.csv"
+    coverage_path = observations / "Edu_B_coverage.csv"
     old_inputs = {
         "mission_sha256": sha256_file(mission_path),
         "trajectory_contract_version": str(pipeline.TRAJECTORY_CONTRACT_VERSION - 1),

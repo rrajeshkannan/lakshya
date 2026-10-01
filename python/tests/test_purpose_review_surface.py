@@ -29,7 +29,9 @@ def test_review_surface_normalizes_money_and_connects_final_evidence(tmp_path: P
         encoding="utf-8",
     )
     output = tmp_path / "output"
-    (output / "achievability_A.csv").write_text(
+    achievability = output / "goals" / "A" / "achievability_A.csv"
+    achievability.parent.mkdir(parents=True, exist_ok=True)
+    achievability.write_text(
         "composition,status,required_annual_return,comparison_horizon_years,observed_upper_return\n"
         "X|X=1.0000,within_observed_terrain,0.05,9,0.10\n",
         encoding="utf-8",
@@ -70,7 +72,9 @@ def test_review_surface_allows_open_purpose_without_achievability_return(tmp_pat
         encoding="utf-8",
     )
     output = tmp_path / "output"
-    (output / "achievability_Open.csv").write_text(
+    achievability = output / "goals" / "Open" / "achievability_Open.csv"
+    achievability.parent.mkdir(parents=True, exist_ok=True)
+    achievability.write_text(
         "composition,status,required_annual_return,comparison_horizon_years,observed_upper_return\n"
         "X|X=1.0000,not_applicable,,,\n",
         encoding="utf-8",

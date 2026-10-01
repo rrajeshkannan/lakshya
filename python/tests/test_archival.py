@@ -6,14 +6,19 @@ from pathlib import Path
 import pytest
 
 from final.archival import archive_final_summaries
+from lfs.layout import final_checkpoint_path, final_summary_path
 
 
 def _write_summary(output: Path, purpose: str, text: str = "purpose,metric\n") -> None:
-    (output / f"final_{purpose}_summary.csv").write_text(text, encoding="utf-8")
+    path = final_summary_path(output, purpose)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def _write_checkpoint(output: Path, purpose: str) -> None:
-    (output / f"final_{purpose}_checkpoint.json").write_text(
+    path = final_checkpoint_path(output, purpose)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
         '{"contract_version":"1","purpose":"%s","purpose_horizon_years":7,'
         '"mission_sha256":"abc","bootstrap_resamples":5000,"bootstrap_seed":20260906}\n' % purpose,
         encoding="utf-8",
@@ -119,7 +124,7 @@ def test_archival_requires_requested_summary_and_valid_contract(tmp_path: Path):
 
     _write_summary(output, "Retirement", "purpose,metric\nRetirement,value\n")
     _write_checkpoint(output, "Retirement")
-    checkpoint = output / "final_Retirement_checkpoint.json"
+    checkpoint = final_checkpoint_path(output, "Retirement")
     checkpoint.write_text(
         checkpoint.read_text(encoding="utf-8").replace('"contract_version":"1"', '"contract_version":"2"'),
         encoding="utf-8",

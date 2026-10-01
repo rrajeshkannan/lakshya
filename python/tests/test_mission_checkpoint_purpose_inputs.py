@@ -1,15 +1,17 @@
 from pathlib import Path
 
 from lakshya_core.hashing import sha256_file
+from lfs.layout import achievability_path, global_survivors_path, mission_survivors_path
 from mission.durable_stage_output import is_valid_csv_checkpoint, write_csv_checkpoint
 from mission.mission_stage import MissionCheckpointDeps, MissionStage
 
 
 def _write_outputs(output: Path, purpose_inputs: str) -> None:
-    global_path = output / "global_survivors.csv"
+    global_path = global_survivors_path(output)
+    global_path.parent.mkdir(parents=True, exist_ok=True)
     global_path.write_text("composition\nA|isin=1.0\n", encoding="utf-8")
-    achievability = output / "achievability_Edu_B.csv"
-    mission = output / "mission_survivors_Edu_B.csv"
+    achievability = achievability_path(output, "Edu_B")
+    mission = mission_survivors_path(output, "Edu_B")
     write_csv_checkpoint(
         achievability,
         [{"composition": "A|isin=1.0", "status": "WITHIN_OBSERVED_TERRAIN"}],

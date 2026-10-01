@@ -42,7 +42,9 @@ def _fixture(tmp_path: Path) -> Path:
     output = tmp_path / "output"
     output.mkdir()
     for name in ("A", "B"):
-        (output / f"achievability_{name}.csv").write_text(
+        achievability = output / "goals" / name / f"achievability_{name}.csv"
+        achievability.parent.mkdir(parents=True, exist_ok=True)
+        achievability.write_text(
             "composition,status,required_annual_return,comparison_horizon_years,observed_upper_return\n"
             "X|X=1.0000,within_observed_terrain,0.05,10,0.10\n",
             encoding="utf-8",

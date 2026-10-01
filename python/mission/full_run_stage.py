@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 from datetime import date
+
+from lfs.layout import (
+    fund_frontier_audit_path,
+    global_survivors_path,
+    pipeline_summary_path,
+    team_survivors_path,
+)
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -79,13 +86,13 @@ class FullRunStage:
             funds=funds,
             fund_histories=histories,
             detail=deps.detail,
-            fund_audit_path=output_dir / f"fund_frontier_audit_{as_of}.csv",
+            fund_audit_path=fund_frontier_audit_path(output_dir, as_of),
         )
         team_elapsed = time.perf_counter() - stage_started
         deps.log(f"  TEAM survivors: {len(teams)} | elapsed={team_elapsed:.1f}s")
         deps.detail(f"TEAM_STAGE_COMPLETE survivors={len(teams)} elapsed_seconds={team_elapsed:.3f}")
         deps.manifest_update("team", "complete", survivors=len(teams), elapsed_seconds=round(team_elapsed, 3))
-        deps.write_rows(output_dir / "team_survivors.csv", [{"team": "|".join(member.isin for member in team.members), "members": len(team.members)} for team in teams])
+        deps.write_rows(team_survivors_path(output_dir), [{"team": "|".join(member.isin for member in team.members), "members": len(team.members)} for team in teams])
 
         deps.log("[5/7] Generating and persisting Composition fingerprints")
         expected_total = deps.write_composition_candidates(teams)
@@ -94,7 +101,7 @@ class FullRunStage:
         deps.log("[6/7] Applying existing MISSION gates")
         stage_started = time.perf_counter()
         global_inputs = deps.global_inputs()
-        global_path = output_dir / "global_survivors.csv"
+        global_path = global_survivors_path(output_dir)
         if deps.is_valid_csv_checkpoint(global_path, stage="global_frontier", as_of=as_of, inputs=global_inputs):
             global_df = deps.load_csv_checkpoint(global_path, stage="global_frontier", as_of=as_of, inputs=global_inputs)
             global_survivors = [deps.composition_from_identity(identity, funds_by_isin) for identity in global_df["composition"].tolist()]
@@ -114,7 +121,7 @@ class FullRunStage:
         deps.run_mission_from_global(purposes, funds_by_isin, max_workers=workers, skip_existing=False)
         deps.log("[7/7] Observing Purpose trajectories")
         deps.observe_persisted_mission_outputs(purposes, funds_by_isin, max_workers=workers)
-        deps.write_rows(output_dir / "pipeline_summary.csv", [
+        deps.write_rows(pipeline_summary_path(output_dir), [
             {"stage": "admissible_funds", "count": len(funds)},
             {"stage": "team_frontier", "count": len(teams)},
             {"stage": "composition_candidates", "count": expected_total},

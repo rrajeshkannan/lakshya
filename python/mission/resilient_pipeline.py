@@ -34,6 +34,13 @@ from .trajectory_execution_stage import (
 import pandas as pd
 
 from fund_analysis.admissible_funds import load_admissible_funds
+from lfs.layout import (
+    composition_candidates_path,
+    global_survivors_path,
+    pipeline_log_path,
+    pipeline_manifest_path,
+    positions_as_of_path,
+)
 from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions
 from .historical_positions import build_positions_as_of
@@ -89,8 +96,8 @@ CURRENT_POSITIONS_PATH = DATA_DIR / "lps" / "positions.csv"
 FINGERPRINT_DIR = PROJECT_ROOT / "output" / "fingerprints" / "composition"
 CHECKPOINT_INDEX_PATH = FINGERPRINT_DIR / ".checkpoint_index.json"
 OUTPUT_DIR = PROJECT_ROOT / "output"
-LOG_PATH = OUTPUT_DIR / "trajectory_pipeline.log"
-MANIFEST_PATH = OUTPUT_DIR / "pipeline_run_manifest.json"
+LOG_PATH = pipeline_log_path(OUTPUT_DIR)
+MANIFEST_PATH = pipeline_manifest_path(OUTPUT_DIR)
 
 _RUN_MANIFEST: dict | None = None
 
@@ -104,7 +111,7 @@ def _console(message: str) -> None:
 
 
 def _detail(message: str) -> None:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with LOG_PATH.open("a", encoding="utf-8") as handle:
         handle.write(f"{_wall_timestamp()} | {message}\n")
         handle.flush()
@@ -122,7 +129,7 @@ def _event(message: str) -> None:
 def _write_manifest() -> None:
     if _RUN_MANIFEST is None:
         return
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
     temporary = MANIFEST_PATH.with_suffix(MANIFEST_PATH.suffix + ".tmp")
     with temporary.open("w", encoding="utf-8") as handle:
         json.dump(_RUN_MANIFEST, handle, ensure_ascii=False, indent=2, sort_keys=True)
@@ -160,7 +167,7 @@ def _input_hash(path: Path) -> str:
 
 
 def _positions_as_of_path(as_of: str) -> Path:
-    return OUTPUT_DIR / f"positions_as_of_{as_of}.csv"
+    return positions_as_of_path(OUTPUT_DIR, as_of)
 
 
 def _positions_as_of_inputs(
@@ -332,8 +339,8 @@ def _global_composition_stage() -> GlobalCompositionStage:
         output_dir=OUTPUT_DIR,
         project_root=PROJECT_ROOT,
         fingerprint_dir=FINGERPRINT_DIR,
-        candidates_path=OUTPUT_DIR / "composition_candidates.csv",
-        global_survivors_path=OUTPUT_DIR / "global_survivors.csv",
+        candidates_path=composition_candidates_path(OUTPUT_DIR),
+        global_survivors_path=global_survivors_path(OUTPUT_DIR),
         fingerprint_schema_version=FINGERPRINT_SCHEMA_VERSION,
         input_hash=_input_hash,
         candidate_compositions=_candidate_compositions,

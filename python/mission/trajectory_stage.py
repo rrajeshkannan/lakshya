@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from lfs.layout import mission_survivors_path, trajectory_observations_dir
+
 
 @dataclass(frozen=True)
 class TrajectoryCheckpointDeps:
@@ -28,8 +30,8 @@ class TrajectoryStage:
 
     def checkpoint_valid(self, purpose) -> bool:
         output_dir = self.deps.output_dir
-        trajectory_path = output_dir / "trajectory_observations" / f"{purpose.name}.csv"
-        mission_path = output_dir / f"mission_survivors_{purpose.name}.csv"
+        trajectory_path = trajectory_observations_dir(output_dir) / f"{purpose.name}.csv"
+        mission_path = mission_survivors_path(output_dir, purpose.name)
         if not mission_path.is_file() or not trajectory_path.is_file():
             return False
         try:

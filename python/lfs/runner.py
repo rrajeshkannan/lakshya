@@ -18,16 +18,17 @@ from final.compromise_programming import (
     write_analysis,
 )
 from lakshya_core.hashing import sha256_file
+from lfs.layout import final_checkpoint_path, final_summary_path, mission_survivors_path
 from mission.purpose_loader import load_purposes
 from mission.resilient_pipeline import run as run_mission
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = PROJECT_ROOT / "output"
 LFS_DATA_DIR = PROJECT_ROOT / "data" / "lfs"
 
 
 def _checkpoint_path(purpose_name: str) -> Path:
-    return OUTPUT_DIR / f"final_{purpose_name}_checkpoint.json"
+    return final_checkpoint_path(OUTPUT_DIR, purpose_name)
 
 
 def _write_checkpoint(path: Path, payload: dict) -> None:
@@ -49,7 +50,7 @@ def _final_checkpoint_valid(
     bootstrap_seed: int,
 ) -> bool:
     checkpoint = _checkpoint_path(purpose_name)
-    summary = OUTPUT_DIR / f"final_{purpose_name}_summary.csv"
+    summary = final_summary_path(OUTPUT_DIR, purpose_name)
     if not checkpoint.is_file() or not summary.is_file():
         return False
     try:
@@ -83,7 +84,7 @@ def run_final_stage(
         purposes = [purpose for purpose in purposes if purpose.name in requested]
 
     for purpose in purposes:
-        mission_path = OUTPUT_DIR / f"mission_survivors_{purpose.name}.csv"
+        mission_path = mission_survivors_path(OUTPUT_DIR, purpose.name)
         if not mission_path.is_file():
             raise FileNotFoundError(
                 f"Required MISSION checkpoint is missing for {purpose.name}: {mission_path}"

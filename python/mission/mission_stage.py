@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable
 
+from lfs.layout import achievability_path, global_survivors_path, mission_survivors_path
+
 
 @dataclass(frozen=True)
 class MissionCheckpointDeps:
@@ -33,19 +35,19 @@ class MissionStage:
 
     def checkpoint_valid(self, purpose) -> bool:
         output_dir = self.deps.output_dir
-        mission_path = output_dir / f"mission_survivors_{purpose.name}.csv"
-        achievability_path = output_dir / f"achievability_{purpose.name}.csv"
-        if not mission_path.is_file() or not achievability_path.is_file():
+        mission_path = mission_survivors_path(output_dir, purpose.name)
+        achievability = achievability_path(output_dir, purpose.name)
+        if not mission_path.is_file() or not achievability.is_file():
             return False
         try:
             as_of = self.deps.as_of_string()
             purpose_inputs = self.deps.purpose_inputs_sha256(as_of)
             achievability_valid = self.deps.is_valid_csv_checkpoint(
-                achievability_path,
+                achievability,
                 stage="mission_achievability",
                 as_of=as_of,
                 inputs={
-                    "global_survivors_sha256": self.deps.sha256(output_dir / "global_survivors.csv"),
+                    "global_survivors_sha256": self.deps.sha256(global_survivors_path(output_dir)),
                     "global_checkpoint_stage": "global_frontier",
                     "purpose_inputs_sha256": purpose_inputs,
                 },
@@ -57,7 +59,7 @@ class MissionStage:
                 stage="mission",
                 as_of=as_of,
                 inputs={
-                    "achievability_sha256": self.deps.sha256(achievability_path),
+                    "achievability_sha256": self.deps.sha256(achievability),
                     "purpose_inputs_sha256": purpose_inputs,
                 },
             )

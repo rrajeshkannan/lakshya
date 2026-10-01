@@ -26,7 +26,6 @@ clustering, or region model is introduced here.
 
 from __future__ import annotations
 
-import argparse
 import json
 import os
 from dataclasses import dataclass
@@ -36,6 +35,8 @@ import numpy as np
 import pandas as pd
 
 from team_analysis.comparator_surface import PROTECTION_METRICS, ROLLING_METRICS
+
+from lfs.layout import final_evidence_prefix
 
 from .observation_horizon import nearest_supported_horizon
 
@@ -465,25 +466,21 @@ def _atomic_csv(path: Path, frame: pd.DataFrame) -> None:
 
 
 def write_analysis(analysis: FinalAnalysis, output_dir: Path = OUTPUT_DIR) -> dict[str, Path]:
-    """Persist the complete FINAL evidence bundle atomically."""
-    prefix = output_dir / f"final_{analysis.purpose}"
+    """Persist the FINAL evidence used by LFS under the purpose goal directory.
+
+    Lp sweep, leave-one-spoke, bootstrap, and raw distance tables stay in the
+    analysis object. They are research diagnostics and are not written.
+    """
+    prefix = final_evidence_prefix(output_dir, analysis.purpose)
     paths = {
         "axes": prefix.with_name(prefix.name + "_axes.csv"),
         "signatures": prefix.with_name(prefix.name + "_signatures.csv"),
-        "distances": prefix.with_name(prefix.name + "_distances.csv"),
         "results": prefix.with_name(prefix.name + "_results.csv"),
-        "lnorm": prefix.with_name(prefix.name + "_lnorm_sweep.csv"),
-        "sensitivity": prefix.with_name(prefix.name + "_leave_one_spoke.csv"),
-        "bootstrap": prefix.with_name(prefix.name + "_bootstrap.csv"),
         "frontier": prefix.with_name(prefix.name + "_joint_l2_linf_frontier.csv"),
     }
     _atomic_csv(paths["axes"], analysis.axis_metadata)
     _atomic_csv(paths["signatures"], analysis.signatures)
-    _atomic_csv(paths["distances"], analysis.distances)
     _atomic_csv(paths["results"], analysis.results)
-    _atomic_csv(paths["lnorm"], analysis.lnorm_sweep)
-    _atomic_csv(paths["sensitivity"], analysis.leave_one_spoke)
-    _atomic_csv(paths["bootstrap"], analysis.bootstrap)
     _atomic_csv(paths["frontier"], analysis.joint_frontier)
 
     winner = analysis.results.iloc[0]
@@ -513,31 +510,3 @@ def write_analysis(analysis: FinalAnalysis, output_dir: Path = OUTPUT_DIR) -> di
     paths["summary"] = prefix.with_name(prefix.name + "_summary.csv")
     _atomic_csv(paths["summary"], summary)
     return paths
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--purpose", required=True)
-    parser.add_argument("--horizon-years", required=True, type=float)
-    parser.add_argument("--identities-file", required=True, type=Path)
-    parser.add_argument("--fingerprint-root", type=Path, default=FINGERPRINT_DIR)
-    parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
-    parser.add_argument("--bootstrap-resamples", type=int, default=DEFAULT_BOOTSTRAP_RESAMPLES)
-    parser.add_argument("--bootstrap-seed", type=int, default=DEFAULT_BOOTSTRAP_SEED)
-    args = parser.parse_args()
-
-    identities = pd.read_csv(args.identities_file)["composition"].astype(str).tolist()
-    analysis = analyze_purpose(
-        args.purpose,
-        identities,
-        args.horizon_years,
-        fingerprint_root=args.fingerprint_root,
-        bootstrap_resamples=args.bootstrap_resamples,
-        bootstrap_seed=args.bootstrap_seed,
-    )
-    for path in write_analysis(analysis, args.output_dir).values():
-        print(path)
-
-
-if __name__ == "__main__":
-    main()

@@ -10,6 +10,8 @@ The worker preserves the original return contract:
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from lfs.layout import achievability_path, global_survivors_path, mission_survivors_path
 from types import SimpleNamespace
 from pathlib import Path
 from typing import Callable, Any
@@ -83,17 +85,15 @@ class MissionPurposeWorker:
             ):
                 qualified.append((composition, evidence))
 
-        global_path = self._deps.output_dir / "global_survivors.csv"
+        global_path = global_survivors_path(self._deps.output_dir)
         global_inputs = {
             "global_survivors_sha256": self._deps.sha256_file(global_path),
             "global_checkpoint_stage": "global_frontier",
             "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(as_of),
         }
-        achievability_path = (
-            self._deps.output_dir / f"achievability_{purpose.name}.csv"
-        )
+        achievability = achievability_path(self._deps.output_dir, purpose.name)
         self._deps.write_rows(
-            achievability_path,
+            achievability,
             assessments,
             stage="mission_achievability",
             inputs=global_inputs,
@@ -101,9 +101,7 @@ class MissionPurposeWorker:
         )
 
         protected = self._deps.protection_frontier(qualified)
-        mission_path = (
-            self._deps.output_dir / f"mission_survivors_{purpose.name}.csv"
-        )
+        mission_path = mission_survivors_path(self._deps.output_dir, purpose.name)
         self._deps.write_rows(
             mission_path,
             [
@@ -112,7 +110,7 @@ class MissionPurposeWorker:
             ],
             stage="mission",
             inputs={
-                "achievability_sha256": self._deps.sha256_file(achievability_path),
+                "achievability_sha256": self._deps.sha256_file(achievability),
                 "purpose_inputs_sha256": self._deps.purpose_inputs_sha256(as_of),
             },
             as_of=as_of,

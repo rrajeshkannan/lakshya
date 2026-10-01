@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from lakshya_core.hashing import sha256_file
 
-import argparse
 import csv
 import json
 import logging
@@ -26,6 +25,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from lfs.layout import achievability_path
 from mission.achievability import required_annual_return
 from mission.achievability_interpretation import AchievabilityStatus
 from mission.models import Purpose
@@ -348,7 +348,7 @@ def _observed_upper_returns(data_dir: Path, as_of: str, required_purposes: set[s
             continue
         if required_purposes is not None and purpose not in required_purposes:
             continue
-        checkpoint = output_dir / f"achievability_{purpose}.csv"
+        checkpoint = achievability_path(output_dir, purpose)
         if not checkpoint.is_file():
             raise FileNotFoundError(f"Achievability checkpoint missing: {checkpoint}")
         matches = [row for row in _read_csv(checkpoint) if row.get("composition") == winner]
@@ -442,26 +442,3 @@ def commit_staging(as_of: str, *, data_dir: Path = DATA_DIR) -> Path:
     with (directory / "staging.log").open("a", encoding="utf-8") as handle:
         handle.write(f"COMMIT as_of={as_of} source={authoritative}\n")
     return authoritative
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    sub = parser.add_subparsers(dest="command", required=True)
-    p = sub.add_parser("init")
-    p.add_argument("--as-of", required=True)
-    p = sub.add_parser("turn")
-    p.add_argument("--as-of", required=True)
-    p.add_argument("--input", required=True, type=Path)
-    p = sub.add_parser("commit")
-    p.add_argument("--as-of", required=True)
-    args = parser.parse_args()
-    if args.command == "init":
-        print(initialize_staging(args.as_of))
-    elif args.command == "turn":
-        print(run_turn(args.as_of, args.input))
-    else:
-        print(commit_staging(args.as_of))
-
-
-if __name__ == "__main__":
-    main()

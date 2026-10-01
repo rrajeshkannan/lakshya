@@ -8,6 +8,8 @@ owner.
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from lfs.layout import composition_candidates_path
 from pathlib import Path
 from typing import Any, Callable
 import csv
@@ -40,7 +42,7 @@ class CompositionEvidenceStage:
         self.d = deps
 
     def write_candidates(self, teams) -> int:
-        path = self.d.output_dir / "composition_candidates.csv"
+        path = composition_candidates_path(self.d.output_dir)
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_suffix(path.suffix + ".tmp")
         count = 0
@@ -73,7 +75,7 @@ class CompositionEvidenceStage:
         self.d.has_fingerprint(). The returned entries are published only after all missing
         Composition work has successfully persisted.
         """
-        candidates_sha256 = self.d.input_hash(self.d.output_dir / "composition_candidates.csv")
+        candidates_sha256 = self.d.input_hash(composition_candidates_path(self.d.output_dir))
         indexed_entries = self.d.load_checkpoint_index(self.d.checkpoint_index_path, candidates_sha256)
         index_reusable = bool(indexed_entries)
         total = existing = 0

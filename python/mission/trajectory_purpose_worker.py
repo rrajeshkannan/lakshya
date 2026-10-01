@@ -8,6 +8,8 @@ updates, and checkpoint eligibility remain in the runner/stage boundaries.
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from lfs.layout import mission_survivors_path, trajectory_observations_dir
 from pathlib import Path
 from typing import Callable
 
@@ -81,12 +83,8 @@ class TrajectoryPurposeWorker:
                     }
                 )
 
-        mission_path = self.deps.output_dir / f"mission_survivors_{purpose.name}.csv"
-        trajectory_path = (
-            self.deps.output_dir
-            / "trajectory_observations"
-            / f"{purpose.name}.csv"
-        )
+        mission_path = mission_survivors_path(self.deps.output_dir, purpose.name)
+        trajectory_path = trajectory_observations_dir(self.deps.output_dir) / f"{purpose.name}.csv"
         self.deps.write_rows(
             trajectory_path,
             rows,

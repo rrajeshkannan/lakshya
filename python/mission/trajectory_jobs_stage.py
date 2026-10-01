@@ -8,6 +8,8 @@ and ProcessPoolExecutor ownership remain in the resilient runner.
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from lfs.layout import achievability_path, mission_survivors_path, positions_as_of_path
 from hashlib import sha256
 from pathlib import Path
 from typing import Callable, Any
@@ -36,7 +38,7 @@ class TrajectoryJobStage:
 
     def _purpose_inputs_sha256(self, as_of: str) -> str:
         """Reproduce the MISSION Purpose-input provenance contract."""
-        snapshot_path = self._deps.output_dir / f"positions_as_of_{as_of}.csv"
+        snapshot_path = positions_as_of_path(self._deps.output_dir, as_of)
         purposes_path = self._deps.output_dir.parent / "data" / "purpose" / "purposes.csv"
         if not snapshot_path.is_file():
             raise FileNotFoundError(f"Historical Position snapshot is missing: {snapshot_path}")
@@ -64,7 +66,7 @@ class TrajectoryJobStage:
                 self._deps.log(f"  {purpose.name}: valid trajectory checkpoint; reusing")
                 self._deps.detail(f"TRAJECTORY_REUSED purpose={purpose.name}")
                 continue
-            mission_path = self._deps.output_dir / f"mission_survivors_{purpose.name}.csv"
+            mission_path = mission_survivors_path(self._deps.output_dir, purpose.name)
             if not self._deps.mission_checkpoint_valid(purpose):
                 self._deps.log(
                     f"  {purpose.name}: no valid persisted MISSION checkpoint; skipping"
@@ -81,7 +83,7 @@ class TrajectoryJobStage:
                 as_of=as_of,
                 inputs={
                     "achievability_sha256": self._deps.sha256(
-                        self._deps.output_dir / f"achievability_{purpose.name}.csv"
+                        achievability_path(self._deps.output_dir, purpose.name)
                     ),
                     "purpose_inputs_sha256": purpose_inputs,
                 },
