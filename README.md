@@ -21,9 +21,10 @@ How do we move from CURRENT to TARGET?
 
 > **Compute once. Persist immediately. Reuse forever.**
 
-Production release **v1.0.0** is valued as of **2026-09-30**. Three systems, four commands:
+Production release **v1.0.0** is valued as of **2026-09-30**. Three systems, five commands:
 
 ```bash
+python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-30
 python -m lps.runner --as-of 2026-09-30
 python -m lfs.runner --as-of 2026-09-30
 python -m lfs.review_runner init --as-of 2026-09-30
@@ -32,18 +33,19 @@ python -m lts.runner --as-of 2026-09-30
 
 | Command | What it does |
 |---|---|
-| `python -m lps.runner` | As-is ledger. Reconciles positions, transactions, and `data/lps/transition_manifest.json`. |
+| `python -m lps.cas_import.runner` | Statement import. Writes transactions and unit balances. Keeps Purpose. Does not price the book. |
+| `python -m lps.runner` | NAV from mfapi.in, then `market value = units × NAV`, then settlement against `data/lps/transition_manifest.json`. |
 | `python -m lfs.runner` | MISSION, then FINAL. Reads `data/lfs/purpose.csv`. |
 | `python -m lfs.review_runner` | Purpose Staging. `init`, `turn`, and `commit`. |
 | `python -m lts.runner` | Tax-lock cascade, execution playbook, and the transition manifest. |
 
-CAS import is `python -m lps.cas_import.runner`. The date `lps.runner` prints is the as-of on the transition manifest.
+`lps.runner` prints the valuation date it was given. It also prints the as-of on the transition manifest when that file is present.
 
 ```bash
 pytest python/tests/
 ```
 
-The v1.0.0 sweep passed 408 tests. Packages are `python/core/`, `python/lps/`, `python/lfs/` (including `python/lfs/purpose_staging/`), and `python/lts/`.
+The v1.0.0 sweep passed 408 tests. Packages are `python/core/`, `python/lps/` (`cas_import/`, `nav_engine/`, `valuator/`), `python/lfs/` (including `python/lfs/purpose_staging/`), and `python/lts/`.
 
 Operating steps: `docs/Lakshya_HowTo.md`. Release record: `docs/Lakshya_Current_Status.md`. Architecture: `docs/Lakshya_Architecture.md`. Domain model: `docs/Lakshya_Domain_Model.md`. Sequence: `docs/Lakshya_Pipeline_Sequence.md`.
 
@@ -353,15 +355,16 @@ The current implementation includes:
 
 ## Validated evidence
 
-The current validation evidence includes:
+The current validation evidence, from the 2026-09-30 valuation, includes:
 
-- **696 lots** and **34 Position summaries**;
-- **602 available** lots and **94 locked** lots;
+- **696 lots** and **34** active slices (53 position rows);
+- **604 available** lots and **92 locked** lots, all ELSS and all `RETAIN`;
 - no negative lot balances in the validated result;
-- six balanced Purpose reports; and
-- numerical reconciliation within floating-point tolerance.
+- position market value **₹14,790,485.6443662**, matching the materialized slices on units and market value;
+- **68** slices and **49** pending orders in `MAN-2026-09-30-01`, agreeing with the execution playbook; and
+- `pytest python/tests/` passed 408 tests.
 
-The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
+The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -379,7 +382,7 @@ The implementation must continue to preserve the following:
 
 ## Closed gaps
 
-The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps. The figures in this list are that close. The live book is the 2026-09-30 valuation above.
 
 1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
 2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.

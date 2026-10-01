@@ -4,7 +4,7 @@
 
 **Release:** FINAL / Compromise Programming v1
 
-**As of:** 2026-09-14
+**As of:** 2026-09-30
 
 This document describes **how the Lakshya review executes**. `docs/Lakshya_Architecture.md` defines the wider production architecture; `docs/Lakshya_Domain_Model.md` defines the bounded contexts and five cross-context contracts; `docs/Lakshya_HowTo.md` defines practical reviewer operation.
 
@@ -226,6 +226,8 @@ NAV as of X
 
 No holiday observations are invented and no interpolation is performed.
 
+`python -m lps.cas_import.runner` writes Transactions and unit balances. `python -m lps.runner --as-of` writes the valuation: `lps.nav_engine` caches mfapi.in history under `data/nav/`, and `lps.valuator` sets market value to units times the NAV on or before that date. Run valuation before LFS and LTS.
+
 LPS derives Purpose capital from Position valuation and accepted Position → Purpose attribution.
 
 ---
@@ -251,7 +253,7 @@ The formation fund universe has two sources:
 
 The second source covers funds not represented by existing Positions. The reviewer is responsible for bringing only admissible candidates into `potential_funds_in_scope`; LFS does not contain a separate admissibility gate.
 
-The legacy `data/lps/funds_in_scope.csv` mechanism is an implementation artifact to be replaced as this contract is implemented. NAV acquisition should ultimately derive ISINs from Positions plus reviewer-selected potential funds.
+Book valuation fetches NAV for active Position ISINs. `data/lps/funds_in_scope.csv` remains the admission and lock-classification list used by formation and transition. Reviewer-selected potential funds are a separate input and are not part of that NAV request.
 
 Formation Evidence contains no Position attribution, transaction history, transition information, or Fund Fingerprints.
 
@@ -736,7 +738,7 @@ Run LTS only after LPS and LFS have used the same as-of date. The runner reads t
 python -m lts.runner --as-of YYYY-MM-DD
 ```
 
-The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/nav/` as of that date. Those two prices agree only when the CAS import valued the positions at the same as-of.
+The economic plan uses the market values stored on `data/lps/positions.csv`. Availability reprices the same units from `data/nav/` as of that date. Those two prices agree when `python -m lps.runner` valued the positions at the same as-of.
 
 Investor matters because different investors can have different tax consequences. Folio matters because the same ISIN may appear in different folios and Purpose relationships.
 
@@ -956,15 +958,16 @@ The current implementation includes:
 
 ## Validated evidence
 
-The current validation evidence includes:
+The current validation evidence, from the 2026-09-30 valuation, includes:
 
-- **696 lots** and **34 Position summaries**;
-- **602 available** lots and **94 locked** lots;
+- **696 lots** and **34** active slices (53 position rows);
+- **604 available** lots and **92 locked** lots, all ELSS and all `RETAIN`;
 - no negative lot balances in the validated result;
-- six balanced Purpose reports; and
-- numerical reconciliation within floating-point tolerance.
+- position market value **₹14,790,485.6443662**, matching the materialized slices on units and market value;
+- **68** slices and **49** pending orders in `MAN-2026-09-30-01`, agreeing with the execution playbook; and
+- `pytest python/tests/` passed 408 tests.
 
-The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
+The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -982,7 +985,7 @@ The implementation must continue to preserve the following:
 
 ## Closed gaps
 
-The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps. The figures in this list are that close. The live book is the 2026-09-30 valuation above.
 
 1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
 2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.

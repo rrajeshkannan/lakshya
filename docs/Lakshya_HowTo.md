@@ -15,13 +15,14 @@ LTS — transition CURRENT → TARGET
 Follow the annual review in order. Do not skip a manual checkpoint.
 
 ```bash
+python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-30
 python -m lps.runner --as-of 2026-09-30
 python -m lfs.runner --as-of 2026-09-30
 python -m lfs.review_runner init --as-of 2026-09-30
 python -m lts.runner --as-of 2026-09-30
 ```
 
-`lps.runner` reconciles the ledger. Import a statement with `python -m lps.cas_import.runner`. Confirm with `pytest python/tests/`.
+Import the statement first. `lps.runner` then fetches NAV, prices the book, and reconciles settlements. Confirm with `pytest python/tests/`.
 
 ---
 
@@ -63,7 +64,7 @@ data/lps/positions.csv
 
 Each record retains investor identity. A Position is identified by `Investor + Folio + ISIN + Slice`. The physical holding is the first three parts. The opening book is `slice-1`.
 
-Run one import per investor from the repository root. Pass the same `--as-of` that LFS and LTS will use. The runner replaces that investor's transactions, acquires NAV, and rewrites `data/lps/positions.csv` for the whole family at that date. It keeps existing Purpose attribution. Do not empty `positions.csv` before import. The password is entered at the prompt and is not stored.
+Run one import per investor from the repository root. The investor name is the filename prefix before `_CAS`, for example `Amma` and `Appanna`. The runner replaces that investor's transactions, reconstructs unit balances, and keeps existing Purpose attribution. It does not fetch NAV or write market value. Do not empty `positions.csv` before import. The password is entered at the prompt and is not stored. `--as-of` is recorded on the import; pricing is the next command.
 
 ```bash
 python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of YYYY-MM-DD
@@ -83,6 +84,14 @@ valuation_as_of_date
 NAV evidence is sparse. Store actual recorded observations only. For a NAV read as of a date, use the latest recorded observation on or before that date.
 
 Do not manufacture holiday/weekend NAVs or interpolate calendar days.
+
+After the statement import, price the family book before LFS:
+
+```bash
+python -m lps.runner --as-of YYYY-MM-DD
+```
+
+That command asks `lps.nav_engine` to cache mfapi.in history under `data/nav/` for each active holding through the date, asks `lps.valuator` to set market value to units times that NAV, then reconciles `data/lps/transition_manifest.json`. A fund whose newest stored print is already on or after the date is not fetched again.
 
 ## 1C. Review Fund scope
 
@@ -421,7 +430,7 @@ data/lts/manifest.json
 data/lps/transition_manifest.json
 ```
 
-The plan uses the market values already stored on `data/lps/positions.csv`. Availability reprices those units from the NAV files as of the LFS date. If those dates differ, the two totals will not match. Revalue positions with the CAS runner at the LFS as-of, then run LTS again.
+The plan uses the market values already stored on `data/lps/positions.csv`. Availability reprices those units from the NAV files as of the LFS date. If those dates differ, the two totals will not match. Revalue with `python -m lps.runner --as-of` at the LFS date, then run LTS again.
 
 The artifacts are a human review plan. They do not place transactions.
 
@@ -550,7 +559,8 @@ LPS — FACTUAL OBSERVATION
 [ ] Validate source import; stop on ambiguity
 [ ] Reconcile family-wide data/lps/transactions.csv
 [ ] Reconstruct / validate data/lps/positions.csv
-[ ] Apply applicable NAV observation for valuation_as_of_date
+[ ] Price the book at valuation_as_of_date
+    python -m lps.runner --as-of YYYY-MM-DD
 [ ] Confirm transaction_through_date and valuation_as_of_date separately
 [ ] Review Purpose mapping; one Position → one Purpose
 [ ] Accept Economic CURRENT only after human review
@@ -588,7 +598,7 @@ CURRENT → TARGET
 [ ] Confirm LPS, LFS, and LTS share one as-of date
 [ ] Run LTS
     python -m lts.runner --as-of YYYY-MM-DD
-[ ] Reconcile the ledger
+[ ] Reconcile the new manifest
     python -m lps.runner --as-of YYYY-MM-DD
 [ ] CHECKPOINT: manifest is balanced and availability matches position market value
 [ ] Review the execution playbook, materialized slices, cascade review, and tax preflight
@@ -648,15 +658,16 @@ The current implementation includes:
 
 ## Validated evidence
 
-The current validation evidence includes:
+The current validation evidence, from the 2026-09-30 valuation, includes:
 
-- **696 lots** and **34 Position summaries**;
-- **602 available** lots and **94 locked** lots;
+- **696 lots** and **34** active slices (53 position rows);
+- **604 available** lots and **92 locked** lots, all ELSS and all `RETAIN`;
 - no negative lot balances in the validated result;
-- six balanced Purpose reports; and
-- numerical reconciliation within floating-point tolerance.
+- position market value **₹14,790,485.6443662**, matching the materialized slices on units and market value;
+- **68** slices and **49** pending orders in `MAN-2026-09-30-01`, agreeing with the execution playbook; and
+- `pytest python/tests/` passed 408 tests.
 
-The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
+The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -674,7 +685,7 @@ The implementation must continue to preserve the following:
 
 ## Closed gaps
 
-The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps. The figures in this list are that close. The live book is the 2026-09-30 valuation above.
 
 1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
 2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.

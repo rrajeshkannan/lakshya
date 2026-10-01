@@ -3,7 +3,7 @@
 **Release:** Production v1.0.0
 **Valuation as-of:** 2026-09-30
 **Recorded:** 2026-10-01
-**Status:** The four-runner sweep completes. LTS artifacts are a human review plan, not an execution instruction. `pytest python/tests/` passed 408 tests across `lps`, `lfs`, `lts`, and `core`.
+**Status:** The five-runner sweep completes. LTS artifacts are a human review plan, not an execution instruction. `pytest python/tests/` passed 408 tests across `lps`, `lfs`, `lts`, and `core`.
 
 This document is the current implementation-status companion to the design documents. It records what the code does now. It is not a second architecture.
 
@@ -11,23 +11,25 @@ This document is the current implementation-status companion to the design docum
 
 ## 1. System boundary
 
-Lakshya remains a deliberately separated three-system design, operated through four commands:
+Lakshya remains a deliberately separated three-system design, operated through five commands:
 
 ```text
-LPS — observe Economic CURRENT from authoritative evidence
+LPS import — transactions and unit balances from the CAS
+LPS valuation — NAV cache, market value, settlement reconciliation
 LFS — form reviewed analytical intent and TARGET inputs
 LFS review — Purpose Staging, the human gate after FINAL
 LTS — analyze the transition from CURRENT to TARGET
 ```
 
 ```bash
+python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-30
 python -m lps.runner --as-of 2026-09-30
 python -m lfs.runner --as-of 2026-09-30
 python -m lfs.review_runner init --as-of 2026-09-30
 python -m lts.runner --as-of 2026-09-30
 ```
 
-Packages: `python/core/`, `python/lps/` (CAS import is `python/lps/cas_import/`), `python/lfs/` (Purpose Staging is `python/lfs/purpose_staging/`), `python/lts/`. Purpose intent is `data/lfs/purpose.csv`. NAV observations are in `data/nav/`.
+Packages: `python/core/`, `python/lps/` (`cas_import/`, `nav_engine/`, `valuator/`), `python/lfs/` (Purpose Staging is `python/lfs/purpose_staging/`), `python/lts/`. Purpose intent is `data/lfs/purpose.csv`. NAV observations are in `data/nav/`.
 
 LTS does not re-run portfolio formation and does not silently change FINAL decisions.
 
@@ -43,19 +45,19 @@ Use one as-of date for LPS valuation, LFS, Purpose Staging, and LTS. The v1.0.0 
 
 ```bash
 python -m lps.cas_import.runner input/<Investor>_CAS_<range>.pdf --investor <Investor> --as-of 2026-09-30
+python -m lps.runner --as-of 2026-09-30
 python -m lfs.runner --as-of 2026-09-30
 python -m lfs.review_runner init --as-of 2026-09-30
 python -m lts.runner --as-of 2026-09-30
-python -m lps.runner --as-of 2026-09-30
 ```
 
-The CAS runner writes `data/lps/positions.csv` at that as-of and keeps Purpose attribution. LFS stamps `data/lfs/purpose_summaries.csv` and `data/lfs/manifest.json`. LTS reads that stamp and refuses a different `--as-of`. It also writes `data/lps/transition_manifest.json`. The date `lps.runner` prints is that manifest as-of.
+The CAS runner replaces that investor's transactions, reconstructs unit balances, and keeps Purpose attribution. It does not fetch NAV or write market value. `python -m lps.runner` then ensures `data/nav/` covers the as-of date, reprices `data/lps/positions.csv`, and reconciles the transition manifest. Run it before LFS. LFS reads that NAV cache when it builds `output/audits/positions_as_of_<date>.csv`, and it stamps `data/lfs/purpose_summaries.csv` and `data/lfs/manifest.json`. LTS reads that stamp and refuses a different `--as-of`. It also writes `data/lps/transition_manifest.json`. A later `lps.runner` reconciles that new manifest; the valuation date it prints is the date you passed.
 
 A normal LFS rerun reuses valid checkpoints under `output/`. Delete `output/*` only for a forced clean rebuild.
 
 ## 3. What the 2026-09-30 sweep produced
 
-Portfolio market value is **₹15,233,131.3171967**.
+Portfolio market value is **₹14,790,485.6443662**, priced at the 2026-09-30 NAV print on every active holding.
 
 - `data/lps/positions.csv` — 53 holdings, 34 active slices;
 - `output/audits/positions_as_of_2026-09-30.csv`;
@@ -63,17 +65,17 @@ Portfolio market value is **₹15,233,131.3171967**.
 - `data/lts/materialized_transition_slices.csv` — 68 slices;
 - `data/lts/cascade_review.csv`;
 - `data/lts/execution_playbook.csv` — 49 orders;
-- `data/lts/tax_preflight_report.txt`;
+- `data/lts/tax_preflight_report.txt` — family advance tax ₹4,84,080.48;
 - `data/lts/manifest.json`;
 - `data/lps/transition_manifest.json` — `MAN-2026-09-30-01`, 49 pending orders, 0 fulfilled.
 
-`python -m lts.runner` writes the slices, the playbook, and the transition manifest. They are part of the artifact contract. The playbook and the manifest agree on source ISIN, target ISIN, and units.
+`python -m lts.runner` writes the slices, the playbook, and the transition manifest. They are part of the artifact contract. The playbook and the manifest agree order for order. Slice units and market value match the 34 active holdings. 92 ELSS-locked lots (14,356.318 units) are `RETAIN` only.
 
 Every FINAL weight is funded. `RETAIN` is only the capital already held in that Purpose and that ISIN. The remainder of the weight is `INVEST` inside the same Purpose.
 
 ## 4. Gaps that were open on 2026-09-23
 
-**Valuation.** Positions had been priced at the 8 Sep NAV while availability used the 6 Sep as-of print, which is the 4 Sep NAV. The difference was ₹27,420.2381130. Sharing 2026-09-06 across CAS import, LFS, and LTS closed it. Availability now matches position market value on all 34 holdings.
+**Valuation.** Positions had been priced at the 8 Sep NAV while availability used the 6 Sep as-of print, which is the 4 Sep NAV. The difference was ₹27,420.2381130. Sharing one as-of across valuation, LFS, and LTS closed it. `python -m lps.runner` is that valuation step. Availability matches position market value on all 34 holdings. The 2026-09-30 book is ₹14,790,485.6443662.
 
 **Same-day rows.** Folio `11002746` / `INF879O01027` has two purchases on 20 Mar 2023 and two on 5 Jun 2023. The running balance steps up by each purchase, and the bank debits match two ₹30,000 payments and two ₹60,000 payments. They stay in the ledger. A repeated zero-unit IFSC note on another folio does not change units. Do not drop a row because the date, amount, and description match; check the running balance.
 

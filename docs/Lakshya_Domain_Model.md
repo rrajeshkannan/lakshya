@@ -2,7 +2,7 @@
 
 **Status:** Authoritative domain model
 
-**As of:** 2026-09-14
+**As of:** 2026-09-30
 
 This document records the bounded-context boundaries, ubiquitous language, ownership rules, and cross-context contracts established during the Lakshya architecture elicitation. It is complementary to `docs/Lakshya_Architecture.md`: this document defines the domain boundaries; the Architecture document describes the wider production architecture and analytical stages.
 
@@ -70,6 +70,8 @@ LPS does not own:
 - TEAM, COMPOSITION, MISSION, FINAL, or TARGET formation;
 - transition decisions; or
 - transaction execution.
+
+Statement parsing, NAV history, and Position valuation stay inside LPS and stay separate from each other. A statement import establishes Transactions and unit balances. Valuation applies a stored NAV observation later, at `valuation_as_of_date`. Market value is units times that NAV.
 
 ### Position identity
 
@@ -406,15 +408,16 @@ The current implementation includes:
 
 ## Validated evidence
 
-The current validation evidence includes:
+The current validation evidence, from the 2026-09-30 valuation, includes:
 
-- **696 lots** and **34 Position summaries**;
-- **602 available** lots and **94 locked** lots;
+- **696 lots** and **34** active slices (53 position rows);
+- **604 available** lots and **92 locked** lots, all ELSS and all `RETAIN`;
 - no negative lot balances in the validated result;
-- six balanced Purpose reports; and
-- numerical reconciliation within floating-point tolerance.
+- position market value **₹14,790,485.6443662**, matching the materialized slices on units and market value;
+- **68** slices and **49** pending orders in `MAN-2026-09-30-01`, agreeing with the execution playbook; and
+- `pytest python/tests/` passed 408 tests.
 
-The 2026-09-26 clean run reconciles. The artifacts are a human review plan, not permission to execute transactions.
+The artifacts are a human review plan, not permission to execute transactions.
 
 ## Design invariants retained
 
@@ -432,7 +435,7 @@ The implementation must continue to preserve the following:
 
 ## Closed gaps
 
-The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps:
+The 2026-09-26 clean run, with LPS, LFS, and LTS sharing as-of **2026-09-06**, closed the previously open implementation gaps. The figures in this list are that close. The live book is the 2026-09-30 valuation above.
 
 1. Materialization is wired into `python -m lts.runner`. The runner writes `data/lts/materialized_transition_slices.csv` together with the mappings, purpose reports, availability files, and `manifest.json`.
 2. Every FINAL-selected fund is funded at its Composition weight. `RETAIN` is the same-Purpose, same-ISIN overlap. A selected fund that the Purpose does not already hold is an `INVEST`, not a missing retain.
