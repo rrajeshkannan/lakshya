@@ -1,7 +1,7 @@
 """[lakshya] Tests for the TEAM candidate universe."""
 
 from lakshya_core.models import Fund
-from team_analysis.candidate_generator import generate_team_candidates
+from lfs.mission.team_analysis.candidate_generator import generate_team_candidates
 
 
 def fund(isin: str) -> Fund:

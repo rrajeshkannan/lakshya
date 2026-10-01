@@ -3,9 +3,9 @@ from __future__ import annotations
 import pandas as pd
 
 from lakshya_core.models import Fund
-from team_analysis.composition import Composition
-from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.team import Team
 
 
 def _fund(isin: str) -> Fund:
@@ -44,8 +44,8 @@ def test_singleton_composition_matches_team_evidence_for_same_trajectory():
     fingerprint = CompositionFingerprint(composition, nav)
 
     assert fingerprint.elevation == __import__(
-        "team_analysis.team_fingerprint", fromlist=["TeamFingerprint"]
+        "lfs.mission.team_analysis.team_fingerprint", fromlist=["TeamFingerprint"]
     ).TeamFingerprint(team, nav).elevation
     assert fingerprint.protection == __import__(
-        "team_analysis.team_fingerprint", fromlist=["TeamFingerprint"]
+        "lfs.mission.team_analysis.team_fingerprint", fromlist=["TeamFingerprint"]
     ).TeamFingerprint(team, nav).protection

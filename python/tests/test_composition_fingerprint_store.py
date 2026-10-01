@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 
 from lakshya_core.models import Fund
-from team_analysis.analyze_composition import analyze_composition
-from team_analysis.composition import Composition, composition_identity
-from team_analysis.composition_fingerprint_store import (
+from lfs.mission.team_analysis.analyze_composition import analyze_composition
+from lfs.mission.team_analysis.composition import Composition, composition_identity
+from lfs.mission.team_analysis.composition_fingerprint_store import (
     evidence_path,
     fingerprint_path,
     fingerprint_to_payload,
@@ -18,7 +18,7 @@ from team_analysis.composition_fingerprint_store import (
     materialize_fingerprint_evidence,
     persist_fingerprint,
 )
-from team_analysis.team import Team
+from lfs.mission.team_analysis.team import Team
 
 
 def _fund(isin: str):

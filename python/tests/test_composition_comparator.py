@@ -3,14 +3,14 @@ from __future__ import annotations
 import pandas as pd
 
 from lakshya_core.models import Fund
-from team_analysis.analyze_composition import analyze_composition
-from team_analysis.composition import Composition
-from team_analysis.composition_comparator import (
+from lfs.mission.team_analysis.analyze_composition import analyze_composition
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.composition_comparator import (
     composition_comparator_values,
     composition_dimensions,
 )
-from team_analysis.comparator_surface import fund_team_dimensions
-from team_analysis.team import Team
+from lfs.mission.team_analysis.comparator_surface import fund_team_dimensions
+from lfs.mission.team_analysis.team import Team
 
 
 def _fund(isin: str) -> Fund:

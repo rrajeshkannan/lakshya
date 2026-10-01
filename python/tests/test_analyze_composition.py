@@ -3,9 +3,9 @@ from __future__ import annotations
 import pandas as pd
 
 from lakshya_core.models import Fund
-from team_analysis.analyze_composition import analyze_composition
-from team_analysis.composition import Composition
-from team_analysis.team import Team
+from lfs.mission.team_analysis.analyze_composition import analyze_composition
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.team import Team
 
 
 def _fund(isin: str) -> Fund:

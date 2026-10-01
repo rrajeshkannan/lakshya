@@ -11,7 +11,7 @@ import json
 import os
 from pathlib import Path
 
-from team_analysis.composition_fingerprint_store import FINGERPRINT_SCHEMA_VERSION
+from lfs.mission.team_analysis.composition_fingerprint_store import FINGERPRINT_SCHEMA_VERSION
 
 CHECKPOINT_INDEX_SCHEMA_VERSION = 1
 

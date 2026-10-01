@@ -1,8 +1,8 @@
 import pandas as pd
 
-from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.composition import Composition
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.team import Team
 from lakshya_core.models import Fund
 
 

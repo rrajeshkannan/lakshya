@@ -10,7 +10,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from fund_analysis.funds_in_scope import load_fund_scope_rows
+from lps.funds_in_scope import load_fund_scope_rows
 from lfs.layout import purpose_intent_path
 from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions

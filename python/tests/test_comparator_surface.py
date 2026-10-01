@@ -1,6 +1,6 @@
 """[lakshya] Tests for the current directional comparator surface."""
 
-from team_analysis.comparator_surface import (
+from lfs.mission.team_analysis.comparator_surface import (
     ROLLING_HORIZONS,
     ROLLING_METRICS,
     PROTECTION_METRICS,

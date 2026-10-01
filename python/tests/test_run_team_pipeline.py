@@ -4,7 +4,7 @@ import pandas as pd
 
 from lakshya_core.dominance import Dimension
 from lakshya_core.models import Fund
-from team_analysis.run_team_pipeline import run_team_pipeline
+from lfs.mission.team_analysis.run_team_pipeline import run_team_pipeline
 
 
 def fund(isin: str) -> Fund:
@@ -52,7 +52,7 @@ def test_runner_uses_declared_team_gate_by_default(monkeypatch):
         return ["frontier"]
 
     monkeypatch.setattr(
-        "team_analysis.run_team_pipeline.team_frontier_from_histories",
+        "lfs.mission.team_analysis.run_team_pipeline.team_frontier_from_histories",
         fake_frontier,
     )
 
@@ -75,7 +75,7 @@ def test_runner_removes_fund_dominated_before_team(monkeypatch):
         return ["frontier"]
 
     monkeypatch.setattr(
-        "team_analysis.run_team_pipeline.team_frontier_from_histories",
+        "lfs.mission.team_analysis.run_team_pipeline.team_frontier_from_histories",
         fake_frontier,
     )
 
@@ -107,11 +107,11 @@ def test_runner_emits_fund_dominator_audit(monkeypatch):
         return ["frontier"]
 
     monkeypatch.setattr(
-        "team_analysis.run_team_pipeline.fund_frontier_from_histories",
+        "lfs.mission.team_analysis.run_team_pipeline.fund_frontier_from_histories",
         fake_fund_frontier,
     )
     monkeypatch.setattr(
-        "team_analysis.run_team_pipeline.team_frontier_from_histories",
+        "lfs.mission.team_analysis.run_team_pipeline.team_frontier_from_histories",
         fake_team_frontier,
     )
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from lakshya_core.models import Fund
-from team_analysis.generate_compositions import generate_compositions
-from team_analysis.team import Team
+from lfs.mission.team_analysis.generate_compositions import generate_compositions
+from lfs.mission.team_analysis.team import Team
 
 
 def _fund(isin: str) -> Fund:

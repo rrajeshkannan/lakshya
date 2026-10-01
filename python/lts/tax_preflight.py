@@ -14,7 +14,7 @@ from datetime import date
 from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
 
-from fund_analysis.funds_in_scope import load_fund_scope_rows
+from lps.funds_in_scope import load_fund_scope_rows
 from lps.positions import PositionId
 from lps.transaction_persistence import read_transactions
 

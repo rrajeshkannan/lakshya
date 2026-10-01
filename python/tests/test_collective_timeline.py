@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from team_analysis.collective_timeline import build_collective_nav
+from lfs.mission.team_analysis.collective_timeline import build_collective_nav
 
 
 def history(dates, navs):

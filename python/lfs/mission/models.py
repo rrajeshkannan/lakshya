@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional
 
-from team_analysis.composition import Composition
+from lfs.mission.team_analysis.composition import Composition
 
 
 @dataclass(frozen=True)

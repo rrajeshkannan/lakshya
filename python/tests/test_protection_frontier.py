@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from lakshya_core.models import Fund
-from team_analysis.composition import Composition
-from team_analysis.protection_frontier import protection_frontier
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.protection_frontier import protection_frontier
+from lfs.mission.team_analysis.team import Team
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lfs.mission.protection_pareto import protection_only_frontier
-from team_analysis.comparator_surface import protection_dimensions
+from lfs.mission.team_analysis.comparator_surface import protection_dimensions
 
 
 PROTECTION_NAMES = tuple(dimension.name for dimension in protection_dimensions())

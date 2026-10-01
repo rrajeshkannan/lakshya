@@ -4,7 +4,7 @@ import pandas as pd
 
 from lakshya_core.dominance import Dimension
 from lakshya_core.models import Fund
-from team_analysis.frontier_pipeline import stream_team_evidence, team_frontier_from_histories
+from lfs.mission.team_analysis.frontier_pipeline import stream_team_evidence, team_frontier_from_histories
 
 
 def fund(isin):

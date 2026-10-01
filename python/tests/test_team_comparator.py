@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from team_analysis.comparator_surface import fund_team_dimensions
-from team_analysis.team_comparator import team_comparator_values
+from lfs.mission.team_analysis.comparator_surface import fund_team_dimensions
+from lfs.mission.team_analysis.team_comparator import team_comparator_values
 
 
 def make_fingerprint():

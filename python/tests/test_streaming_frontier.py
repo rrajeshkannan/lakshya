@@ -1,7 +1,7 @@
 """[lakshya] Tests for exact streaming frontier semantics."""
 
 from lakshya_core.dominance import Dimension
-from team_analysis.streaming_frontier import FrontierAccumulator, streaming_frontier
+from lfs.mission.team_analysis.streaming_frontier import FrontierAccumulator, streaming_frontier
 
 UP = Dimension("x", "up")
 DOWN = Dimension("y", "down")

@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from team_analysis.composition import Composition, composition_identity
-from team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.composition import Composition, composition_identity
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
 
 from .observation_horizon import nearest_supported_horizon
 from .trajectory_observation import (

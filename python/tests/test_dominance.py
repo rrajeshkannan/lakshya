@@ -3,7 +3,7 @@
 import pytest
 
 from lakshya_core.dominance import Dimension, dominates, non_dominated_frontier
-from team_analysis.comparator_surface import fund_team_dimensions
+from lfs.mission.team_analysis.comparator_surface import fund_team_dimensions
 
 
 UP = Dimension("growth", "up")

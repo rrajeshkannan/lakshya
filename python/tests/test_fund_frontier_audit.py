@@ -2,7 +2,7 @@
 
 from lakshya_core.dominance import Dimension
 from lakshya_core.models import Fund
-from team_analysis.fund_frontier import fund_frontier_from_histories
+from lfs.mission.team_analysis.fund_frontier import fund_frontier_from_histories
 
 
 def test_fund_frontier_audit_identifies_a_real_dominator(monkeypatch):
@@ -17,7 +17,7 @@ def test_fund_frontier_audit_identifies_a_real_dominator(monkeypatch):
         return fund, values[fund.isin]
 
     monkeypatch.setattr(
-        "team_analysis.fund_frontier.fund_comparator_values",
+        "lfs.mission.team_analysis.fund_frontier.fund_comparator_values",
         fake_comparator,
     )
 
@@ -43,7 +43,7 @@ def test_fund_frontier_audit_is_observability_only(monkeypatch):
     }
 
     monkeypatch.setattr(
-        "team_analysis.fund_frontier.fund_comparator_values",
+        "lfs.mission.team_analysis.fund_frontier.fund_comparator_values",
         lambda fund, nav: (fund, values[fund.isin]),
     )
 

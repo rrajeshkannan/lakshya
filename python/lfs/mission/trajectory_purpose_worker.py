@@ -13,9 +13,9 @@ from lfs.layout import mission_survivors_path, trajectory_observations_dir
 from pathlib import Path
 from typing import Callable
 
-from team_analysis.composition import Composition, composition_identity
-from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.composition_fingerprint_store import fingerprint_path, load_fingerprint
+from lfs.mission.team_analysis.composition import Composition, composition_identity
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.composition_fingerprint_store import fingerprint_path, load_fingerprint
 from .models import Purpose
 from .survivor_trajectory_experiment import (
     TRAJECTORY_CONTRACT_VERSION,

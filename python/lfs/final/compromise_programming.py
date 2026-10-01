@@ -34,7 +34,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from team_analysis.comparator_surface import PROTECTION_METRICS, ROLLING_METRICS
+from lfs.mission.team_analysis.comparator_surface import PROTECTION_METRICS, ROLLING_METRICS
 
 from lfs.layout import final_evidence_prefix
 

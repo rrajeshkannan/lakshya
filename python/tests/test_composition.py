@@ -3,9 +3,9 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from team_analysis.composition import Composition
-from team_analysis.composition_timeline import build_composition_nav
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition import Composition
+from lfs.mission.team_analysis.composition_timeline import build_composition_nav
+from lfs.mission.team_analysis.team import Team
 from lakshya_core.models import Fund
 
 

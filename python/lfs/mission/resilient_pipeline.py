@@ -33,7 +33,7 @@ from .trajectory_execution_stage import (
 
 import pandas as pd
 
-from fund_analysis.admissible_funds import load_admissible_funds
+from lps.funds_in_scope import load_funds_in_scope
 from lfs.layout import (
     composition_candidates_path,
     global_survivors_path,
@@ -46,9 +46,9 @@ from lps.position_persistence import read_positions
 from lps.transaction_persistence import read_transactions
 from .historical_positions import build_positions_as_of
 from .pipeline_inputs import load_fund_histories
-from team_analysis.composition import Composition, composition_identity
-from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.composition_fingerprint_store import (
+from lfs.mission.team_analysis.composition import Composition, composition_identity
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.composition_fingerprint_store import (
     FINGERPRINT_SCHEMA_VERSION,
     evidence_path,
     fingerprint_path,
@@ -58,12 +58,12 @@ from team_analysis.composition_fingerprint_store import (
     materialize_fingerprint_evidence,
     persist_fingerprint,
 )
-from team_analysis.composition_frontier import global_composition_frontier
-from team_analysis.composition_pipeline import analyze_compositions_parallel_resilient
-from team_analysis.generate_compositions import generate_compositions
-from team_analysis.protection_frontier import protection_frontier
-from team_analysis.run_team_pipeline import run_team_pipeline
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition_frontier import global_composition_frontier
+from lfs.mission.team_analysis.composition_pipeline import analyze_compositions_parallel_resilient
+from lfs.mission.team_analysis.generate_compositions import generate_compositions
+from lfs.mission.team_analysis.protection_frontier import protection_frontier
+from lfs.mission.team_analysis.run_team_pipeline import run_team_pipeline
+from lfs.mission.team_analysis.team import Team
 
 from .achievability_interpretation import AchievabilityStatus, assess_achievability
 from .composition_checkpoint_index import (
@@ -614,7 +614,7 @@ def run(
     _log(f"START as-of {valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'}")
     _detail(f"RUN_START run_id={run_id} as_of={valuation_date.date()} mode={resume_from or 'full'} workers={workers or 'auto'} log={LOG_PATH} manifest={MANIFEST_PATH}")
 
-    funds = load_admissible_funds()
+    funds = load_funds_in_scope()
     histories = load_fund_histories(
         funds,
         nav_dir=NAV_DIR,

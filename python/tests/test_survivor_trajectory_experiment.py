@@ -3,9 +3,9 @@ import pytest
 
 from lfs.mission.survivor_trajectory_experiment import observe_survivors_for_purpose
 from lfs.mission.trajectory_observation import observe_trajectory
-from team_analysis.composition_fingerprint import CompositionFingerprint
-from team_analysis.composition import Composition, composition_identity
-from team_analysis.team import Team
+from lfs.mission.team_analysis.composition_fingerprint import CompositionFingerprint
+from lfs.mission.team_analysis.composition import Composition, composition_identity
+from lfs.mission.team_analysis.team import Team
 from lakshya_core.models import Fund
 
 

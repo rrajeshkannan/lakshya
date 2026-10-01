@@ -19,7 +19,7 @@ class RunInputs:
 
 @dataclass(frozen=True)
 class RunInputDeps:
-    load_admissible_funds: Callable[[], list[Any]]
+    load_funds_in_scope: Callable[[], list[Any]]
     load_fund_histories: Callable[..., Any]
     load_purposes: Callable[..., list[Any]]
     nav_dir: Any
@@ -35,7 +35,7 @@ class RunInputStage:
 
     def prepare(self, as_of: str, purpose_names: list[str] | None = None) -> RunInputs:
         valuation_date = pd.Timestamp(as_of)
-        funds = self._deps.load_admissible_funds()
+        funds = self._deps.load_funds_in_scope()
         histories = self._deps.load_fund_histories(
             funds,
             nav_dir=self._deps.nav_dir,

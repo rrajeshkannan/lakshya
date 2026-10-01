@@ -1,6 +1,6 @@
 import pytest
 
-from fund_analysis.funds_in_scope import (
+from lps.funds_in_scope import (
     load_fund_scope_rows,
     validate_scope_covers_positions,
 )

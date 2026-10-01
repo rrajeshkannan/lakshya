@@ -5,9 +5,9 @@ import pandas as pd
 from lakshya_core.drawdown_severity import calculate_protection
 from lakshya_core.elevation import calculate_elevation
 from lakshya_core.models import Fund
-from team_analysis.collective_timeline import build_collective_nav
-from team_analysis.team import Team
-from team_analysis.team_fingerprint import TeamFingerprint
+from lfs.mission.team_analysis.collective_timeline import build_collective_nav
+from lfs.mission.team_analysis.team import Team
+from lfs.mission.team_analysis.team_fingerprint import TeamFingerprint
 
 
 def nav_history(dates, navs):

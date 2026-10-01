@@ -7,7 +7,7 @@ from typing import Any
 
 from lakshya_core.dominance import Dimension, non_dominated_frontier
 
-from team_analysis.comparator_surface import protection_dimensions
+from lfs.mission.team_analysis.comparator_surface import protection_dimensions
 
 
 def protection_only_frontier(
