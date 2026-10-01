@@ -710,10 +710,9 @@ The architecture deliberately parks the following until evidence earns them:
 - unmapped-Position automation;
 - a formal Z-trigger framework for rare exceptions;
 - broader LPS reference-data expansion;
-- Purpose-specific external views until a consumer earns one; and
-- **removal of the obsolete Family Architecture Validation implementation (`python/run_family_attribution.py` and its supporting `python/family/` code).**
+- Purpose-specific external views until a consumer earns one.
 
-The last item is an explicit cleanup task, not an active pipeline stage. Until that cleanup is deliberately executed, the legacy code must not be described as part of the production architecture or annual review flow.
+Family Architecture Validation is not a pipeline stage. `python/family/` is Purpose Staging. Production runs MISSION, then FINAL. Purpose Staging is the separate human review after that, and LTS reads the committed result.
 
 Parking means deliberately refusing to make architecture pay for a need before evidence demonstrates it.
 

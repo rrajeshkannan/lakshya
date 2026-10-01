@@ -17,7 +17,6 @@ output/*
 # Generated Lakshya review-session logs
 # Structured review artifacts under data/reviews/ remain trackable.
 data/reviews/*/purpose_staging/staging.log
-data/reviews/*/family_attribution.log
 
 # macOS metadata
 .DS_Store
